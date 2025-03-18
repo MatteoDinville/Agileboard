@@ -1,0 +1,46 @@
+name: Create Pull Request
+
+on:
+  create:
+
+jobs:
+  create-pr:
+    if: github.event.ref_type == 'branch' && github.event.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the current branch name
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+
+          # Check if PR already exists for this branch
+          EXISTING_PR=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[].number')
+
+          if [ -z "$EXISTING_PR" ]; then
+            echo "No existing PR found for branch $BRANCH_NAME. Creating new PR..."
+            # Create the pull request using gh cli
+            gh pr create \
+            --title "${BRANCH_NAME}" \
+            --base develop \
+            --head "${BRANCH_NAME}" \
+            --assignee "MatteoDinville" \
+            --fill
+            echo "Pull request created successfully"
+          else
+            echo "Pull request already exists for branch $BRANCH_NAME (PR #$EXISTING_PR). Skipping PR creation."
+          fi
