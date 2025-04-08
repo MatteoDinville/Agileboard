@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal } from './Modal';
 import toast from 'react-hot-toast';
@@ -21,6 +21,10 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 		confirmPassword: ''
 	});
 	const [error, setError] = useState('');
+
+	useEffect(() => {
+		setActiveTab(defaultTab);
+	}, [defaultTab]);
 
 	const handleClose = () => {
 		onClose();
