@@ -79,7 +79,6 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 			});
 
 			if (response.ok) {
-				//toast.success('Inscription réussie !', { duration: 5000 });
 				toast.custom((t) => (
 					<div className={`${t.visible ? 'animate-in' : 'animate-out'}`}>
 						<div className="bg-green-500 text-white px-4 py-2 rounded-md">
@@ -118,7 +117,6 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 	};
 
 	const handleSocialLogin = (provider: 'github' | 'google') => {
-		//Implement social login
 		console.log(`Login with ${provider}`);
 	};
 

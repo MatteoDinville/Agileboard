@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import authRoutes, { verifyToken } from './routes/auth';
+import routes from './routes';
 
 dotenv.config();
 
@@ -16,10 +16,9 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
-app.use('/api/auth', authRoutes);
+app.use(routes)
 
-app.get('/api/home', verifyToken, (req, res) => {
+app.get('/api/home', (req, res) => {
 	try {
 		res.json({ message: 'Bienvenue sur la page d\'accueil' });
 	} catch (error) {
@@ -29,5 +28,5 @@ app.get('/api/home', verifyToken, (req, res) => {
 });
 
 app.listen(port, () => {
-	console.log(`Server is running on port ${port}`);
+	console.log(`🚀 Server is running on http://localhost:${port}`);
 });
