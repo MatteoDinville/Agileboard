@@ -10,6 +10,6 @@ router.get('/me', authMiddleware, controller.me);
 router.get('/refresh', controller.refresh);
 router.get('/verify', controller.verify);
 router.get('/verify/:token', controller.verifyToken);
-
+router.put('/update-profile', authMiddleware, controller.updateProfile);
 
 export default router;

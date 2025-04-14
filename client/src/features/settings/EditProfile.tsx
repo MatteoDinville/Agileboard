@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from '@tanstack/react-router';
-import { User, Save } from 'lucide-react';
+import { User, Save, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AppLayout } from '../../layouts/AppLayout';
 import { api } from '../../config/api';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 interface User {
 	firstName: string;
@@ -23,25 +24,48 @@ export const EditProfile = () => {
 		confirmPassword: ''
 	});
 
-	useEffect(() => {
-		const fetchUser = async () => {
-			try {
-				const userData = await api.get<User>('/auth/me');
-				setUser(userData);
-				setFormData(prev => ({
-					...prev,
-					firstName: userData.firstName,
-					lastName: userData.lastName,
-					email: userData.email
-				}));
-			} catch (error) {
-				console.error('Erreur lors de la récupération des informations utilisateur:', error);
-				toast.error('Erreur lors du chargement des informations utilisateur', { duration: 3000 });
-			}
-		};
+	const { data: userData, isError } = useQuery({
+		queryKey: ['user'],
+		queryFn: async () => {
+			const response = await api.get<User>('/auth/me');
+			return response;
+		}
+	});
 
-		fetchUser();
-	}, []);
+	useEffect(() => {
+		if (userData) {
+			setUser(userData);
+			setFormData(prev => ({
+				...prev,
+				firstName: userData.firstName,
+				lastName: userData.lastName,
+				email: userData.email
+			}));
+		}
+	}, [userData]);
+
+	const { mutate: updateProfile, isPending } = useMutation({
+		mutationFn: async () => {
+			await api.put('/auth/update-profile', {
+				firstName: formData.firstName,
+				lastName: formData.lastName,
+				email: formData.email,
+			});
+		},
+		onSuccess: () => {
+			toast.success('Profil mis à jour avec succès', { duration: 3000 });
+			router.navigate({ to: '/settings' });
+		},
+		onError: () => {
+			toast.error('Erreur lors de la mise à jour du profil', { duration: 3000 });
+		}
+	});
+
+	useEffect(() => {
+		if (isError) {
+			toast.error('Erreur lors du chargement des informations utilisateur', { duration: 3000 });
+		}
+	}, [isError]);
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
@@ -53,20 +77,7 @@ export const EditProfile = () => {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		try {
-			await api.put('/auth/update-profile', {
-				firstName: formData.firstName,
-				lastName: formData.lastName,
-				email: formData.email,
-				currentPassword: formData.currentPassword,
-				newPassword: formData.newPassword
-			});
-			toast.success('Profil mis à jour avec succès', { duration: 3000 });
-			router.navigate({ to: '/settings' });
-		} catch (error) {
-			console.error('Erreur lors de la mise à jour du profil:', error);
-			toast.error('Erreur lors de la mise à jour du profil', { duration: 3000 });
-		}
+		updateProfile();
 	};
 
 	return (
@@ -188,9 +199,14 @@ export const EditProfile = () => {
 							</button>
 							<button
 								type="submit"
+								disabled={isPending}
 								className="cursor-pointer px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
 							>
-								<Save className="w-5 h-5" />
+								{isPending ? (
+									<Loader className="w-5 h-5 animate-spin" />
+								) : (
+									<Save className="w-5 h-5" />
+								)}
 								Enregistrer les modifications
 							</button>
 						</div>

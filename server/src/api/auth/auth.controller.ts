@@ -91,3 +91,16 @@ export const verify = (req: Request, res: Response) => {
 export const verifyToken = (req: Request, res: Response) => {
 	res.status(200).json({ message: "Token verified", token: req.params.token })
 }
+
+export const updateProfile = async (req: Request, res: Response) => {
+	try {
+		if (!req.user?.id) {
+			return res.status(401).json({ message: "Non authentifié" });
+		}
+		const { firstName, lastName, email } = req.body;
+		const updatedUser = await authService.updateProfile(req.user.id, { firstName, lastName, email });
+		res.status(200).json(updatedUser);
+	} catch (error: any) {
+		res.status(400).json({ message: error.message });
+	}
+}

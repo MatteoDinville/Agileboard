@@ -44,7 +44,7 @@ const settingsRoute = createRoute({
 
 const editProfileRoute = createRoute({
 	getParentRoute: () => rootRoute,
-	path: '/settings/edit-profile',
+	path: '/settings/update-profile',
 	component: EditProfile,
 });
 
