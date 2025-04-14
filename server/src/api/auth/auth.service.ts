@@ -47,3 +47,10 @@ export const register = async (email: string, password: string, firstName: strin
 	})
 	return { message: 'User created', userId: user.id }
 }
+
+export const me = async (userId: string) => {
+	const user = await prisma.user.findUnique({
+		where: { id: userId }
+	})
+	return user
+}

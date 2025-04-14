@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Modal } from './Modal';
+import { useRouter } from '@tanstack/react-router';
+import { Modal } from '../../components/Modal';
 import toast from 'react-hot-toast';
 import { AuthTabs } from './AuthTabs';
 
@@ -11,7 +11,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalProps) => {
-	const navigate = useNavigate();
+	const router = useRouter();
 	const [activeTab, setActiveTab] = useState<'login' | 'register'>(defaultTab);
 	const [formData, setFormData] = useState({
 		firstName: '',
@@ -28,7 +28,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 
 	const handleClose = () => {
 		onClose();
-		navigate('/');
+		router.navigate({ to: '/' });
 	};
 
 	const handleLogin = async (e: React.FormEvent) => {
@@ -47,7 +47,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 			});
 
 			if (response.ok) {
-				navigate('/home');
+				router.navigate({ to: '/home' });
 			} else {
 				const data = await response.json();
 				setError(data.message || 'Une erreur est survenue');
@@ -79,13 +79,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 			});
 
 			if (response.ok) {
-				toast.custom((t) => (
-					<div className={`${t.visible ? 'animate-in' : 'animate-out'}`}>
-						<div className="bg-green-500 text-white px-4 py-2 rounded-md">
-							🎉 Inscription réussie !
-						</div>
-					</div>
-				))
+				toast.success('🎉 Inscription réussie !');
 				setActiveTab('login');
 				setFormData({
 					firstName: '',
@@ -113,7 +107,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 			password: '',
 			confirmPassword: ''
 		});
-		navigate(tab === 'login' ? '/login' : '/register');
+		router.navigate({ to: tab === 'login' ? '/login' : '/register' });
 	};
 
 	const handleSocialLogin = (provider: 'github' | 'google') => {

@@ -1,36 +1,36 @@
-import { Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useRouter } from '@tanstack/react-router';
 
 interface ProtectedRouteProps {
 	children: React.ReactNode;
 }
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+	const router = useRouter();
 	const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
 	useEffect(() => {
-		const verifyAuth = async () => {
+		const checkAuth = async () => {
 			try {
-				const response = await fetch('http://localhost:4000/api/home', {
+				const response = await fetch('http://localhost:4000/api/auth/me', {
 					credentials: 'include'
 				});
-				setIsAuthenticated(response.ok);
+				if (!response.ok) {
+					router.navigate({ to: '/' });
+				} else {
+					setIsAuthenticated(true);
+				}
 			} catch (error) {
 				console.error('Erreur lors de la vérification de l\'authentification:', error);
-				setIsAuthenticated(false);
+				router.navigate({ to: '/' });
 			}
 		};
-
-		verifyAuth();
-	}, []);
+		checkAuth();
+	}, [router]);
 
 	if (isAuthenticated === null) {
 		return <div>Chargement...</div>;
 	}
 
-	if (!isAuthenticated) {
-		return <Navigate to="/login" replace />;
-	}
-
-	return <>{children}</>;
+	return isAuthenticated ? <>{children}</> : null;
 };

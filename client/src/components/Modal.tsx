@@ -13,7 +13,7 @@ export const Modal = ({ isOpen, onClose, children }: ModalProps) => {
 		<div className="fixed inset-0 z-50 overflow-y-auto">
 			{/* Backdrop with blur */}
 			<div
-				className="fixed inset-0 bg-opacity-30 backdrop-blur-sm transition-opacity"
+				className="fixed inset-0 bg-opacity-30 transition-opacity"
 				onClick={onClose}
 			/>
 
@@ -31,7 +31,7 @@ export const Modal = ({ isOpen, onClose, children }: ModalProps) => {
 						</svg>
 					</button>*/}
 					{/* Content */}
-					<div className="bg-white">
+					<div className="">
 						{children}
 					</div>
 				</div>
