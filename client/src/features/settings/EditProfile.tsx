@@ -15,6 +15,7 @@ interface User {
 export const EditProfile = () => {
 	const router = useRouter();
 	const [user, setUser] = useState<User | null>(null);
+	const [error, setError] = useState<string>('')
 	const [formData, setFormData] = useState({
 		firstName: '',
 		lastName: '',
@@ -56,8 +57,12 @@ export const EditProfile = () => {
 			toast.success('Profil mis à jour avec succès', { duration: 3000 });
 			router.navigate({ to: '/settings' });
 		},
-		onError: () => {
-			toast.error('Erreur lors de la mise à jour du profil', { duration: 3000 });
+		onError: (err: { response?: { data?: { message?: string } } }) => {
+			const msg =
+				err.response?.data?.message ??
+				'Erreur lors de la mise à jour du profil';
+			setError(msg);
+			toast.error(msg, { duration: 3000 });
 		}
 	});
 
@@ -68,6 +73,7 @@ export const EditProfile = () => {
 	}, [isError]);
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (error) setError('');
 		const { name, value } = e.target;
 		setFormData(prev => ({
 			...prev,
