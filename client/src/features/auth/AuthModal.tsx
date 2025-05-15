@@ -3,7 +3,7 @@ import { useRouter } from '@tanstack/react-router';
 import { Modal } from '../../components/Modal';
 import toast from 'react-hot-toast';
 import { AuthTabs } from './AuthTabs';
-
+import { api } from '../../config/api';
 interface AuthModalProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -36,70 +36,56 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 		setError('')
 
 		try {
-			const response = await fetch('http://localhost:4000/api/auth/login', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				credentials: 'include',
-				body: JSON.stringify({
-					email: formData.email,
-					password: formData.password
-				}),
+			const data = await api.post('/auth/login', {
+				email: formData.email,
+				password: formData.password
 			})
-
-			const data = await response.json()
-
-			if (response.ok) {
-				router.navigate({ to: '/home' })
-			} else {
-				const msg = data.message || 'Identifiants invalides'
-				setError(msg)
-				toast.error(msg)
-			}
-		} catch (err) {
-			const msg = 'Erreur de connexion au serveur : ' + err
-			setError(msg)
-			toast.error(msg)
-		}
-	}
-
-
-	const handleRegister = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (formData.password !== formData.confirmPassword) {
-			setError('Les mots de passe ne correspondent pas');
-			return;
-		}
-
-		try {
-			const response = await fetch('http://localhost:4000/api/auth/register', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					firstName: formData.firstName,
-					lastName: formData.lastName,
-					email: formData.email,
-					password: formData.password
-				}),
-			});
-
-			if (response.ok) {
-				toast.success('🎉 Inscription réussie !');
-				setActiveTab('login');
+			if (data) {
+				toast.success('Connexion réussie !')
 				setFormData({
 					firstName: '',
 					lastName: '',
 					email: '',
 					password: '',
 					confirmPassword: ''
-				});
-			} else {
-				const data = await response.json();
-				setError(data.message || 'Une erreur est survenue');
+				})
 			}
+			router.navigate({ to: '/home' })
 		} catch (err) {
-			setError('Erreur de connexion au serveur : ' + err);
+			const errorMessage = err instanceof Error ? err.message : 'Identifiants invalides'
+			setError(errorMessage)
+		}
+	}
+
+
+	const handleRegister = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setError('');
+
+		if (formData.password !== formData.confirmPassword) {
+			setError('Les mots de passe ne correspondent pas');
+			return;
+		}
+
+		try {
+			await api.post('/auth/register', {
+				firstName: formData.firstName,
+				lastName: formData.lastName,
+				email: formData.email,
+				password: formData.password
+			});
+
+			toast.success('🎉 Inscription réussie !');
+			setActiveTab('login');
+			setFormData({
+				firstName: '',
+				lastName: '',
+				email: '',
+				password: '',
+				confirmPassword: ''
+			});
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Erreur lors de l\'inscription');
 		}
 	};
 
