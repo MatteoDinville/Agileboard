@@ -1,7 +1,22 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, User } from '@prisma/client'
+import createHttpError from 'http-errors'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
+
+export async function register(
+	email: string,
+	password: string,
+	firstName: string,
+	lastName: string
+): Promise<User> {
+	const existing = await prisma.user.findUnique({ where: { email } })
+	if (existing) throw createHttpError(409, 'Email déjà utilisé')
+	const hash = await bcrypt.hash(password, 10)
+	return prisma.user.create({
+		data: { email, password: hash, firstName, lastName },
+	})
+}
 
 export const login = async (email: string, password: string) => {
 
@@ -10,59 +25,26 @@ export const login = async (email: string, password: string) => {
 	})
 
 	if (!user) {
-		throw new Error('Authentication failed: No account found with this email address')
+		throw createHttpError(401, 'Aucun compte ne correspond à cet email')
 	}
 
 	const isPasswordValid = await bcrypt.compare(password, user.password)
 
 	if (!isPasswordValid) {
-		throw new Error('Authentication failed: The password you entered is incorrect')
+		throw createHttpError(401, 'Mot de passe incorrect')
 	}
 
-	return {
-		message: 'Authentication successful! Welcome back!',
-		userId: user.id,
-		firstName: user.firstName,
-		lastName: user.lastName
-	}
-}
-
-export const register = async (email: string, password: string, firstName: string, lastName: string) => {
-	const hashedPassword = await bcrypt.hash(password, 10)
-
-	const existingUser = await prisma.user.findUnique({
-		where: { email }
-	})
-
-	if (existingUser) {
-		throw new Error('User already exists')
-	}
-	const user = await prisma.user.create({
-		data: {
-			email,
-			password: hashedPassword,
-			firstName,
-			lastName
-		},
-	})
-	return { message: 'User created', userId: user.id }
-}
-
-export const me = async (userId: string) => {
-	const user = await prisma.user.findUnique({
-		where: { id: userId }
-	})
+	console.log(user);
 	return user
 }
 
-export const updateProfile = async (userId: string, data: { firstName?: string; lastName?: string; email?: string }) => {
-	const user = await prisma.user.update({
-		where: { id: userId },
-		data: {
-			firstName: data.firstName,
-			lastName: data.lastName,
-			email: data.email
-		}
-	});
-	return user;
+export async function getById(id: string): Promise<User> {
+	return prisma.user.findUniqueOrThrow({ where: { id } })
+}
+
+export async function updateProfile(
+	id: string,
+	data: { firstName: string; lastName: string; email: string }
+): Promise<User> {
+	return prisma.user.update({ where: { id }, data })
 }
