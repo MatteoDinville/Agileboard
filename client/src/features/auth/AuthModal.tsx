@@ -32,30 +32,36 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 	};
 
 	const handleLogin = async (e: React.FormEvent) => {
-		e.preventDefault();
+		e.preventDefault()
+		setError('')
+
 		try {
 			const response = await fetch('http://localhost:4000/api/auth/login', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
+				headers: { 'Content-Type': 'application/json' },
 				credentials: 'include',
 				body: JSON.stringify({
 					email: formData.email,
 					password: formData.password
 				}),
-			});
+			})
+
+			const data = await response.json()
 
 			if (response.ok) {
-				router.navigate({ to: '/home' });
+				router.navigate({ to: '/home' })
 			} else {
-				const data = await response.json();
-				setError(data.message || 'Une erreur est survenue');
+				const msg = data.message || 'Identifiants invalides'
+				setError(msg)
+				toast.error(msg)
 			}
 		} catch (err) {
-			setError('Erreur de connexion au serveur : ' + err);
+			const msg = 'Erreur de connexion au serveur : ' + err
+			setError(msg)
+			toast.error(msg)
 		}
-	};
+	}
+
 
 	const handleRegister = async (e: React.FormEvent) => {
 		e.preventDefault();
