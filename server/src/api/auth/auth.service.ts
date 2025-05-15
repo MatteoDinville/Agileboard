@@ -34,7 +34,6 @@ export const login = async (email: string, password: string) => {
 		throw createHttpError(401, 'Mot de passe incorrect')
 	}
 
-	console.log(user);
 	return user
 }
 
