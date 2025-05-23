@@ -10,9 +10,5 @@ router.post('/logout', controller.logout);
 router.get('/me', authenticate, controller.me);
 router.put('/update-profile', controller.updateProfile);
 
-//router.get('/refresh', controller.refresh);
-
-//router.get('/verify', controller.verify);
-//router.get('/verify/:token', controller.verifyToken);
 
 export default router;
