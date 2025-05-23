@@ -22,12 +22,35 @@ enum Role {
 }
 
 model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  password      String
+  firstName     String
+  lastName      String
+  role          Role            @default(USER)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  ProjectMember ProjectMember[]
+}
+
+model Project {
+  id          String          @id @default(uuid())
+  name        String
+  description String?
+  key         String          @unique
+  members     ProjectMember[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model ProjectMember {
   id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role     @default(DEVELOPER)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  joinedAt  DateTime @default(now())
+
+  @@unique([userId, projectId])
 }
