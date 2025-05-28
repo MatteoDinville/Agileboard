@@ -1,10 +1,11 @@
 import { Request, Response } from 'express'
 import createHttpError from 'http-errors'
 import * as projectService from './project.service'
+import { Role } from '@prisma/client'
 
 export const allProjects = async (req: Request, res: Response) => {
-	const userId = req.body.userId    // idéalement: req.user.id (JWT)
-	if (!userId) throw createHttpError(400, 'User ID is required')
+	if (!req.user) throw createHttpError(401, 'Non authentifié')
+	const userId = req.user.id
 
 	const projects = await projectService.getAllProjects(userId)
 	res.json(projects)
@@ -56,3 +57,15 @@ export const removeUserFromProject = async (req: Request, res: Response) => {
 	await projectService.removeUserFromProject(projectId, userId)
 	res.json({ message: 'User removed from project' })
 }
+
+export const updateMemberRole = async (req: Request, res: Response) => {
+	const { projectId, memberId } = req.params;
+	const { role } = req.body;
+
+	if (!role || !Object.values(Role).includes(role)) {
+		throw createHttpError(400, 'Invalid role');
+	}
+
+	await projectService.updateMemberRole(projectId, memberId, role);
+	res.json({ message: 'Member role updated successfully' });
+};

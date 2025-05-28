@@ -93,9 +93,16 @@ export async function updateProject(
  */
 export async function deleteProject(id: string) {
 	try {
-		await prisma.project.delete({ where: { id } })
-	} catch {
-		throw createHttpError(404, 'Project not found')
+		await prisma.projectMember.deleteMany({
+			where: { projectId: id }
+		});
+
+		await prisma.project.delete({
+			where: { id }
+		});
+	} catch (error) {
+		console.error('Error deleting project:', error);
+		throw createHttpError(404, 'Project not found');
 	}
 }
 
@@ -119,4 +126,22 @@ export async function removeUserFromProject(projectId: string, userId: string) {
 		where: { userId, projectId },
 	})
 	if (deleted.count === 0) throw createHttpError(404, 'Project not found')
+}
+
+export async function updateMemberRole(projectId: string, memberId: string, role: Role) {
+	try {
+		const updatedMember = await prisma.projectMember.update({
+			where: {
+				userId_projectId: {
+					userId: memberId,
+					projectId: projectId
+				}
+			},
+			data: { role },
+			include: { user: true }
+		});
+		return updatedMember;
+	} catch (error) {
+		throw createHttpError(404, 'Project member not found');
+	}
 }
