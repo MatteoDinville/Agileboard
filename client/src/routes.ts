@@ -56,8 +56,8 @@ const projectsRoute = createRoute({
 })
 
 const projectDetailsRoute = createRoute({
-	getParentRoute: () => projectsRoute,
-	path: '$projectId',     // GET '/home/projects/:projectId'
+	getParentRoute: () => appLayoutRoute,
+	path: 'projects/$projectId',     // GET '/home/projects/:projectId'
 	parseParams: (p: { projectId: string }) => p,
 	component: ProjectDetailsPage,
 })
