@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth";
-// import projectRoutes from "./routes/project";
+import projectRoutes from "./routes/project";
 // import userRoutes from "./routes/user";
 // import taskRoutes from "./routes/task";
 import { PrismaClient } from "@prisma/client";
@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
-// app.use("/api/projects", projectRoutes);
+app.use("/api/projects", projectRoutes);
 // app.use("/api/user", userRoutes);
 // app.use("/api/tasks", taskRoutes);
 app.get("/", async (req: Request, res: Response) => {
