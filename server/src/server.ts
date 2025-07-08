@@ -1,40 +1,39 @@
-import 'express-async-errors'
+import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+import authRoutes from "./routes/auth";
+// import projectRoutes from "./routes/project";
+// import userRoutes from "./routes/user";
+// import taskRoutes from "./routes/task";
+import { PrismaClient } from "@prisma/client";
 
-import express, { Request, Response, NextFunction } from 'express'
-import cors from 'cors'
-import cookieParser from 'cookie-parser'
-import routes from './routes'
-import config from './config'
+dotenv.config();
 
-const app = express()
+const app = express();
+const prisma = new PrismaClient();
+const PORT = process.env.PORT ?? 4000;
 
-const FRONT_URL = process.env.FRONT_URL ?? 'http://localhost:5173'
 app.use(cors({
-	origin: FRONT_URL,
-	credentials: true,
-}))
-app.options('*', cors())
+	origin: true, // ou spécifiez votre domaine frontend
+	credentials: true
+}));
+app.use(express.json());
+app.use(cookieParser());
 
-app.use(express.json())
-app.use(cookieParser())
+app.use("/api/auth", authRoutes);
+// app.use("/api/projects", projectRoutes);
+// app.use("/api/user", userRoutes);
+// app.use("/api/tasks", taskRoutes);
+app.get("/", async (req: Request, res: Response) => {
+	res.json({ message: "API en fonctionnement." });
+});
 
-app.use('/api', routes)
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+	console.error(err);
+	res.status(err.status ?? 500).json({ error: err.message ?? "Erreur serveur" });
+});
 
-app.use((
-	err: any,
-	_req: Request,
-	res: Response,
-	_next: NextFunction
-) => {
-	const status = err.status ?? err.statusCode ?? 500
-	const message = err.expose === false
-		? 'Internal Server Error'
-		: err.message
-
-	console.error(err)
-	return res.status(status).json({ message })
-})
-
-app.listen(config.port, () =>
-	console.log(`🚀 Server running on http://localhost:${config.port}`)
-)
+app.listen(PORT, () => {
+	console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+});
