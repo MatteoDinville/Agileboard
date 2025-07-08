@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal } from '../../components/Modal';
-import { Role } from '../../types/role';
+import { Role } from '../../types/Role';
 import { api } from '../../config/api';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
