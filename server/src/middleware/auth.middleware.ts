@@ -1,29 +1,22 @@
-import { Request, Response, NextFunction } from 'express'
-import createHttpError from 'http-errors'
-import jwt from 'jsonwebtoken'
-import config from '../config'
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-export interface AuthenticatedUser {
-	id: string
-	email: string
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET ?? "changeme_pour_la_prod";
+
+export interface AuthRequest extends Request {
+	userId?: number;
 }
 
-declare global {
-	namespace Express {
-		interface Request {
-			user?: AuthenticatedUser
-		}
-	}
-}
+export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+	const authHeader = req.headers["authorization"];
+	const token = authHeader?.split(" ")[1];
+	if (!token) return res.status(401).json({ error: "Token manquant." });
 
-export function authenticate(req: Request, _res: Response, next: NextFunction) {
-	try {
-		const token = req.cookies.token
-		if (!token) throw createHttpError(401, 'Token manquant')
-		const payload = jwt.verify(token, config.jwt.secret) as any
-		req.user = { id: payload.userId, email: payload.email }
-		next()
-	} catch (err) {
-		next(err)
-	}
-}
+	jwt.verify(token, JWT_SECRET, (err, payload: any) => {
+		if (err) return res.status(403).json({ error: "Token invalide ou expiré." });
+		req.userId = payload.userId;
+		next();
+	});
+};

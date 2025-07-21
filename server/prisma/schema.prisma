@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,44 +7,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  ADMIN
-  PRODUCT_OWNER
-  SCRUM_MASTER
-  DEVELOPER
-}
-
 model User {
-  id            String          @id @default(uuid())
-  email         String          @unique
-  password      String
-  firstName     String
-  lastName      String
-  role          Role            @default(USER)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  ProjectMember ProjectMember[]
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  name      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  // Relation 1-N vers Project (projets dont il est propriétaire)
+  projects  Project[]
+  // Relation N-N vers Project (projets dont il est membre)
+  memberOf  ProjectMember[]
+  // Relation 1-N vers Task (tâches assignées à l'utilisateur)
+  assignedTasks Task[]
 }
 
 model Project {
-  id          String          @id @default(uuid())
-  name        String
+  id          Int      @id @default(autoincrement())
+  title       String
   description String?
-  key         String          @unique
+  status      String   @default("En attente")
+  priority    String   @default("Basse")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ownerId     Int
+  owner       User     @relation(fields: [ownerId], references: [id])
+  // Relation N-N vers User (membres du projet)
   members     ProjectMember[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  // Relation 1-N vers Task (tâches du projet)
+  tasks       Task[]
+
+  @@index([ownerId])
 }
 
 model ProjectMember {
-  id        String   @id @default(uuid())
-  role      Role     @default(DEVELOPER)
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  project   Project  @relation(fields: [projectId], references: [id])
-  projectId String
-  joinedAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  projectId Int
+  addedAt   DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([userId, projectId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Task {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  status      String   @default("À faire") // Colonnes Kanban: "À faire", "En cours", "Terminé"
+  priority    String   @default("Moyenne") // "Basse", "Moyenne", "Haute", "Urgente"
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  projectId   Int
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  assignedToId Int?
+  assignedTo   User?    @relation(fields: [assignedToId], references: [id])
+
+  @@index([projectId])
+  @@index([assignedToId])
+  @@index([status])
 }
