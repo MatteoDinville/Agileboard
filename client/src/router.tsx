@@ -6,14 +6,13 @@ import {
 	Outlet,
 	Navigate,
 	RouterProvider,
-	useParams,
 } from "@tanstack/react-router";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 import Welcome from "./pages/Welcome";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
 
-// Root route with AuthProvider
 const rootRoute = createRootRoute({
 	component: () => (
 		<AuthProvider>
@@ -22,30 +21,55 @@ const rootRoute = createRootRoute({
 	),
 });
 
-// Index route - redirects to welcome page
 const indexRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/",
 	component: () => <Navigate to="/welcome" replace />,
 });
 
-// Welcome route (landing page)
 const welcomeRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/welcome",
 	component: Welcome,
 });
 
-// Create route tree
+const loginRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/login",
+	component: Login,
+});
+
+const registerRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/register",
+	component: Register,
+});
+
+const ProtectedDashboard = () => {
+	const { token, user } = React.useContext(AuthContext);
+	
+	if (!token && !user) {
+		return <Navigate to="/welcome" />;
+	}
+	return <Dashboard />;
+};
+
+const dashboardRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/dashboard",
+	component: ProtectedDashboard,
+});
+
 const routeTree = rootRoute.addChildren([
 	indexRoute,
 	welcomeRoute,
+	loginRoute,
+	registerRoute,
+	dashboardRoute,
 ]);
 
-// Create router
 const router = createRouter({ routeTree });
 
-// Declare router type for TypeScript
 declare module "@tanstack/react-router" {
 	interface Register {
 		router: typeof router;
