@@ -1,20 +1,18 @@
-import { createContext, useState, useContext, type ReactNode, useEffect } from "react";
+import { createContext, useState, useContext, type ReactNode, useMemo, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { login as apiLogin, register as apiRegister, logout as apiLogout } from "../services/auth";
+import { login as apiLogin, register as apiRegister } from "../services/auth";
 import type { RegisterData, LoginData } from "../services/auth";
 import { useNavigate } from "@tanstack/react-router";
-
-const getCookie = (name: string): string | null => {
-	const value = `; ${document.cookie}`;
-	const parts = value.split(`; ${name}=`);
-	if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-	return null;
-};
 
 interface User {
 	id: number;
 	email: string;
 	name?: string;
+}
+
+interface StoredUserData {
+	user: User;
+	token: string;
 }
 
 interface AuthResponse {
@@ -43,21 +41,39 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-	const [token, setToken] = useState<string | null>(null);
-	const [user, setUser] = useState<User | null>(null);
+	// Initialisation avec les données stockées
+	const initializeAuth = (): { user: User | null; token: string | null } => {
+		try {
+			const storedData = localStorage.getItem("authData");
+			if (storedData) {
+				const parsedData: StoredUserData = JSON.parse(storedData);
+				return {
+					user: parsedData.user,
+					token: parsedData.token
+				};
+			}
+		} catch (error) {
+			console.error("Erreur lors du parsing des données d'authentification:", error);
+			localStorage.removeItem("authData");
+		}
+		return { user: null, token: null };
+	};
+
+	const { user: initialUser, token: initialToken } = initializeAuth();
+
+	const [token, setToken] = useState<string | null>(initialToken);
+	const [user, setUser] = useState<User | null>(initialUser);
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		const cookieToken = getCookie('authToken');
-		if (cookieToken) {
-			setToken(cookieToken);
-			const storedUserJson = localStorage.getItem("user");
-			if (storedUserJson) {
-				setUser(JSON.parse(storedUserJson));
-			}
-		}
-	}, []);
+	// Fonction pour sauvegarder les données d'authentification
+	const saveAuthData = (userData: User, userToken: string) => {
+		const authData: StoredUserData = {
+			user: userData,
+			token: userToken
+		};
+		localStorage.setItem("authData", JSON.stringify(authData));
+	};
 
 
 	const loginMutation = useMutation({
@@ -65,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		onSuccess: (data) => {
 			setToken(data.token);
 			setUser(data.user);
-			localStorage.setItem("user", JSON.stringify(data.user));
+			saveAuthData(data.user, data.token);
 			navigate({ to: "/dashboard" });
 		},
 	});
@@ -75,22 +91,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		onSuccess: (data) => {
 			setToken(data.token);
 			setUser(data.user);
-			localStorage.setItem("user", JSON.stringify(data.user));
+			saveAuthData(data.user, data.token);
 			navigate({ to: "/dashboard" });
 		},
 	});
 
-	const logout = () => {
-		apiLogout().catch(console.error);
+	const logout = useCallback(() => {
 		navigate({ to: "/welcome" });
+		localStorage.removeItem("authData");
+		// Nettoyage des anciens items si ils existent
+		localStorage.removeItem("token");
 		localStorage.removeItem("user");
 		queryClient.clear();
 		setToken(null);
 		setUser(null);
-	};
+	}, [navigate, queryClient]);
+
+	const contextValue = useMemo(() => ({
+		user,
+		token,
+		setUser,
+		loginMutation,
+		registerMutation,
+		logout
+	}), [user, token, loginMutation, registerMutation, logout]);
 
 	return (
-		<AuthContext.Provider value={{ user, token, setUser, loginMutation, registerMutation, logout }}>
+		<AuthContext.Provider value={contextValue}>
 			{children}
 		</AuthContext.Provider>
 	);

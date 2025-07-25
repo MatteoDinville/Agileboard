@@ -34,16 +34,10 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
 		const token = generateToken(newUser.id);
 
-		res.cookie('authToken', token, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'strict',
-			maxAge: 7 * 24 * 60 * 60 * 1000
-		});
-
 		res.status(201).json({
 			message: "Utilisateur créé avec succès.",
 			user: { id: newUser.id, email: newUser.email, name: newUser.name },
+			token: token,
 		});
 	} catch (err) {
 		next(err);
@@ -66,13 +60,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 		}
 		const token = generateToken(user.id);
 
-		res.cookie('authToken', token, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'strict',
-			maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
-		});
-
 		res.status(200).json({
 			message: "Connexion réussie.",
 			user: { id: user.id, email: user.email, name: user.name },
@@ -84,6 +71,5 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 };
 
 export const logout = async (req: Request, res: Response) => {
-	res.clearCookie('authToken');
 	res.status(200).json({ message: "Déconnexion réussie." });
 };
