@@ -1,52 +1,24 @@
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+import { api } from "./api";
 
-export interface RegisterData {
-	email: string;
-	password: string;
-	name?: string;
-}
-
-export interface LoginData {
-	email: string;
-	password: string;
-}
+export type RegisterData = { email: string; password: string; name?: string };
+export type LoginData = { email: string; password: string };
 
 export async function register(data: RegisterData) {
-	const res = await fetch(`${API_URL}/auth/register`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(data),
-	});
-	if (!res.ok) {
-		const err = await res.json();
-		throw new Error(err.error ?? "Erreur inscription");
-	}
-	return res.json();
+	const { data: res } = await api.post("/auth/register", data);
+	return res as { user: { id: number; email: string; name?: string } };
 }
 
 export async function login(data: LoginData) {
-	const res = await fetch(`${API_URL}/auth/login`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(data),
-	});
-	if (!res.ok) {
-		const err = await res.json();
-		throw new Error(err.error ?? "Erreur connexion");
-	}
-	return res.json();
+	const { data: res } = await api.post("/auth/login", data);
+	return res as { user: { id: number; email: string; name?: string } };
 }
 
 export async function logout() {
-    const res = await fetch(`${API_URL}/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-    });
-    if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Erreur déconnexion");
-    }
-    return res.json();
+	const { data } = await api.post("/auth/logout", {});
+	return data;
+}
+
+export async function getCurrentUser() {
+	const { data } = await api.get("/auth/me");
+	return data as { user?: { id: number; email: string; name?: string } };
 }

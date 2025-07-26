@@ -5,7 +5,7 @@ import {
 	createRouter,
 	Outlet,
 	Navigate,
-	RouterProvider,
+	RouterProvider
 } from "@tanstack/react-router";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -46,11 +46,23 @@ const registerRoute = createRoute({
 });
 
 const ProtectedDashboard = () => {
-	const { token, user } = React.useContext(AuthContext);
-	
-	if (!token && !user) {
-		return <Navigate to="/welcome" />;
+	const { user, isLoading } = React.useContext(AuthContext);
+
+	if (isLoading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<div className="text-center">
+					<div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+					<p className="text-gray-600">Vérification de l'authentification...</p>
+				</div>
+			</div>
+		);
 	}
+
+	if (!user) {
+		return <Navigate to="/welcome" replace />;
+	}
+
 	return <Dashboard />;
 };
 

@@ -1,6 +1,6 @@
-import { createContext, useState, useContext, type ReactNode, useMemo, useCallback } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { login as apiLogin, register as apiRegister } from "../services/auth";
+import { createContext, useState, useContext, type ReactNode, useMemo, useCallback, useEffect } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { login as apiLogin, register as apiRegister, logout as apiLogout, getCurrentUser } from "../services/auth";
 import type { RegisterData, LoginData } from "../services/auth";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -10,20 +10,14 @@ interface User {
 	name?: string;
 }
 
-interface StoredUserData {
-	user: User;
-	token: string;
-}
-
 interface AuthResponse {
-	token: string;
 	user: User;
 	message?: string;
 }
 
 interface AuthContextType {
 	user: User | null;
-	token: string | null;
+	isLoading: boolean;
 	setUser: React.Dispatch<React.SetStateAction<User | null>>;
 	loginMutation: ReturnType<typeof useMutation<AuthResponse, Error, LoginData>>;
 	registerMutation: ReturnType<typeof useMutation<AuthResponse, Error, RegisterData>>;
@@ -33,55 +27,44 @@ interface AuthContextType {
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType>({
 	user: null,
-	token: null,
+	isLoading: true,
 	setUser: () => { },
 	loginMutation: {} as ReturnType<typeof useMutation<AuthResponse, Error, LoginData>>,
 	registerMutation: {} as ReturnType<typeof useMutation<AuthResponse, Error, RegisterData>>,
-	logout: () => { },
+	logout: () => { }
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-	// Initialisation avec les données stockées
-	const initializeAuth = (): { user: User | null; token: string | null } => {
-		try {
-			const storedData = localStorage.getItem("authData");
-			if (storedData) {
-				const parsedData: StoredUserData = JSON.parse(storedData);
-				return {
-					user: parsedData.user,
-					token: parsedData.token
-				};
-			}
-		} catch (error) {
-			console.error("Erreur lors du parsing des données d'authentification:", error);
-			localStorage.removeItem("authData");
-		}
-		return { user: null, token: null };
-	};
-
-	const { user: initialUser, token: initialToken } = initializeAuth();
-
-	const [token, setToken] = useState<string | null>(initialToken);
-	const [user, setUser] = useState<User | null>(initialUser);
+	const [user, setUser] = useState<User | null>(null);
+	const [isInitialized, setIsInitialized] = useState(false);
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
-	// Fonction pour sauvegarder les données d'authentification
-	const saveAuthData = (userData: User, userToken: string) => {
-		const authData: StoredUserData = {
-			user: userData,
-			token: userToken
-		};
-		localStorage.setItem("authData", JSON.stringify(authData));
-	};
+	const { data: meData, isLoading, error } = useQuery({
+		queryKey: ['auth', 'me'],
+		queryFn: getCurrentUser,
+		retry: false,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+	});
 
+	useEffect(() => {
+		if (!isLoading) {
+			setIsInitialized(true);
+		}
+
+		if (meData?.user) {
+			setUser(meData.user);
+		} else if (error || (meData && !meData.user)) {
+			setUser(null);
+		}
+	}, [meData, isLoading, error]);
 
 	const loginMutation = useMutation({
 		mutationFn: ({ email, password }: LoginData) => apiLogin({ email, password }),
 		onSuccess: (data) => {
-			setToken(data.token);
 			setUser(data.user);
-			saveAuthData(data.user, data.token);
+			queryClient.invalidateQueries({ queryKey: ['auth'] });
 			navigate({ to: "/dashboard" });
 		},
 	});
@@ -89,32 +72,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const registerMutation = useMutation({
 		mutationFn: ({ email, password, name }: RegisterData) => apiRegister({ email, password, name }),
 		onSuccess: (data) => {
-			setToken(data.token);
 			setUser(data.user);
-			saveAuthData(data.user, data.token);
+			queryClient.invalidateQueries({ queryKey: ['auth'] });
 			navigate({ to: "/dashboard" });
 		},
 	});
 
-	const logout = useCallback(() => {
-		navigate({ to: "/welcome" });
-		localStorage.removeItem("authData");
-		// Nettoyage des anciens items si ils existent
-		localStorage.removeItem("token");
-		localStorage.removeItem("user");
-		queryClient.clear();
-		setToken(null);
-		setUser(null);
+	const logout = useCallback(async () => {
+		try {
+			await apiLogout();
+		} catch (error) {
+			console.error("Erreur lors de la déconnexion:", error);
+		} finally {
+			setUser(null);
+			queryClient.clear();
+			navigate({ to: "/welcome" });
+		}
 	}, [navigate, queryClient]);
 
 	const contextValue = useMemo(() => ({
 		user,
-		token,
+		isLoading: !isInitialized,
 		setUser,
 		loginMutation,
 		registerMutation,
-		logout
-	}), [user, token, loginMutation, registerMutation, logout]);
+		logout,
+	}), [user, isInitialized, loginMutation, registerMutation, logout]);
 
 	return (
 		<AuthContext.Provider value={contextValue}>
