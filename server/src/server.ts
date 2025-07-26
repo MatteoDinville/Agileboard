@@ -15,8 +15,8 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT ?? 4000;
 
 app.use(cors({
-	origin: true, // ou spécifiez votre domaine frontend
-	credentials: true
+	origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+	credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
