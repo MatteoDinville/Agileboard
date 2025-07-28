@@ -131,11 +131,13 @@ const EditProjectRoute = createRoute({
 	path: "/projects/$projectId/edit",
 	component: ProtectedEditProject,
 });
+
 const ProjectDetailRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/projects/$projectId",
 	component: ProtectedProjectDetail,
 });
+
 const NotFoundRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '*',

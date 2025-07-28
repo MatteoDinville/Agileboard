@@ -125,3 +125,54 @@ export async function deleteProject(id: number): Promise<void> {
 	}
 }
 
+/**
+ * GET /api/projects/:id/members
+ */
+export async function fetchProjectMembers(projectId: number): Promise<ProjectMember[]> {
+	const res = await fetch(`${API_URL}/projects/${projectId}/members`, {
+		headers: {
+			"Content-Type": "application/json",
+		},
+		credentials: "include",
+	});
+	if (!res.ok) {
+		throw new Error("Erreur lors de la récupération des membres");
+	}
+	return res.json();
+}
+
+/**
+ * POST /api/projects/:id/members
+ */
+export async function addProjectMember(projectId: number, userId: number): Promise<ProjectMember> {
+	const res = await fetch(`${API_URL}/projects/${projectId}/members`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		credentials: "include",
+		body: JSON.stringify({ userId }),
+	});
+	if (!res.ok) {
+		const err = await res.json();
+		throw new Error(err.error || "Erreur ajout membre");
+	}
+	return res.json();
+}
+
+/**
+ * DELETE /api/projects/:id/members/:userId
+ */
+export async function removeProjectMember(projectId: number, userId: number): Promise<void> {
+	const res = await fetch(`${API_URL}/projects/${projectId}/members/${userId}`, {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		credentials: "include",
+	});
+	if (!res.ok) {
+		const err = await res.json();
+		throw new Error(err.error || "Erreur suppression membre");
+	}
+}

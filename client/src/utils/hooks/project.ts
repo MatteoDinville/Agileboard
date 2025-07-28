@@ -7,13 +7,17 @@ import {
 	createProject,
 	updateProject,
 	deleteProject,
+	fetchProjectMembers,
+	addProjectMember,
+	removeProjectMember,
 } from "../../services/project";
 import type { Project, ProjectInput, ProjectMember } from "../../services/project";
+
 export function useProjects() {
 	return useQuery<Project[], Error>({
 		queryKey: ["projects"],
 		queryFn: fetchProjects,
-		staleTime: 1000 * 60 * 5, // 5 minutes
+		staleTime: 1000 * 60 * 5,
 	});
 }
 
@@ -29,13 +33,11 @@ export function useCreateProject() {
 	return useMutation<Project, Error, ProjectInput>({
 		mutationFn: createProject,
 		onSuccess: () => {
-			// Invalider la liste pour la rafraîchir
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
 	});
 }
 
-// 4) Hook pour mettre à jour un projet
 export function useUpdateProject() {
 	const queryClient = useQueryClient();
 	return useMutation<Project, Error, { id: number; data: ProjectInput }>({
@@ -45,11 +47,44 @@ export function useUpdateProject() {
 		},
 	});
 }
+
 export function useDeleteProject() {
 	const queryClient = useQueryClient();
 	return useMutation<void, Error, number>({
 		mutationFn: deleteProject,
 		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["projects"] });
+		},
+	});
+}
+
+export function useProjectMembers(projectId: number) {
+	return useQuery<ProjectMember[], Error>({
+		queryKey: ["projects", projectId, "members"],
+		queryFn: () => fetchProjectMembers(projectId),
+		enabled: !!projectId,
+	});
+}
+
+export function useAddProjectMember() {
+	const queryClient = useQueryClient();
+	return useMutation<ProjectMember, Error, { projectId: number; userId: number }>({
+		mutationFn: ({ projectId, userId }) => addProjectMember(projectId, userId),
+		onSuccess: (_, { projectId }) => {
+			queryClient.invalidateQueries({ queryKey: ["projects", projectId, "members"] });
+			queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
+			queryClient.invalidateQueries({ queryKey: ["projects"] });
+		},
+	});
+}
+
+export function useRemoveProjectMember() {
+	const queryClient = useQueryClient();
+	return useMutation<void, Error, { projectId: number; userId: number }>({
+		mutationFn: ({ projectId, userId }) => removeProjectMember(projectId, userId),
+		onSuccess: (_, { projectId }) => {
+			queryClient.invalidateQueries({ queryKey: ["projects", projectId, "members"] });
+			queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
 	});

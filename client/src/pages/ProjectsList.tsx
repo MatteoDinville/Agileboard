@@ -313,6 +313,14 @@ const ProjectsList: React.FC = () => {
 															{project.priority ?? "Non définie"}
 														</div>
 													</span>
+													{project.members && project.members.length > 0 && (
+														<span className="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-purple-100 text-purple-800">
+															<div className="flex items-center gap-1.5">
+																<Users className="w-3 h-3" />
+																{project.members.length} membre{project.members.length > 1 ? 's' : ''}
+															</div>
+														</span>
+													)}
 												</div>
 
 												<div className="flex items-center space-x-3 text-xs text-slate-500">
