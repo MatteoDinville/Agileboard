@@ -15,6 +15,7 @@ import Welcome from "./pages/Welcome";
 import ProjectsList from "./pages/ProjectsList";
 import ProjectForm from "./pages/ProjectForm";
 import ProjectDetail from "./pages/ProjectDetail";
+import NotFound from "./pages/NotFound";
 
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
 
@@ -107,6 +108,12 @@ const ProtectedProjectDetail = () => (
 	</RequireAuth>
 );
 
+const ProtectedNotFound = () => (
+	<RequireAuth>
+		<NotFound />
+	</RequireAuth>
+);
+
 const ProjectsListRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/projects",
@@ -129,6 +136,12 @@ const ProjectDetailRoute = createRoute({
 	path: "/projects/$projectId",
 	component: ProtectedProjectDetail,
 });
+const NotFoundRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '*',
+	component: ProtectedNotFound,
+});
+
 const routeTree = rootRoute.addChildren([
 	indexRoute,
 	welcomeRoute,
@@ -139,6 +152,7 @@ const routeTree = rootRoute.addChildren([
 	CreateProjectRoute,
 	EditProjectRoute,
 	ProjectDetailRoute,
+	NotFoundRoute,
 ]);
 
 const router = createRouter({ routeTree });
