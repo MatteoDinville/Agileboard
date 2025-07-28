@@ -5,13 +5,40 @@ import {
 	createRouter,
 	Outlet,
 	Navigate,
-	RouterProvider
+	RouterProvider,
+	useParams
 } from "@tanstack/react-router";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Welcome from "./pages/Welcome";
+import ProjectsList from "./pages/ProjectsList";
+import ProjectForm from "./pages/ProjectForm";
+import ProjectDetail from "./pages/ProjectDetail";
+import NotFound from "./pages/NotFound";
+
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
+
+// Composant RequireAuth réutilisable
+const RequireAuth = ({ children }: { children: React.ReactNode }) => {
+	const { user, isLoading } = React.useContext(AuthContext);
+
+	if (isLoading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<div className="text-center">
+					<div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+				</div>
+			</div>
+		);
+	}
+
+	if (!user) {
+		return <Navigate to="/login" replace />;
+	}
+
+	return <>{children}</>;
+};
 
 const rootRoute = createRootRoute({
 	component: () => (
@@ -45,31 +72,76 @@ const registerRoute = createRoute({
 	component: Register,
 });
 
-const ProtectedDashboard = () => {
-	const { user, isLoading } = React.useContext(AuthContext);
-
-	if (isLoading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<div className="text-center">
-					<div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-					<p className="text-gray-600">Vérification de l'authentification...</p>
-				</div>
-			</div>
-		);
-	}
-
-	if (!user) {
-		return <Navigate to="/welcome" replace />;
-	}
-
-	return <Dashboard />;
-};
+const ProtectedDashboard = () => (
+	<RequireAuth>
+		<Dashboard />
+	</RequireAuth>
+);
 
 const dashboardRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/dashboard",
 	component: ProtectedDashboard,
+});
+
+const ProtectedProjectsList = () => (
+	<RequireAuth>
+		<ProjectsList />
+	</RequireAuth>
+);
+
+const ProtectedCreateProject = () => (
+	<RequireAuth>
+		<ProjectForm />
+	</RequireAuth>
+);
+
+const ProtectedEditProject = () => (
+	<RequireAuth>
+		<ProjectForm projectId={Number(useParams({ from: "/projects/$projectId/edit" }).projectId)} />
+	</RequireAuth>
+);
+
+const ProtectedProjectDetail = () => (
+	<RequireAuth>
+		<ProjectDetail />
+	</RequireAuth>
+);
+
+const ProtectedNotFound = () => (
+	<RequireAuth>
+		<NotFound />
+	</RequireAuth>
+);
+
+const ProjectsListRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/projects",
+	component: ProtectedProjectsList,
+});
+
+const CreateProjectRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/projects/new",
+	component: ProtectedCreateProject,
+});
+
+const EditProjectRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/projects/$projectId/edit",
+	component: ProtectedEditProject,
+});
+
+const ProjectDetailRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/projects/$projectId",
+	component: ProtectedProjectDetail,
+});
+
+const NotFoundRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '*',
+	component: ProtectedNotFound,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -78,6 +150,11 @@ const routeTree = rootRoute.addChildren([
 	loginRoute,
 	registerRoute,
 	dashboardRoute,
+	ProjectsListRoute,
+	CreateProjectRoute,
+	EditProjectRoute,
+	ProjectDetailRoute,
+	NotFoundRoute,
 ]);
 
 const router = createRouter({ routeTree });
