@@ -1,19 +1,20 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+// prisma/seed.ts ------------------------------------------------------------
+import { PrismaClient, Role } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-const firstNames = [
-	'Antoine', 'Marie', 'Pierre', 'Sophie', 'Lucas', 'Emma', 'Thomas', 'Camille',
-	'Nicolas', 'Julie', 'Alexandre', 'Sarah', 'Maxime', 'Laura', 'Benjamin',
-	'Léa', 'Julien', 'Manon', 'Romain', 'Clara'
-];
+/** -------------------- CONFIG -------------------- */
+const PASSWORD_PLAINTEXT = 'password123'
+const BCRYPT_ROUNDS = 10
 
-const lastNames = [
-	'Martin', 'Bernard', 'Thomas', 'Petit', 'Robert', 'Richard', 'Durand',
-	'Dubois', 'Moreau', 'Laurent', 'Simon', 'Michel', 'Lefebvre', 'Leroy',
-	'Roux', 'David', 'Bertrand', 'Morel', 'Fournier', 'Girard'
-];
+const usersSeed = [
+	{ email: 'admin@example.com', firstName: 'Admin', lastName: 'User', role: Role.ADMIN },
+	{ email: 'po@example.com', firstName: 'Product', lastName: 'Owner', role: Role.PRODUCT_OWNER },
+	{ email: 'scrum@example.com', firstName: 'Scrum', lastName: 'Master', role: Role.SCRUM_MASTER },
+	{ email: 'dev@example.com', firstName: 'Dev', lastName: 'User', role: Role.DEVELOPER },
+	{ email: 'user@example.com', firstName: 'Basic', lastName: 'User', role: Role.USER },
+] as const
 
 const projectTitles = [
 	'Application E-commerce', 'Système de Gestion RH', 'Plateforme de Formation',
@@ -232,10 +233,6 @@ async function main() {
 					addedAt: getRandomDate(project.createdAt, new Date())
 				},
 			});
-		}
-
-		console.log(`✅ ${selectedUsers.length} membres ajoutés au projet: ${project.title}`);
-	}
 
 	console.log('\n📋 Création de tâches pour chaque projet...');
 
@@ -284,13 +281,18 @@ async function main() {
 
 	const totalTasks = await prisma.task.count();
 	console.log(`   - ${totalTasks} tâches créées`);
+	console.info(`✅ Projects ready (${projectsSeed.length})`)
+}
+
+async function main() {
+	try {
+		await seedUsers()
+		await seedProjectsWithMembers()
+	} catch (err) {
+		console.error('❌ Seeding failed :', err)
+	} finally {
+		await prisma.$disconnect()
+	}
 }
 
 main()
-	.catch((e) => {
-		console.error('❌ Erreur lors du seeding:', e);
-		process.exit(1);
-	})
-	.finally(async () => {
-		await prisma.$disconnect();
-	});
