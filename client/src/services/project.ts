@@ -50,6 +50,23 @@ export async function fetchProjects(): Promise<Project[]> {
 	}
 	return res.json();
 }
+
+/**
+ * GET /api/projects/:id
+ */
+export async function fetchProjectById(id: number): Promise<Project> {
+	const res = await fetch(`${API_URL}/projects/${id}`, {
+		headers: {
+			"Content-Type": "application/json",
+		},
+		credentials: "include",
+	});
+	if (!res.ok) {
+		throw new Error("Erreur : Projet introuvable ou accès refusé");
+	}
+	return res.json();
+}
+
 /**
  * POST /api/projects
  */
@@ -90,3 +107,21 @@ export async function updateProject(
 	}
 	return res.json();
 }
+
+/**
+ * DELETE /api/projects/:id
+ */
+export async function deleteProject(id: number): Promise<void> {
+	const res = await fetch(`${API_URL}/projects/${id}`, {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		credentials: "include",
+	});
+	if (!res.ok) {
+		const err = await res.json();
+		throw new Error(err.error || "Erreur suppression projet");
+	}
+}
+

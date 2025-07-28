@@ -19,10 +19,17 @@ import {
 const ProjectsList: React.FC = () => {
 	const { data: projects, isLoading, isError, error } = useProjects();
 
+	const deleteMutation = useDeleteProject();
 
 	const [viewMode, setViewMode] = useState("list");
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filterStatus, setFilterStatus] = useState("Tous");
+
+	const handleDelete = (id: number) => {
+		if (confirm("Voulez-vous vraiment supprimer ce projet ?")) {
+			deleteMutation.mutate(id);
+		}
+	};
 
 	const getStatusColor = (status?: string) => {
 		switch (status) {
@@ -194,6 +201,11 @@ const ProjectsList: React.FC = () => {
 									<>
 										<div className="flex justify-between items-start mb-6">
 											<div className="flex-1">
+												<Link
+													to="/projects/$projectId"
+													params={{ projectId: project.id.toString() }}
+													className="block"
+												>
 													<h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:bg-blue-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-200 hover:cursor-pointer">
 														{project.title}
 													</h3>
@@ -240,6 +252,31 @@ const ProjectsList: React.FC = () => {
 													})}
 												</span>
 											</div>
+											<div className="flex items-center space-x-1">
+												<Link
+													to="/projects/$projectId"
+													params={{ projectId: project.id.toString() }}
+													className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
+													title="Voir les détails du projet"
+												>
+													<FolderOpen className="w-4 h-4" />
+												</Link>
+												<Link
+													to="/projects/$projectId/edit"
+													params={{ projectId: project.id.toString() }}
+													className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
+													title="Modifier le projet"
+												>
+													<Edit3 className="w-4 h-4" />
+												</Link>
+												<button
+													onClick={() => handleDelete(project.id)}
+													className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
+													title="Supprimer le projet"
+												>
+													<Trash2 className="w-4 h-4" />
+												</button>
+											</div>
 										</div>
 									</>
 								) : (
@@ -247,6 +284,11 @@ const ProjectsList: React.FC = () => {
 										<div className="flex-1 pr-6">
 											<div className="flex items-start justify-between mb-4">
 												<div className="flex-1">
+													<Link
+														to="/projects/$projectId"
+														params={{ projectId: project.id.toString() }}
+														className="block"
+													>
 														<h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-200 hover:cursor-pointer">
 															{project.title}
 														</h3>
@@ -288,6 +330,32 @@ const ProjectsList: React.FC = () => {
 													</div>
 												</div>
 											</div>
+										</div>
+
+										<div className="flex items-center space-x-1 ml-4">
+											<Link
+												to="/projects/$projectId"
+												params={{ projectId: project.id.toString() }}
+												className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
+												title="Voir les détails du projet"
+											>
+												<FolderOpen className="w-4 h-4" />
+											</Link>
+											<Link
+												to="/projects/$projectId/edit"
+												params={{ projectId: project.id.toString() }}
+												className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
+												title="Modifier le projet"
+											>
+												<Edit3 className="w-4 h-4" />
+											</Link>
+											<button
+												onClick={() => handleDelete(project.id)}
+												className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-110"
+												title="Supprimer le projet"
+											>
+												<Trash2 className="w-4 h-4" />
+											</button>
 										</div>
 									</div>
 								)}
