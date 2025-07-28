@@ -85,6 +85,7 @@ export const createProject = async (req: AuthRequest, res: Response, next: NextF
 			return res.status(400).json({ error: "Le titre du projet est requis." });
 		}
 
+		// Validation des valeurs de status et priority
 		const validStatuses = ["En attente", "En cours", "Terminé"];
 		const validPriorities = ["Basse", "Moyenne", "Haute"];
 

@@ -1,13 +1,11 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/AuthContext";
-import { Link } from "@tanstack/react-router";
 import { User, LogOut, Home, Settings, Bell, Loader, Play, BookmarkCheck } from "lucide-react";
-import { useProjects } from "../utils/hooks/project";
 
 const Dashboard: React.FC = () => {
 	const { user, logout } = useContext(AuthContext);
 	const [message, setMessage] = useState<string>("");
-	const { data: projects } = useProjects();
+
 
 	useEffect(() => {
 		setMessage(`Bienvenue, ${user?.name ?? "utilisateur"} !`);
@@ -31,11 +29,8 @@ const Dashboard: React.FC = () => {
 						</div>
 
 						<div className="flex items-center space-x-4">
-							<button className="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-300">
+							<button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
 								<Bell className="w-5 h-5" />
-								<span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-semibold leading-none text-white bg-gradient-to-tr from-pink-500 to-red-500 border-2 border-white shadow-lg rounded-full">
-									3
-								</span>
 							</button>
 							<button
 								onClick={handleLogout}
@@ -70,7 +65,7 @@ const Dashboard: React.FC = () => {
 								<div>
 									<p className="text-blue-600 text-sm font-medium">Projets actifs</p>
 									<p className="text-2xl pt-2 font-bold text-blue-900">
-										{projects?.length}
+                                        12
 									</p>
 								</div>
 								<div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -152,29 +147,6 @@ const Dashboard: React.FC = () => {
 								</div>
 							</div>
 						</div>
-					</div>
-				</div>
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					<div className="bg-white rounded-xl shadow-lg shadow-gray-100/50 p-6 border border-gray-100 hover:shadow-xl transition-shadow">
-						<h3 className="text-lg font-semibold text-gray-900 mb-2">Nouveau projet</h3>
-						<p className="text-gray-600 text-sm mb-4">Créez un nouveau projet pour organiser vos tâches</p>
-						<Link
-							to="/projects/new"
-							className="block w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-colors text-center"
-						>
-							Commencer
-						</Link>
-					</div>
-
-					<div className="bg-white rounded-xl shadow-lg shadow-gray-100/50 p-6 border border-gray-100 hover:shadow-xl transition-shadow">
-						<h3 className="text-lg font-semibold text-gray-900 mb-2">Mes projets</h3>
-						<p className="text-gray-600 text-sm mb-4">Consultez et gérez tous vos projets</p>
-						<Link
-							to="/projects"
-							className="block w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 px-4 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-colors text-center"
-						>
-							Voir mes projets
-						</Link>
 					</div>
 				</div>
 			</main>
