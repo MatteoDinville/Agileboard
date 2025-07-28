@@ -1,11 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/AuthContext";
+import { Link } from "@tanstack/react-router";
 import { User, LogOut, Home, Settings, Bell, Loader, Play, BookmarkCheck } from "lucide-react";
+import { useProjects } from "../utils/hooks/project";
 
 const Dashboard: React.FC = () => {
 	const { user, logout } = useContext(AuthContext);
 	const [message, setMessage] = useState<string>("");
-
+	const { data: projects } = useProjects();
 
 	useEffect(() => {
 		setMessage(`Bienvenue, ${user?.name ?? "utilisateur"} !`);
@@ -65,7 +67,7 @@ const Dashboard: React.FC = () => {
 								<div>
 									<p className="text-blue-600 text-sm font-medium">Projets actifs</p>
 									<p className="text-2xl pt-2 font-bold text-blue-900">
-                                        12
+										{projects?.length}
 									</p>
 								</div>
 								<div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -148,6 +150,19 @@ const Dashboard: React.FC = () => {
 							</div>
 						</div>
 					</div>
+				</div>
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div className="bg-white rounded-xl shadow-lg shadow-gray-100/50 p-6 border border-gray-100 hover:shadow-xl transition-shadow">
+						<h3 className="text-lg font-semibold text-gray-900 mb-2">Nouveau projet</h3>
+						<p className="text-gray-600 text-sm mb-4">Créez un nouveau projet pour organiser vos tâches</p>
+						<Link
+							to="/projects/new"
+							className="block w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-colors text-center"
+						>
+							Commencer
+						</Link>
+					</div>
+
 				</div>
 			</main>
 		</div>
