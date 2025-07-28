@@ -36,6 +36,21 @@ export interface ProjectInput {
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
 
 /**
+ * GET /api/projects
+ */
+export async function fetchProjects(): Promise<Project[]> {
+	const res = await fetch(`${API_URL}/projects`, {
+		headers: {
+			"Content-Type": "application/json",
+		},
+		credentials: "include",
+	});
+	if (!res.ok) {
+		throw new Error("Erreur lors de la récupération des projets");
+	}
+	return res.json();
+}
+/**
  * POST /api/projects
  */
 export async function createProject(data: ProjectInput): Promise<Project> {

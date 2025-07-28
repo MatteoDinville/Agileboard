@@ -166,6 +166,16 @@ const Dashboard: React.FC = () => {
 						</Link>
 					</div>
 
+					<div className="bg-white rounded-xl shadow-lg shadow-gray-100/50 p-6 border border-gray-100 hover:shadow-xl transition-shadow">
+						<h3 className="text-lg font-semibold text-gray-900 mb-2">Mes projets</h3>
+						<p className="text-gray-600 text-sm mb-4">Consultez et gérez tous vos projets</p>
+						<Link
+							to="/projects"
+							className="block w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 px-4 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-colors text-center"
+						>
+							Voir mes projets
+						</Link>
+					</div>
 				</div>
 			</main>
 		</div>

@@ -2,10 +2,17 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+	fetchProjects,
 	createProject,
 	updateProject,
 } from "../../services/project";
 import type { Project, ProjectInput, ProjectMember } from "../../services/project";
+export function useProjects() {
+	return useQuery<Project[], Error>({
+		queryKey: ["projects"],
+		queryFn: fetchProjects,
+	});
+}
 export function useCreateProject() {
 	const queryClient = useQueryClient();
 	return useMutation<Project, Error, ProjectInput>({
