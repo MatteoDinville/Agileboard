@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Welcome from "./pages/Welcome";
+import ProjectsList from "./pages/ProjectsList";
 import ProjectForm from "./pages/ProjectForm";
 
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
@@ -80,6 +81,12 @@ const dashboardRoute = createRoute({
 	path: "/dashboard",
 	component: ProtectedDashboard,
 });
+
+const ProtectedProjectsList = () => (
+	<RequireAuth>
+		<ProjectsList />
+	</RequireAuth>
+);
 
 const ProtectedCreateProject = () => (
 	<RequireAuth>
