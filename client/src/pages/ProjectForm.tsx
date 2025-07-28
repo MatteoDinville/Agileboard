@@ -17,6 +17,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 	const navigate = useNavigate();
 	const isEditMode = typeof projectId === "number";
 
+	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [status, setStatus] = useState<ProjectStatus>("En attente");
 	const [priority, setPriority] = useState<ProjectPriority>("Basse");
