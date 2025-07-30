@@ -60,8 +60,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		}
 	}, [meData, isLoading, error]);
 
-	const loginMutation = useMutation({
-		mutationFn: ({ email, password }: LoginData) => apiLogin({ email, password }),
+	const loginMutation = useMutation<AuthResponse, Error, LoginData>({
+		mutationFn: async ({ email, password }: LoginData) => {
+			const res = await apiLogin({ email, password });
+			if (!res) throw new Error("No response from login");
+			return res;
+		},
 		onSuccess: (data) => {
 			setUser(data.user);
 			queryClient.invalidateQueries({ queryKey: ['auth'] });
@@ -69,8 +73,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		},
 	});
 
-	const registerMutation = useMutation({
-		mutationFn: ({ email, password, name }: RegisterData) => apiRegister({ email, password, name }),
+	const registerMutation = useMutation<AuthResponse, Error, RegisterData>({
+		mutationFn: async ({ email, password, name }: RegisterData) => {
+			const res = await apiRegister({ email, password, name });
+			if (!res) throw new Error("No response from register");
+			return res;
+		},
 		onSuccess: (data) => {
 			setUser(data.user);
 			queryClient.invalidateQueries({ queryKey: ['auth'] });
