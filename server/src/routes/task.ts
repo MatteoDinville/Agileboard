@@ -1,25 +1,16 @@
-import { Router, RequestHandler } from "express";
+import { Router } from "express";
 import { authenticateToken } from "../middleware/auth.middleware";
-import {
-	getProjectTasks,
-	createTask,
-	updateTask,
-	deleteTask,
-	updateTaskStatus
-} from "../controllers/taskController";
+import { taskController } from "../controllers/taskController";
 
 const router = Router();
 
-// Toutes les routes nécessitent une authentification
-router.use(authenticateToken as RequestHandler);
+router.use(authenticateToken);
 
-// Routes pour les tâches d'un projet
-router.get("/project/:projectId", getProjectTasks as RequestHandler);
-router.post("/project/:projectId", createTask as RequestHandler);
+router.get("/project/:projectId", taskController.getProjectTasks);
+router.post("/project/:projectId", taskController.createTask);
 
-// Routes pour une tâche spécifique
-router.put("/:taskId", updateTask as RequestHandler);
-router.delete("/:taskId", deleteTask as RequestHandler);
-router.patch("/:taskId/status", updateTaskStatus as RequestHandler);
+router.put("/:taskId", taskController.updateTask);
+router.delete("/:taskId", taskController.deleteTask);
+router.patch("/:taskId/status", taskController.updateTaskStatus);
 
 export default router;

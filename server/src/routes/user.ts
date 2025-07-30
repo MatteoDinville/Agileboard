@@ -4,7 +4,6 @@ import { authenticateToken } from "../middleware/auth.middleware";
 
 const router = Router();
 
-// Toutes les routes nécessitent une authentification
 router.use(authenticateToken as any);
 
 // GET /api/user/profile - Récupérer le profil

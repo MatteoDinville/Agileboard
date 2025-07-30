@@ -1,14 +1,14 @@
-import { Router, RequestHandler } from "express";
-import { register, login, logout, me, refresh } from "../controllers/authController";
+import { Router } from "express";
+import { authController } from "../controllers/authController";
 import { authenticateToken } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.post("/register", register as RequestHandler);
-router.post("/login", login as RequestHandler);
-router.post("/logout", logout as RequestHandler);
-router.post("/refresh", refresh);
-router.get("/me", authenticateToken, me);
+router.post("/register", authController.register);
+router.post("/login", authController.login);
+router.post("/logout", authController.logout);
+router.post("/refresh", authController.refresh);
+router.get("/me", authenticateToken, authController.me);
 
 
 export default router;

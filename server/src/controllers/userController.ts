@@ -21,7 +21,6 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
 				name: true,
 				createdAt: true,
 				updatedAt: true,
-				// Ne pas inclure le mot de passe
 			},
 		});
 
@@ -45,12 +44,10 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
 		const userId = req.userId!;
 		const { name, email } = req.body;
 
-		// Validation de base
 		if (!name && !email) {
 			return res.status(400).json({ error: "Au moins un champ (nom ou email) doit être fourni." });
 		}
 
-		// Si l'email est fourni, vérifier qu'il n'est pas déjà utilisé par un autre utilisateur
 		if (email) {
 			const existingUser = await prisma.user.findUnique({
 				where: { email },
@@ -60,14 +57,12 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
 				return res.status(409).json({ error: "Cet email est déjà utilisé par un autre utilisateur." });
 			}
 
-			// Validation format email basique
 			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 			if (!emailRegex.test(email)) {
 				return res.status(400).json({ error: "Format d'email invalide." });
 			}
 		}
 
-		// Mise à jour des données
 		const updatedUser = await prisma.user.update({
 			where: { id: userId },
 			data: {
@@ -110,7 +105,6 @@ export const changePassword = async (req: AuthRequest, res: Response, next: Next
 			return res.status(400).json({ error: "Le nouveau mot de passe doit contenir au moins 6 caractères." });
 		}
 
-		// Récupérer l'utilisateur avec son mot de passe
 		const user = await prisma.user.findUnique({
 			where: { id: userId },
 		});
@@ -119,16 +113,13 @@ export const changePassword = async (req: AuthRequest, res: Response, next: Next
 			return res.status(404).json({ error: "Utilisateur non trouvé." });
 		}
 
-		// Vérifier le mot de passe actuel
 		const passwordMatch = await bcrypt.compare(currentPassword, user.password);
 		if (!passwordMatch) {
 			return res.status(400).json({ error: "Mot de passe actuel incorrect." });
 		}
 
-		// Hasher le nouveau mot de passe
 		const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-		// Mettre à jour le mot de passe
 		await prisma.user.update({
 			where: { id: userId },
 			data: { password: hashedNewPassword },
@@ -151,7 +142,6 @@ export const getAllUsers = async (req: AuthRequest, res: Response, next: NextFun
 				id: true,
 				email: true,
 				name: true,
-				// Ne pas inclure le mot de passe
 			},
 			orderBy: { name: "asc" }
 		});

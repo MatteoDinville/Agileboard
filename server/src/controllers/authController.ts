@@ -32,118 +32,119 @@ function signRefreshToken(userId: number) {
 	return jwt.sign({ sub: userId }, JWT_REFRESH_SECRET, { expiresIn: Math.floor(REFRESH_TTL_MS / 1000) });
 }
 
-export const register = async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const { email, password, name } = req.body;
-		if (!email || !password) {
-			return res.status(400).json({ error: "Email et mot de passe requis." });
+export const authController = {
+	register: async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { email, password, name } = req.body;
+			if (!email || !password) {
+				return res.status(400).json({ error: "Email et mot de passe requis." });
+			}
+			const existingUser = await prisma.user.findUnique({ where: { email } });
+			if (existingUser) {
+				return res.status(409).json({ error: "Email déjà utilisé." });
+			}
+			const hashedPassword = await bcrypt.hash(password, 10);
+
+			const newUser = await prisma.user.create({
+				data: {
+					email,
+					password: hashedPassword,
+					name: name ?? null,
+				},
+			});
+
+			const access = signAccessToken(newUser.id);
+			const refresh = signRefreshToken(newUser.id);
+
+			res.cookie("access_token", access, cookieOpts(15 * 60 * 1000));
+			res.cookie("refresh_token", refresh, cookieOpts(REFRESH_TTL_MS));
+
+			res.status(201).json({
+				message: "Utilisateur créé avec succès.",
+				user: { id: newUser.id, email: newUser.email, name: newUser.name ?? undefined },
+			});
+		} catch (err) {
+			next(err);
 		}
-		const existingUser = await prisma.user.findUnique({ where: { email } });
-		if (existingUser) {
-			return res.status(409).json({ error: "Email déjà utilisé." });
+	},
+
+	login: async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { email, password } = req.body;
+			if (!email || !password) {
+				return res.status(400).json({ error: "Email et mot de passe requis." });
+			}
+			const user = await prisma.user.findUnique({ where: { email } });
+			if (!user) {
+				return res.status(401).json({ error: "Email ou mot de passe invalide." });
+			}
+			const passwordMatch = await bcrypt.compare(password, user.password);
+			if (!passwordMatch) {
+				return res.status(401).json({ error: "Email ou mot de passe invalide." });
+			}
+			const access = signAccessToken(user.id);
+			const refresh = signRefreshToken(user.id);
+
+			res.cookie("access_token", access, cookieOpts(15 * 60 * 1000));
+			res.cookie("refresh_token", refresh, cookieOpts(REFRESH_TTL_MS));
+
+			res.status(200).json({
+				message: "Connexion réussie.",
+				user: { id: user.id, email: user.email, name: user.name ?? undefined },
+			});
+		} catch (err) {
+			next(err);
 		}
-		const hashedPassword = await bcrypt.hash(password, 10);
+	},
 
-		const newUser = await prisma.user.create({
-			data: {
-				email,
-				password: hashedPassword,
-				name: name ?? null,
-			},
-		});
+	refresh: (req: Request, res: Response) => {
+		const token = (req as any).cookies?.["refresh_token"];
+		if (!token) return res.status(401).json({ error: "Refresh token manquant." });
 
-		const access = signAccessToken(newUser.id);
-		const refresh = signRefreshToken(newUser.id);
+		try {
+			const payload = jwt.verify(token, JWT_REFRESH_SECRET);
+			if (typeof payload !== "object" || payload === null || typeof (payload as any).sub === "undefined") {
+				return res.status(401).json({ error: "Refresh token invalide." });
+			}
 
-		res.cookie("access_token", access, cookieOpts(15 * 60 * 1000));
-		res.cookie("refresh_token", refresh, cookieOpts(REFRESH_TTL_MS));
+			const userId = typeof (payload as any).sub === "string" ? parseInt((payload as any).sub, 10) : (payload as any).sub;
+			if (typeof userId !== "number" || isNaN(userId)) {
+				return res.status(401).json({ error: "Refresh token invalide." });
+			}
 
-		res.status(201).json({
-			message: "Utilisateur créé avec succès.",
-			user: { id: newUser.id, email: newUser.email, name: newUser.name ?? undefined },
-		});
-	} catch (err) {
-		next(err);
-	}
-};
+			const newAccess = signAccessToken(userId);
+			const newRefresh = signRefreshToken(userId);
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const { email, password } = req.body;
-		if (!email || !password) {
-			return res.status(400).json({ error: "Email et mot de passe requis." });
-		}
-		const user = await prisma.user.findUnique({ where: { email } });
-		if (!user) {
-			return res.status(401).json({ error: "Email ou mot de passe invalide." });
-		}
-		const passwordMatch = await bcrypt.compare(password, user.password);
-		if (!passwordMatch) {
-			return res.status(401).json({ error: "Email ou mot de passe invalide." });
-		}
-		const access = signAccessToken(user.id);
-		const refresh = signRefreshToken(user.id);
+			res.cookie("access_token", newAccess, cookieOpts(15 * 60 * 1000));
+			res.cookie("refresh_token", newRefresh, cookieOpts(REFRESH_TTL_MS));
 
-		res.cookie("access_token", access, cookieOpts(15 * 60 * 1000));
-		res.cookie("refresh_token", refresh, cookieOpts(REFRESH_TTL_MS));
-
-		res.status(200).json({
-			message: "Connexion réussie.",
-			user: { id: user.id, email: user.email, name: user.name ?? undefined },
-		});
-	} catch (err) {
-		next(err);
-	}
-};
-
-export const refresh = (req: Request, res: Response) => {
-	const token = (req as any).cookies?.["refresh_token"];
-	if (!token) return res.status(401).json({ error: "Refresh token manquant." });
-
-	try {
-		const payload = jwt.verify(token, JWT_REFRESH_SECRET);
-
-		if (typeof payload !== "object" || payload === null || typeof (payload as any).sub === "undefined") {
+			return res.json({ ok: true });
+		} catch {
 			return res.status(401).json({ error: "Refresh token invalide." });
 		}
+	},
 
-		const userId = typeof (payload as any).sub === "string" ? parseInt((payload as any).sub, 10) : (payload as any).sub;
-		if (typeof userId !== "number" || isNaN(userId)) {
-			return res.status(401).json({ error: "Refresh token invalide." });
+	logout: async (_req: Request, res: Response) => {
+		res.clearCookie("access_token", { path: "/" });
+		res.clearCookie("refresh_token", { path: "/" });
+		res.status(200).json({ message: "Déconnexion réussie." });
+	},
+
+	me: async (req: AuthRequest, res: Response) => {
+		try {
+			const userId = req.userId;
+			if (!userId) return res.status(401).json({ error: "Utilisateur non authentifié." });
+
+			const user = await prisma.user.findUnique({
+				where: { id: userId },
+				select: { id: true, email: true, name: true },
+			});
+
+			if (!user) return res.status(404).json({ error: "Utilisateur non trouvé." });
+
+			res.status(200).json({ user: { id: user.id, email: user.email, name: user.name ?? undefined } });
+		} catch {
+			res.status(500).json({ error: "Erreur serveur." });
 		}
-
-		const newAccess = signAccessToken(userId);
-		const newRefresh = signRefreshToken(userId);
-
-		res.cookie("access_token", newAccess, cookieOpts(15 * 60 * 1000));
-		res.cookie("refresh_token", newRefresh, cookieOpts(REFRESH_TTL_MS));
-
-		return res.json({ ok: true });
-	} catch {
-		return res.status(401).json({ error: "Refresh token invalide." });
-	}
-};
-
-export const logout = async (_req: Request, res: Response) => {
-	res.clearCookie("access_token", { path: "/" });
-	res.clearCookie("refresh_token", { path: "/" });
-	res.status(200).json({ message: "Déconnexion réussie." });
-};
-
-export const me = async (req: AuthRequest, res: Response) => {
-	try {
-		const userId = req.userId;
-		if (!userId) return res.status(401).json({ error: "Utilisateur non authentifié." });
-
-		const user = await prisma.user.findUnique({
-			where: { id: userId },
-			select: { id: true, email: true, name: true },
-		});
-
-		if (!user) return res.status(404).json({ error: "Utilisateur non trouvé." });
-
-		res.status(200).json({ user: { id: user.id, email: user.email, name: user.name ?? undefined } });
-	} catch {
-		res.status(500).json({ error: "Erreur serveur." });
-	}
+	},
 };
