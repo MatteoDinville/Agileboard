@@ -1,5 +1,3 @@
-// frontend/src/utils/hooks/projects.ts
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "../../services/project";
 import type { Project, ProjectInput, ProjectMember } from "../../services/project";

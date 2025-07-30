@@ -128,13 +128,11 @@ export const projectController = {
 			const projectId = parseInt(req.params.id, 10);
 			const { title, description, status, priority } = req.body;
 
-			// 1) On vérifie d'abord que le projet existe et appartient à l'utilisateur
 			const existing = await prisma.project.findUnique({ where: { id: projectId } });
 			if (!existing || existing.ownerId !== userId) {
 				return res.status(404).json({ error: "Projet non trouvé ou accès refusé." });
 			}
 
-			// Validation des valeurs de status et priority si fournies
 			const validStatuses = ["En attente", "En cours", "Terminé"];
 			const validPriorities = ["Basse", "Moyenne", "Haute"];
 
@@ -150,7 +148,6 @@ export const projectController = {
 				});
 			}
 
-			// 2) On effectue la mise à jour
 			const updated = await prisma.project.update({
 				where: { id: projectId },
 				data: {
@@ -158,7 +155,6 @@ export const projectController = {
 					description: description ?? existing.description,
 					status: status ?? existing.status,
 					priority: priority ?? existing.priority,
-					// updatedAt sera mis à jour automatiquement
 				},
 			});
 
@@ -183,7 +179,7 @@ export const projectController = {
 			}
 
 			await prisma.project.delete({ where: { id: projectId } });
-			res.status(204).send(); // No Content
+			res.status(204).send();
 		} catch (err) {
 			next(err);
 		}
@@ -198,7 +194,6 @@ export const projectController = {
 			const userId = req.userId!;
 			const projectId = parseInt(req.params.id, 10);
 
-			// Vérifier que l'utilisateur est propriétaire du projet
 			const project = await prisma.project.findUnique({
 				where: { id: projectId }
 			});
@@ -242,7 +237,6 @@ export const projectController = {
 				return res.status(400).json({ error: "L'ID de l'utilisateur est requis." });
 			}
 
-			// Vérifier que l'utilisateur connecté est propriétaire du projet
 			const project = await prisma.project.findUnique({
 				where: { id: projectId }
 			});
@@ -251,7 +245,6 @@ export const projectController = {
 				return res.status(404).json({ error: "Projet non trouvé ou accès refusé." });
 			}
 
-			// Vérifier que l'utilisateur à ajouter existe
 			const userToAdd = await prisma.user.findUnique({
 				where: { id: userId },
 				select: { id: true, name: true, email: true }
@@ -261,7 +254,6 @@ export const projectController = {
 				return res.status(404).json({ error: "Utilisateur non trouvé." });
 			}
 
-			// Vérifier que l'utilisateur n'est pas déjà membre
 			const existingMember = await prisma.projectMember.findUnique({
 				where: {
 					userId_projectId: {
@@ -275,7 +267,6 @@ export const projectController = {
 				return res.status(409).json({ error: "L'utilisateur est déjà membre de ce projet." });
 			}
 
-			// Ajouter le membre
 			const newMember = await prisma.projectMember.create({
 				data: {
 					userId,
@@ -308,7 +299,6 @@ export const projectController = {
 			const projectId = parseInt(req.params.id, 10);
 			const memberUserId = parseInt(req.params.userId, 10);
 
-			// Vérifier que l'utilisateur connecté est propriétaire du projet
 			const project = await prisma.project.findUnique({
 				where: { id: projectId }
 			});
@@ -317,7 +307,6 @@ export const projectController = {
 				return res.status(404).json({ error: "Projet non trouvé ou accès refusé." });
 			}
 
-			// Vérifier que le membre existe
 			const existingMember = await prisma.projectMember.findUnique({
 				where: {
 					userId_projectId: {
@@ -331,7 +320,6 @@ export const projectController = {
 				return res.status(404).json({ error: "Membre non trouvé dans ce projet." });
 			}
 
-			// Supprimer le membre
 			await prisma.projectMember.delete({
 				where: {
 					userId_projectId: {
@@ -341,7 +329,7 @@ export const projectController = {
 				}
 			});
 
-			res.status(204).send(); // No Content
+			res.status(204).send();
 		} catch (err) {
 			next(err);
 		}

@@ -34,7 +34,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
 	const [isLoading, setIsLoading] = useState(false);
 	useEffect(() => {
 		if (task?.id) {
-			// Mode édition : utiliser les données de la tâche existante
 			setFormData({
 				title: task.title || '',
 				description: task.description || '',
@@ -44,7 +43,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
 				assignedToId: task.assignedToId?.toString() || '',
 			});
 		} else if (task?.status) {
-			// Mode création avec statut spécifique : utiliser le statut fourni
 			setFormData({
 				title: '',
 				description: '',
@@ -54,7 +52,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
 				assignedToId: '',
 			});
 		} else {
-			// Mode création par défaut
 			setFormData({
 				title: '',
 				description: '',
@@ -64,19 +61,12 @@ const TaskModal: React.FC<TaskModalProps> = ({
 				assignedToId: '',
 			});
 		}
-		// Réinitialiser le loading quand le modal s'ouvre
 		setIsLoading(false);
 	}, [task, isOpen]);
 
-	useEffect(() => {
-		if (isOpen) {
-			loadUsers();
-		}
-	}, [isOpen]);
-	const loadUsers = async () => {
+	const loadUsers = React.useCallback(async () => {
 		try {
 			const projectMembers = await projectService.fetchProjectMembers(projectId);
-			// Extraire les utilisateurs des membres du projet
 			const memberUsers = projectMembers.map(member => ({
 				id: member.user.id,
 				email: member.user.email,
@@ -86,7 +76,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
 		} catch (error) {
 			console.error('Erreur lors du chargement des membres du projet:', error);
 		}
-	};
+	}, [projectId]);
+
+	useEffect(() => {
+		if (isOpen) {
+			loadUsers();
+		}
+	}, [isOpen, loadUsers]);
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);

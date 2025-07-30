@@ -37,7 +37,6 @@ export interface UpdateTaskData {
 }
 
 export const taskService = {
-	// Récupérer toutes les tâches d'un projet
 	async getProjectTasks(projectId: number): Promise<Task[]> {
 		const res = await fetch(`${API_URL}/tasks/project/${projectId}`, {
 			method: "GET",
@@ -55,7 +54,6 @@ export const taskService = {
 		return res.json();
 	},
 
-	// Créer une nouvelle tâche
 	async createTask(projectId: number, data: CreateTaskData): Promise<Task> {
 		const res = await fetch(`${API_URL}/tasks/project/${projectId}`, {
 			method: "POST",
@@ -74,7 +72,6 @@ export const taskService = {
 		return res.json();
 	},
 
-	// Mettre à jour une tâche
 	async updateTask(taskId: number, data: UpdateTaskData): Promise<Task> {
 		const res = await fetch(`${API_URL}/tasks/${taskId}`, {
 			method: "PUT",
@@ -93,7 +90,6 @@ export const taskService = {
 		return res.json();
 	},
 
-	// Supprimer une tâche
 	async deleteTask(taskId: number): Promise<void> {
 		const res = await fetch(`${API_URL}/tasks/${taskId}`, {
 			method: "DELETE",
@@ -109,7 +105,6 @@ export const taskService = {
 		}
 	},
 
-	// Mettre à jour le statut d'une tâche (pour le drag & drop)
 	async updateTaskStatus(taskId: number, status: string): Promise<Task> {
 		const res = await fetch(`${API_URL}/tasks/${taskId}/status`, {
 			method: "PATCH",

@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 
-// Extend Request interface to include user property
 declare global {
 	namespace Express {
 		interface Request {
@@ -17,13 +16,11 @@ declare global {
 const prisma = new PrismaClient();
 
 export const taskController = {
-	// Récupérer toutes les tâches d'un projet
 	async getProjectTasks(req: Request, res: Response) {
 		try {
 			const { projectId } = req.params;
 			const userId = req.user?.id;
 
-			// Vérifier que l'utilisateur a accès au projet
 			const project = await prisma.project.findFirst({
 				where: {
 					id: parseInt(projectId),
@@ -62,14 +59,12 @@ export const taskController = {
 		}
 	},
 
-	// Créer une nouvelle tâche
 	async createTask(req: Request, res: Response) {
 		try {
 			const { projectId } = req.params;
 			const { title, description, priority, dueDate, assignedToId } = req.body;
 			const userId = req.user?.id;
 
-			// Vérifier que l'utilisateur a accès au projet
 			const project = await prisma.project.findFirst({
 				where: {
 					id: parseInt(projectId),
@@ -84,7 +79,6 @@ export const taskController = {
 				return res.status(404).json({ error: "Projet non trouvé ou accès refusé" });
 			}
 
-			// Si assignedToId est fourni, vérifier que l'utilisateur fait partie du projet
 			if (assignedToId) {
 				const isMember = await prisma.project.findFirst({
 					where: {
@@ -128,14 +122,12 @@ export const taskController = {
 		}
 	},
 
-	// Mettre à jour une tâche
 	async updateTask(req: Request, res: Response) {
 		try {
 			const { taskId } = req.params;
 			const { title, description, status, priority, dueDate, assignedToId } = req.body;
 			const userId = req.user?.id;
 
-			// Vérifier que la tâche existe et que l'utilisateur a accès au projet
 			const existingTask = await prisma.task.findFirst({
 				where: {
 					id: parseInt(taskId),
@@ -153,7 +145,6 @@ export const taskController = {
 				return res.status(404).json({ error: "Tâche non trouvée ou accès refusé" });
 			}
 
-			// Si assignedToId est fourni, vérifier que l'utilisateur fait partie du projet
 			if (assignedToId) {
 				const isMember = await prisma.project.findFirst({
 					where: {
@@ -199,13 +190,11 @@ export const taskController = {
 		}
 	},
 
-	// Supprimer une tâche
 	async deleteTask(req: Request, res: Response) {
 		try {
 			const { taskId } = req.params;
 			const userId = req.user?.id;
 
-			// Vérifier que la tâche existe et que l'utilisateur a accès au projet
 			const existingTask = await prisma.task.findFirst({
 				where: {
 					id: parseInt(taskId),
@@ -233,14 +222,12 @@ export const taskController = {
 		}
 	},
 
-	// Mettre à jour le statut d'une tâche (pour le drag & drop)
 	async updateTaskStatus(req: Request, res: Response) {
 		try {
 			const { taskId } = req.params;
 			const { status } = req.body;
 			const userId = req.user?.id;
 
-			// Vérifier que la tâche existe et que l'utilisateur a accès au projet
 			const existingTask = await prisma.task.findFirst({
 				where: {
 					id: parseInt(taskId),
