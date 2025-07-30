@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Task } from '../services/task';
-import { fetchProjectMembers } from '../services/project';
+import { projectService } from '../services/project';
 
 interface TaskModalProps {
 	isOpen: boolean;
@@ -75,7 +75,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 	}, [isOpen]);
 	const loadUsers = async () => {
 		try {
-			const projectMembers = await fetchProjectMembers(projectId);
+			const projectMembers = await projectService.fetchProjectMembers(projectId);
 			// Extraire les utilisateurs des membres du projet
 			const memberUsers = projectMembers.map(member => ({
 				id: member.user.id,
