@@ -138,7 +138,7 @@ const ProjectDetail: React.FC = () => {
 						<nav className="flex space-x-8 px-8 py-4">
 							<button
 								onClick={() => setActiveTab("overview")}
-								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "overview"
+								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm ${activeTab === "overview"
 									? "border-blue-500 text-blue-600"
 									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
 									} transition-colors`}
@@ -148,7 +148,7 @@ const ProjectDetail: React.FC = () => {
 							</button>
 							<button
 								onClick={() => setActiveTab("kanban")}
-								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "kanban"
+								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm ${activeTab === "kanban"
 									? "border-blue-500 text-blue-600"
 									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
 									} transition-colors`}
@@ -158,7 +158,7 @@ const ProjectDetail: React.FC = () => {
 							</button>
 							<button
 								onClick={() => setActiveTab("members")}
-								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "members"
+								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm ${activeTab === "members"
 									? "border-blue-500 text-blue-600"
 									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
 									} transition-colors`}
