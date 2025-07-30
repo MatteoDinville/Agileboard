@@ -10,7 +10,7 @@ import {
 	closestCorners,
 	DragOverlay,
 } from '@dnd-kit/core';
-import { getProjectTasks, updateTask, createTask } from '../services/task';
+import { taskService } from '../services/task';
 import type { CreateTaskData, Task, UpdateTaskData } from '../services/task';
 import KanbanColumn from './KanbanColumn.tsx';
 import TaskCard from './TaskCard.tsx';
@@ -69,7 +69,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 	const loadTasks = React.useCallback(async () => {
 		try {
 			setLoading(true);
-			const data = await getProjectTasks(projectId);
+			const data = await taskService.getProjectTasks(projectId);
 			setTasks(data);
 		} catch (error) {
 			console.error('Erreur lors du chargement des tâches:', error);
@@ -105,7 +105,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 		));
 
 		try {
-			await updateTask(taskId, { status: newStatus });
+			await taskService.updateTask(taskId, { status: newStatus });
 		} catch (error) {
 			console.error('Erreur lors de la mise à jour:', error);
 			setTasks(prev => prev.map(t =>
@@ -116,7 +116,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 
 	const handleCreateTask = async (taskData: CreateTaskData) => {
 		try {
-			const newTask = await createTask(projectId, taskData);
+			const newTask = await taskService.createTask(projectId, taskData);
 			setTasks(prev => [...prev, newTask]);
 			setIsModalOpen(false);
 		} catch (error) {
@@ -126,7 +126,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 
 	const handleUpdateTask = async (taskId: number, taskData: UpdateTaskData) => {
 		try {
-			const updatedTask = await updateTask(taskId, taskData);
+			const updatedTask = await taskService.updateTask(taskId, taskData);
 			setTasks(prev => prev.map(t => t.id === taskId ? updatedTask : t));
 			setIsModalOpen(false);
 			setEditingTask(null);
