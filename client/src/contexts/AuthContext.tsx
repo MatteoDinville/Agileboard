@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, type ReactNode, useMemo, useCallback, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { login as apiLogin, register as apiRegister, logout as apiLogout, getCurrentUser } from "../services/auth";
+import { authService } from "../services/auth";
 import type { RegisterData, LoginData } from "../services/auth";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	const { data: meData, isLoading, error } = useQuery({
 		queryKey: ['auth', 'me'],
-		queryFn: getCurrentUser,
+		queryFn: authService.getCurrentUser,
 		retry: false,
 		staleTime: 5 * 60 * 1000,
 		refetchOnWindowFocus: false,
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	const loginMutation = useMutation<AuthResponse, Error, LoginData>({
 		mutationFn: async ({ email, password }: LoginData) => {
-			const res = await apiLogin({ email, password });
+			const res = await authService.login({ email, password });
 			if (!res) throw new Error("No response from login");
 			return res;
 		},
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	const registerMutation = useMutation<AuthResponse, Error, RegisterData>({
 		mutationFn: async ({ email, password, name }: RegisterData) => {
-			const res = await apiRegister({ email, password, name });
+			const res = await authService.register({ email, password, name });
 			if (!res) throw new Error("No response from register");
 			return res;
 		},
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	const logout = useCallback(async () => {
 		try {
-			await apiLogout();
+			await authService.logout();
 		} catch (error) {
 			console.error("Erreur lors de la déconnexion:", error);
 		} finally {
