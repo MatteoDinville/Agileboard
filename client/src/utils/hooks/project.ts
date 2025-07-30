@@ -1,22 +1,13 @@
 // frontend/src/utils/hooks/projects.ts
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-	fetchProjects,
-	fetchProjectById,
-	createProject,
-	updateProject,
-	deleteProject,
-	fetchProjectMembers,
-	addProjectMember,
-	removeProjectMember,
-} from "../../services/project";
+import { projectService } from "../../services/project";
 import type { Project, ProjectInput, ProjectMember } from "../../services/project";
 
 export function useProjects() {
 	return useQuery<Project[], Error>({
 		queryKey: ["projects"],
-		queryFn: fetchProjects,
+		queryFn: projectService.fetchProjects,
 		staleTime: 1000 * 60 * 5,
 	});
 }
@@ -24,14 +15,14 @@ export function useProjects() {
 export function useProject(projectId: number) {
 	return useQuery<Project, Error>({
 		queryKey: ["projects", projectId],
-		queryFn: () => fetchProjectById(projectId),
+		queryFn: () => projectService.fetchProjectById(projectId),
 		enabled: !!projectId,
 	});
 }
 export function useCreateProject() {
 	const queryClient = useQueryClient();
 	return useMutation<Project, Error, ProjectInput>({
-		mutationFn: createProject,
+		mutationFn: projectService.createProject,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
@@ -41,7 +32,7 @@ export function useCreateProject() {
 export function useUpdateProject() {
 	const queryClient = useQueryClient();
 	return useMutation<Project, Error, { id: number; data: ProjectInput }>({
-		mutationFn: ({ id, data }) => updateProject(id, data),
+		mutationFn: ({ id, data }) => projectService.updateProject(id, data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
@@ -51,7 +42,7 @@ export function useUpdateProject() {
 export function useDeleteProject() {
 	const queryClient = useQueryClient();
 	return useMutation<void, Error, number>({
-		mutationFn: deleteProject,
+		mutationFn: projectService.deleteProject,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
@@ -61,7 +52,7 @@ export function useDeleteProject() {
 export function useProjectMembers(projectId: number) {
 	return useQuery<ProjectMember[], Error>({
 		queryKey: ["projects", projectId, "members"],
-		queryFn: () => fetchProjectMembers(projectId),
+		queryFn: () => projectService.fetchProjectMembers(projectId),
 		enabled: !!projectId,
 	});
 }
@@ -69,7 +60,7 @@ export function useProjectMembers(projectId: number) {
 export function useAddProjectMember() {
 	const queryClient = useQueryClient();
 	return useMutation<ProjectMember, Error, { projectId: number; userId: number }>({
-		mutationFn: ({ projectId, userId }) => addProjectMember(projectId, userId),
+		mutationFn: ({ projectId, userId }) => projectService.addProjectMember(projectId, userId),
 		onSuccess: (_, { projectId }) => {
 			queryClient.invalidateQueries({ queryKey: ["projects", projectId, "members"] });
 			queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
@@ -81,7 +72,7 @@ export function useAddProjectMember() {
 export function useRemoveProjectMember() {
 	const queryClient = useQueryClient();
 	return useMutation<void, Error, { projectId: number; userId: number }>({
-		mutationFn: ({ projectId, userId }) => removeProjectMember(projectId, userId),
+		mutationFn: ({ projectId, userId }) => projectService.removeProjectMember(projectId, userId),
 		onSuccess: (_, { projectId }) => {
 			queryClient.invalidateQueries({ queryKey: ["projects", projectId, "members"] });
 			queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
