@@ -2,6 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '../services/task';
+import { TaskPriority, TaskPriorityLabels } from '../types/enums';
 
 interface TaskCardProps {
 	task: Task;
@@ -22,18 +23,33 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
 		transform: CSS.Transform.toString(transform),
 		transition,
 	};
-	const getPriorityColor = (priority: string) => {
+	const getPriorityColor = (priority: TaskPriority) => {
 		switch (priority) {
-			case 'Urgente':
+			case TaskPriority.URGENTE:
 				return 'border-l-red-500 bg-gradient-to-r from-red-50 to-red-100 shadow-red-100';
-			case 'Haute':
+			case TaskPriority.HAUTE:
 				return 'border-l-orange-500 bg-gradient-to-r from-orange-50 to-orange-100 shadow-orange-100';
-			case 'Moyenne':
+			case TaskPriority.MOYENNE:
 				return 'border-l-yellow-500 bg-gradient-to-r from-yellow-50 to-yellow-100 shadow-yellow-100';
-			case 'Basse':
+			case TaskPriority.BASSE:
 				return 'border-l-green-500 bg-gradient-to-r from-green-50 to-green-100 shadow-green-100';
 			default:
 				return 'border-l-slate-500 bg-gradient-to-r from-slate-50 to-slate-100 shadow-slate-100';
+		}
+	};
+
+	const getPriorityBadgeColor = (priority: TaskPriority) => {
+		switch (priority) {
+			case TaskPriority.URGENTE:
+				return 'bg-red-100 text-red-800 border-red-200';
+			case TaskPriority.HAUTE:
+				return 'bg-orange-100 text-orange-800 border-orange-200';
+			case TaskPriority.MOYENNE:
+				return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+			case TaskPriority.BASSE:
+				return 'bg-green-100 text-green-800 border-green-200';
+			default:
+				return 'bg-gray-100 text-gray-800 border-gray-200';
 		}
 	};
 
@@ -69,13 +85,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
 				</h4>
 				<div className="flex items-center gap-2">
 					<span className={`
-            text-xs px-3 py-1.5 rounded-full font-semibold shadow-sm border
-            ${task.priority === 'Urgente' ? 'bg-red-100 text-red-800 border-red-200' :
-							task.priority === 'Haute' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-								task.priority === 'Moyenne' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-									'bg-green-100 text-green-800 border-green-200'}
-          `}>
-						{task.priority}
+			text-xs px-3 py-1.5 rounded-full font-semibold shadow-sm border
+			${getPriorityBadgeColor(task.priority)}
+		  `}>
+						{TaskPriorityLabels[task.priority]}
 					</span>
 				</div>
 			</div>

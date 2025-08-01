@@ -1,11 +1,12 @@
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+import type { TaskStatusType, TaskPriorityType } from '../types/enums';
 
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
 export interface Task {
 	id: number;
 	title: string;
 	description?: string;
-	status: string;
-	priority: string;
+	status: TaskStatusType;
+	priority: TaskPriorityType;
 	dueDate?: string;
 	createdAt: string;
 	updatedAt: string;
@@ -21,8 +22,8 @@ export interface Task {
 export interface CreateTaskData {
 	title: string;
 	description?: string;
-	status?: string;
-	priority?: string;
+	status?: TaskStatusType;
+	priority?: TaskPriorityType;
 	dueDate?: string;
 	assignedToId?: number;
 }
@@ -30,8 +31,8 @@ export interface CreateTaskData {
 export interface UpdateTaskData {
 	title?: string;
 	description?: string;
-	status?: string;
-	priority?: string;
+	status?: TaskStatusType;
+	priority?: TaskPriorityType;
 	dueDate?: string;
 	assignedToId?: number;
 }

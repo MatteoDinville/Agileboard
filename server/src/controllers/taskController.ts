@@ -62,7 +62,7 @@ export const taskController = {
 	async createTask(req: Request, res: Response) {
 		try {
 			const { projectId } = req.params;
-			const { title, description, priority, dueDate, assignedToId } = req.body;
+			const { title, description, status, priority, dueDate, assignedToId } = req.body;
 			const userId = req.user?.id;
 
 			const project = await prisma.project.findFirst({
@@ -99,7 +99,8 @@ export const taskController = {
 				data: {
 					title,
 					description,
-					priority: priority || "Moyenne",
+					status,
+					priority,
 					dueDate: dueDate ? new Date(dueDate) : null,
 					projectId: parseInt(projectId),
 					assignedToId: assignedToId || null

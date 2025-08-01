@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, TaskStatus, TaskPriority } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -140,8 +140,8 @@ const taskDescriptions = [
 	"Développer un système de templates personnalisables"
 ];
 
-const statuses = ['À faire', 'En cours', 'Terminé'];
-const priorities = ['Basse', 'Moyenne', 'Haute', 'Urgente'];
+const statuses = [TaskStatus.A_FAIRE, TaskStatus.EN_COURS, TaskStatus.TERMINE];
+const priorities = [TaskPriority.BASSE, TaskPriority.MOYENNE, TaskPriority.HAUTE, TaskPriority.URGENTE];
 const projectStatuses = ['En attente', 'En cours', 'Terminé', 'En pause'];
 const projectPriorities = ['Basse', 'Moyenne', 'Haute', 'Urgente'];
 

@@ -1,77 +1,89 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
+enum TaskStatus {
+    A_FAIRE
+    EN_COURS
+    TERMINE
+}
+
+enum TaskPriority {
+    BASSE
+    MOYENNE
+    HAUTE
+    URGENTE
+}
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  name      String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  // Relation 1-N vers Project (projets dont il est propriétaire)
-  projects  Project[]
-  // Relation N-N vers Project (projets dont il est membre)
-  memberOf  ProjectMember[]
-  // Relation 1-N vers Task (tâches assignées à l'utilisateur)
-  assignedTasks Task[]
+    id            Int             @id @default(autoincrement())
+    email         String          @unique
+    password      String
+    name          String?
+    createdAt     DateTime        @default(now())
+    updatedAt     DateTime        @updatedAt
+    // Relation 1-N vers Project (projets dont il est propriétaire)
+    projects      Project[]
+    // Relation N-N vers Project (projets dont il est membre)
+    memberOf      ProjectMember[]
+    // Relation 1-N vers Task (tâches assignées à l'utilisateur)
+    assignedTasks Task[]
 }
 
 model Project {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  status      String   @default("En attente")
-  priority    String   @default("Basse")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+    id          Int      @id @default(autoincrement())
+    title       String
+    description String?
+    status      String   @default("En attente")
+    priority    String   @default("Basse")
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
-  ownerId     Int
-  owner       User     @relation(fields: [ownerId], references: [id])
-  // Relation N-N vers User (membres du projet)
-  members     ProjectMember[]
-  // Relation 1-N vers Task (tâches du projet)
-  tasks       Task[]
+    ownerId Int
+    owner   User            @relation(fields: [ownerId], references: [id])
+    // Relation N-N vers User (membres du projet)
+    members ProjectMember[]
+    // Relation 1-N vers Task (tâches du projet)
+    tasks   Task[]
 
-  @@index([ownerId])
+    @@index([ownerId])
 }
 
 model ProjectMember {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  projectId Int
-  addedAt   DateTime @default(now())
+    id        Int      @id @default(autoincrement())
+    userId    Int
+    projectId Int
+    addedAt   DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, projectId])
-  @@index([projectId])
-  @@index([userId])
+    @@unique([userId, projectId])
+    @@index([projectId])
+    @@index([userId])
 }
 
 model Task {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  status      String   @default("À faire") // Colonnes Kanban: "À faire", "En cours", "Terminé"
-  priority    String   @default("Moyenne") // "Basse", "Moyenne", "Haute", "Urgente"
-  dueDate     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+    id          Int          @id @default(autoincrement())
+    title       String
+    description String?
+    status      TaskStatus   @default(A_FAIRE) // Colonnes Kanban: "À faire", "En cours", "Terminé"
+    priority    TaskPriority @default(MOYENNE) // "Basse", "Moyenne", "Haute", "Urgente"
+    dueDate     DateTime?
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
 
-  projectId   Int
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    projectId Int
+    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  assignedToId Int?
-  assignedTo   User?    @relation(fields: [assignedToId], references: [id])
+    assignedToId Int?
+    assignedTo   User? @relation(fields: [assignedToId], references: [id])
 
-  @@index([projectId])
-  @@index([assignedToId])
-  @@index([status])
+    @@index([projectId])
+    @@index([assignedToId])
+    @@index([status])
 }
