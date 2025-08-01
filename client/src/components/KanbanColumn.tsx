@@ -2,7 +2,7 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import TaskCard from './TaskCard.tsx';
-import type { Task } from '../api/task';
+import type { Task } from '../services/task';
 
 interface Column {
 	id: string;
