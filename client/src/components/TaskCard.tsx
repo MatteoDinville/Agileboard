@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { Task } from '../api/task';
+import type { Task } from '../services/task';
 
 interface TaskCardProps {
 	task: Task;
