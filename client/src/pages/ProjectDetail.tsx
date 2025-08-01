@@ -4,6 +4,11 @@ import { useProject } from "../utils/hooks/project";
 import ProjectMembers from "../components/ProjectMembers";
 import MembersListOnly from "../components/MembersListOnly";
 import KanbanBoard from "../components/KanbanBoard";
+import Backlog from "../components/Backlog";
+import TaskModal from "../components/TaskModal";
+import { taskService, type Task, type CreateTaskData, type UpdateTaskData } from "../services/task";
+import { useQueryClient } from "@tanstack/react-query";
+import { TaskStatus } from "../types/enums";
 import {
 	ArrowLeft,
 	Edit3,
@@ -13,14 +18,18 @@ import {
 	FolderOpen,
 	LayoutGrid,
 	Users,
+	List,
 } from "lucide-react";
 
 const ProjectDetail: React.FC = () => {
 	const { projectId } = useParams({ from: "/projects/$projectId" });
-	const projectIdNum = Number(projectId); const [activeTab, setActiveTab] = useState<"overview" | "kanban" | "members">(
+	const projectIdNum = Number(projectId); const [activeTab, setActiveTab] = useState<"overview" | "kanban" | "backlog" | "members">(
 		"overview"
 	);
+	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+	const [editingTask, setEditingTask] = useState<Task | null>(null);
 
+	const queryClient = useQueryClient();
 	const { data: project, isLoading, isError, error } = useProject(projectIdNum);
 
 	if (isLoading) {
@@ -95,6 +104,67 @@ const ProjectDetail: React.FC = () => {
 		}
 	};
 
+	// Fonctions de gestion des tâches
+	const handleCreateTask = () => {
+		setEditingTask(null);
+		setIsTaskModalOpen(true);
+	};
+
+	const handleEditTask = (task: Task) => {
+		setEditingTask(task);
+		setIsTaskModalOpen(true);
+	};
+
+	const handleDeleteTask = async (taskId: number) => {
+		if (!confirm("Êtes-vous sûr de vouloir supprimer cette tâche ?")) {
+			return;
+		}
+
+		try {
+			await taskService.deleteTask(taskId);
+			await queryClient.invalidateQueries({ queryKey: ["tasks", projectIdNum] });
+		} catch (error) {
+			console.error("Erreur lors de la suppression de la tâche:", error);
+			alert("Erreur lors de la suppression de la tâche");
+		}
+	};
+
+	const handleSaveTask = async (taskData: Partial<Task>) => {
+		try {
+			if (editingTask?.id) {
+				// Modification d'une tâche existante
+				const updateData: UpdateTaskData = {
+					title: taskData.title,
+					description: taskData.description,
+					status: taskData.status,
+					priority: taskData.priority,
+					dueDate: taskData.dueDate,
+					assignedToId: taskData.assignedToId,
+				};
+				await taskService.updateTask(editingTask.id, updateData);
+			} else {
+				// Création d'une nouvelle tâche
+				const createData: CreateTaskData = {
+					title: taskData.title ?? "",
+					description: taskData.description,
+					status: taskData.status ?? TaskStatus.A_FAIRE,
+					priority: taskData.priority,
+					dueDate: taskData.dueDate,
+					assignedToId: taskData.assignedToId,
+				};
+				await taskService.createTask(projectIdNum, createData);
+			}
+
+			// Fermer la modal et invalider le cache
+			setIsTaskModalOpen(false);
+			setEditingTask(null);
+			await queryClient.invalidateQueries({ queryKey: ["tasks", projectIdNum] });
+		} catch (error) {
+			console.error("Erreur lors de la sauvegarde de la tâche:", error);
+			alert("Erreur lors de la sauvegarde de la tâche");
+		}
+	};
+
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
 			{/* Header */}
@@ -155,6 +225,16 @@ const ProjectDetail: React.FC = () => {
 							>
 								<LayoutGrid className="w-4 h-4" />
 								<span>Kanban</span>
+							</button>
+							<button
+								onClick={() => setActiveTab("backlog")}
+								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm ${activeTab === "backlog"
+									? "border-blue-500 text-blue-600"
+									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+									} transition-colors`}
+							>
+								<List className="w-4 h-4" />
+								<span>Backlog</span>
 							</button>
 							<button
 								onClick={() => setActiveTab("members")}
@@ -258,6 +338,14 @@ const ProjectDetail: React.FC = () => {
 						{activeTab === "kanban" && (
 							<KanbanBoard projectId={projectIdNum} />
 						)}
+						{activeTab === "backlog" && (
+							<Backlog
+								projectId={projectIdNum}
+								onEditTask={handleEditTask}
+								onDeleteTask={handleDeleteTask}
+								onCreateTask={handleCreateTask}
+							/>
+						)}
 						{activeTab === "members" && (
 							<div className="w-full">
 								<MembersListOnly projectId={projectIdNum} />
@@ -266,6 +354,18 @@ const ProjectDetail: React.FC = () => {
 					</div>
 				</div>
 			</main>
+
+			{/* Modal pour créer/éditer une tâche */}
+			<TaskModal
+				isOpen={isTaskModalOpen}
+				onClose={() => {
+					setIsTaskModalOpen(false);
+					setEditingTask(null);
+				}}
+				task={editingTask}
+				onSave={handleSaveTask}
+				projectId={projectIdNum}
+			/>
 		</div>
 	);
 };
