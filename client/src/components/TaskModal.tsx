@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Task } from '../services/task';
 import { projectService } from '../services/project';
+import { TaskStatus, TaskPriority, TaskStatusLabels, TaskPriorityLabels, type TaskStatusType, type TaskPriorityType } from '../types/enums';
 
 interface TaskModalProps {
 	isOpen: boolean;
@@ -23,22 +24,31 @@ const TaskModal: React.FC<TaskModalProps> = ({
 	onSave,
 	projectId,
 }) => {
-	const [formData, setFormData] = useState({
+	const [formData, setFormData] = useState<{
+		title: string;
+		description: string;
+		status: TaskStatusType;
+		priority: TaskPriorityType;
+		dueDate: string;
+		assignedToId: string;
+	}>({
 		title: '',
 		description: '',
-		status: 'À faire',
-		priority: 'Moyenne',
+		status: TaskStatus.A_FAIRE,
+		priority: TaskPriority.MOYENNE,
 		dueDate: '',
 		assignedToId: '',
-	}); const [users, setUsers] = useState<User[]>([]);
+	});
+
+	const [users, setUsers] = useState<User[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	useEffect(() => {
 		if (task?.id) {
 			setFormData({
 				title: task.title || '',
 				description: task.description || '',
-				status: task.status || 'À faire',
-				priority: task.priority || 'Moyenne',
+				status: task.status || TaskStatus.A_FAIRE,
+				priority: task.priority || TaskPriority.MOYENNE,
 				dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
 				assignedToId: task.assignedToId?.toString() || '',
 			});
@@ -47,7 +57,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 				title: '',
 				description: '',
 				status: task.status,
-				priority: 'Moyenne',
+				priority: TaskPriority.MOYENNE,
 				dueDate: '',
 				assignedToId: '',
 			});
@@ -55,8 +65,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
 			setFormData({
 				title: '',
 				description: '',
-				status: 'À faire',
-				priority: 'Moyenne',
+				status: TaskStatus.A_FAIRE,
+				priority: TaskPriority.MOYENNE,
 				dueDate: '',
 				assignedToId: '',
 			});
@@ -98,7 +108,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 				projectId,
 			};
 
-			await onSave(taskData);
+			onSave(taskData);
 		} catch (error) {
 			console.error('Erreur lors de la sauvegarde:', error);
 		} finally {
@@ -132,10 +142,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-1">
+						<label htmlFor="task-title" className="block text-sm font-medium text-gray-700 mb-1">
 							Titre *
 						</label>
 						<input
+							id="task-title"
 							type="text"
 							name="title"
 							value={formData.title}
@@ -147,10 +158,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
 					</div>
 
 					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-1">
+						<label htmlFor="task-description" className="block text-sm font-medium text-gray-700 mb-1">
 							Description
 						</label>
 						<textarea
+							id="task-description"
 							name="description"
 							value={formData.description}
 							onChange={handleChange}
@@ -162,44 +174,47 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
 					<div className="grid grid-cols-2 gap-4">
 						<div>
-							<label className="block text-sm font-medium text-gray-700 mb-1">
+							<label htmlFor="task-status" className="block text-sm font-medium text-gray-700 mb-1">
 								Statut
 							</label>
 							<select
+								id="task-status"
 								name="status"
 								value={formData.status}
 								onChange={handleChange}
 								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							>
-								<option value="À faire">À faire</option>
-								<option value="En cours">En cours</option>
-								<option value="Terminé">Terminé</option>
+								<option value={TaskStatus.A_FAIRE}>{TaskStatusLabels.A_FAIRE}</option>
+								<option value={TaskStatus.EN_COURS}>{TaskStatusLabels.EN_COURS}</option>
+								<option value={TaskStatus.TERMINE}>{TaskStatusLabels.TERMINE}</option>
 							</select>
 						</div>
 
 						<div>
-							<label className="block text-sm font-medium text-gray-700 mb-1">
+							<label htmlFor="task-priority" className="block text-sm font-medium text-gray-700 mb-1">
 								Priorité
 							</label>
 							<select
+								id="task-priority"
 								name="priority"
 								value={formData.priority}
 								onChange={handleChange}
 								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							>
-								<option value="Basse">Basse</option>
-								<option value="Moyenne">Moyenne</option>
-								<option value="Haute">Haute</option>
-								<option value="Urgente">Urgente</option>
+								<option value={TaskPriority.BASSE}>{TaskPriorityLabels.BASSE}</option>
+								<option value={TaskPriority.MOYENNE}>{TaskPriorityLabels.MOYENNE}</option>
+								<option value={TaskPriority.HAUTE}>{TaskPriorityLabels.HAUTE}</option>
+								<option value={TaskPriority.URGENTE}>{TaskPriorityLabels.URGENTE}</option>
 							</select>
 						</div>
 					</div>
 
 					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-1">
+						<label htmlFor="task-dueDate" className="block text-sm font-medium text-gray-700 mb-1">
 							Date d'échéance
 						</label>
 						<input
+							id="task-dueDate"
 							type="date"
 							name="dueDate"
 							value={formData.dueDate}
@@ -209,10 +224,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
 					</div>
 
 					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-1">
+						<label htmlFor="task-assignedToId" className="block text-sm font-medium text-gray-700 mb-1">
 							Assigné à
 						</label>
 						<select
+							id="task-assignedToId"
 							name="assignedToId"
 							value={formData.assignedToId}
 							onChange={handleChange}
@@ -249,7 +265,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 									{task?.id ? 'Modification en cours...' : 'Création en cours...'}
 								</>
 							) : (
-								task?.id ? 'Modifier' : 'Créer'
+								<span>{task?.id ? 'Modifier' : 'Créer'}</span>
 							)}
 						</button>
 					</div>

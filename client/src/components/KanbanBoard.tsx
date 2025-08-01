@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/core';
 import { taskService } from '../services/task';
 import type { CreateTaskData, Task, UpdateTaskData } from '../services/task';
+import { TaskStatus, TaskStatusLabels, type TaskStatusType } from '../types/enums';
 import KanbanColumn from './KanbanColumn.tsx';
 import TaskCard from './TaskCard.tsx';
 import TaskModal from './TaskModal.tsx';
@@ -22,24 +23,24 @@ interface KanbanBoardProps {
 
 const columns = [
 	{
-		id: 'À faire',
-		title: 'À faire',
+		id: TaskStatus.A_FAIRE,
+		title: TaskStatusLabels.A_FAIRE,
 		color: 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200',
 		icon: '📋',
 		textColor: 'text-slate-700',
 		borderColor: 'border-slate-300'
 	},
 	{
-		id: 'En cours',
-		title: 'En cours',
+		id: TaskStatus.EN_COURS,
+		title: TaskStatusLabels.EN_COURS,
 		color: 'bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200',
 		icon: '🚀',
 		textColor: 'text-blue-700',
 		borderColor: 'border-blue-300'
 	},
 	{
-		id: 'Terminé',
-		title: 'Terminé',
+		id: TaskStatus.TERMINE,
+		title: TaskStatusLabels.TERMINE,
 		color: 'bg-gradient-to-br from-green-50 to-emerald-100 border-green-200',
 		icon: '✅',
 		textColor: 'text-green-700',
@@ -95,10 +96,23 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 		if (!over) return;
 
 		const taskId = Number(active.id);
-		const newStatus = String(over.id);
+		let newStatus: TaskStatusType;
+
+		if (String(over.id).startsWith('column-')) {
+			newStatus = String(over.id).replace('column-', '') as TaskStatusType;
+		} else {
+			const targetTask = tasks.find(t => t.id === Number(over.id));
+			if (!targetTask) return;
+			newStatus = targetTask.status;
+		}
 
 		const task = tasks.find(t => t.id === taskId);
 		if (!task || task.status === newStatus) return;
+
+		if (!Object.values(TaskStatus).includes(newStatus)) {
+			console.error('Statut invalide:', newStatus);
+			return;
+		}
 
 		setTasks(prev => prev.map(t =>
 			t.id === taskId ? { ...t, status: newStatus } : t
@@ -135,7 +149,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 		}
 	};
 
-	const openCreateModal = (status: string) => {
+	const openCreateModal = (status: TaskStatusType) => {
 		setEditingTask({ status } as Task);
 		setIsModalOpen(true);
 	};
@@ -162,8 +176,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 					<p className="text-slate-600 mt-1">Organisez et suivez vos tâches en temps réel</p>
 				</div>
 				<button
-					onClick={() => openCreateModal('À faire')}
-					className="bg-blue-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+					onClick={() => openCreateModal(TaskStatus.A_FAIRE)}
+					className="bg-blue-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 cursor-pointer"
 				>
 					<span className="text-lg">+</span>
 					<span className="font-medium">Nouvelle tâche</span>
@@ -183,7 +197,6 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 								key={column.id}
 								column={column}
 								tasks={columnTasks}
-								onCreateTask={() => openCreateModal(column.id)}
 								onEditTask={openEditModal}
 							/>
 						);
@@ -208,18 +221,22 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 				onSave={(taskData: Partial<Task>) => {
 					if (editingTask?.id) {
 						const updateData: UpdateTaskData = {
-							title: taskData.title ?? "",
-							description: taskData.description ?? "",
-							status: taskData.status ?? "À faire",
-							dueDate: taskData.dueDate ?? "",
+							title: taskData.title,
+							description: taskData.description,
+							status: taskData.status,
+							priority: taskData.priority,
+							dueDate: taskData.dueDate,
+							assignedToId: taskData.assignedToId,
 						};
 						handleUpdateTask(editingTask.id, updateData);
 					} else {
 						const createData: CreateTaskData = {
 							title: taskData.title ?? "",
-							description: taskData.description ?? "",
-							status: taskData.status ?? "",
-							dueDate: taskData.dueDate ?? "",
+							description: taskData.description,
+							status: taskData.status,
+							priority: taskData.priority,
+							dueDate: taskData.dueDate,
+							assignedToId: taskData.assignedToId,
 						};
 						handleCreateTask(createData);
 					}
