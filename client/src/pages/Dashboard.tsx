@@ -1,10 +1,12 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/AuthContext";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { User, LogOut, Home, Settings, Bell, Loader, Play, BookmarkCheck } from "lucide-react";
 import { useProjects } from "../utils/hooks/project";
 
-const Dashboard: React.FC = () => {
+const Dashboard: React.FC = () =>
+{
+	const navigate = useNavigate();
 	const { user, logout } = useContext(AuthContext);
 	const [message, setMessage] = useState<string>("");
 	const { data: projects } = useProjects();
@@ -36,6 +38,12 @@ const Dashboard: React.FC = () => {
 								<span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-semibold leading-none text-white bg-gradient-to-tr from-pink-500 to-red-500 border-2 border-white shadow-lg rounded-full">
 									3
 								</span>
+							</button>
+							<button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+								onClick={() => navigate({ to: "/settings" })}
+								title="Paramètres"
+							>
+								<Settings className="w-5 h-5" />
 							</button>
 							<button
 								onClick={handleLogout}

@@ -16,10 +16,9 @@ import ProjectsList from "./pages/ProjectsList";
 import ProjectForm from "./pages/ProjectForm";
 import ProjectDetail from "./pages/ProjectDetail";
 import NotFound from "./pages/NotFound";
-
+import Settings from "./pages/Settings";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
 
-// Composant RequireAuth réutilisable
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 	const { user, isLoading } = React.useContext(AuthContext);
 
@@ -114,6 +113,12 @@ const ProtectedNotFound = () => (
 	</RequireAuth>
 );
 
+const ProtectedSettingsRoute = () => (
+	<RequireAuth>
+		<Settings />
+	</RequireAuth>
+);
+
 const ProjectsListRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/projects",
@@ -138,6 +143,12 @@ const ProjectDetailRoute = createRoute({
 	component: ProtectedProjectDetail,
 });
 
+const SettingsRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/settings",
+	component: ProtectedSettingsRoute,
+});
+
 const NotFoundRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '*',
@@ -154,6 +165,7 @@ const routeTree = rootRoute.addChildren([
 	CreateProjectRoute,
 	EditProjectRoute,
 	ProjectDetailRoute,
+	SettingsRoute,
 	NotFoundRoute,
 ]);
 
