@@ -427,7 +427,7 @@ const ProjectDetail: React.FC = () => {
 										<div className="space-y-3">
 											<button
 												onClick={() => setActiveTab("kanban")}
-												className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group"
+												className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group cursor-pointer"
 											>
 												<div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
 													<LayoutGrid className="w-4 h-4 text-blue-600" />
@@ -439,7 +439,7 @@ const ProjectDetail: React.FC = () => {
 											</button>
 											<button
 												onClick={() => setActiveTab("backlog")}
-												className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all duration-200 group"
+												className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all duration-200 group cursor-pointer"
 											>
 												<div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
 													<List className="w-4 h-4 text-green-600" />
@@ -451,7 +451,7 @@ const ProjectDetail: React.FC = () => {
 											</button>
 											<button
 												onClick={() => setActiveTab("members")}
-												className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 group"
+												className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 group cursor-pointer"
 											>
 												<div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
 													<Users className="w-4 h-4 text-purple-600" />
