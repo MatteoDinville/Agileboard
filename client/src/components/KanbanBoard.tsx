@@ -16,6 +16,9 @@ import { TaskStatus, TaskStatusLabels, type TaskStatusType } from '../types/enum
 import KanbanColumn from './KanbanColumn.tsx';
 import TaskCard from './TaskCard.tsx';
 import TaskModal from './TaskModal.tsx';
+import {
+	Plus
+} from 'lucide-react';
 
 interface KanbanBoardProps {
 	projectId: number;
@@ -54,6 +57,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 	const [activeTask, setActiveTask] = useState<Task | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingTask, setEditingTask] = useState<Task | null>(null);
+
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
@@ -153,6 +157,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 		setEditingTask({ status } as Task);
 		setIsModalOpen(true);
 	};
+
 	const openEditModal = (task: Task) => {
 		setEditingTask(task);
 		setIsModalOpen(true);
@@ -175,14 +180,17 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 					</h2>
 					<p className="text-slate-600 mt-1">Organisez et suivez vos tâches en temps réel</p>
 				</div>
-				<button
-					onClick={() => openCreateModal(TaskStatus.A_FAIRE)}
-					className="bg-blue-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 cursor-pointer"
-				>
-					<span className="text-lg">+</span>
-					<span className="font-medium">Nouvelle tâche</span>
-				</button>
+				<div className="flex items-center gap-4">
+					<button
+						onClick={() => openCreateModal(TaskStatus.A_FAIRE)}
+						className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+					>
+						<Plus className="w-4 h-4" />
+						<span className="font-medium">Nouvelle tâche</span>
+					</button>
+				</div>
 			</div>
+
 			<DndContext
 				sensors={sensors}
 				collisionDetection={closestCorners}
@@ -211,6 +219,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 					) : null}
 				</DragOverlay>
 			</DndContext>
+
 			<TaskModal
 				isOpen={isModalOpen}
 				onClose={() => {

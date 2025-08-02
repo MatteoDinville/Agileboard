@@ -1,25 +1,14 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-
-declare global {
-	namespace Express {
-		interface Request {
-			user?: {
-				id: number;
-				email: string;
-				name: string;
-			};
-		}
-	}
-}
+import { AuthRequest } from "../middleware/auth.middleware";
 
 const prisma = new PrismaClient();
 
 export const taskController = {
-	async getProjectTasks(req: Request, res: Response) {
+	async getProjectTasks(req: AuthRequest, res: Response) {
 		try {
 			const { projectId } = req.params;
-			const userId = req.user?.id;
+			const userId = req.userId;
 
 			const project = await prisma.project.findFirst({
 				where: {
@@ -59,11 +48,11 @@ export const taskController = {
 		}
 	},
 
-	async createTask(req: Request, res: Response) {
+	async createTask(req: AuthRequest, res: Response) {
 		try {
 			const { projectId } = req.params;
 			const { title, description, status, priority, dueDate, assignedToId } = req.body;
-			const userId = req.user?.id;
+			const userId = req.userId;
 
 			const project = await prisma.project.findFirst({
 				where: {
@@ -123,11 +112,11 @@ export const taskController = {
 		}
 	},
 
-	async updateTask(req: Request, res: Response) {
+	async updateTask(req: AuthRequest, res: Response) {
 		try {
 			const { taskId } = req.params;
 			const { title, description, status, priority, dueDate, assignedToId } = req.body;
-			const userId = req.user?.id;
+			const userId = req.userId;
 
 			const existingTask = await prisma.task.findFirst({
 				where: {
@@ -191,10 +180,10 @@ export const taskController = {
 		}
 	},
 
-	async deleteTask(req: Request, res: Response) {
+	async deleteTask(req: AuthRequest, res: Response) {
 		try {
 			const { taskId } = req.params;
-			const userId = req.user?.id;
+			const userId = req.userId;
 
 			const existingTask = await prisma.task.findFirst({
 				where: {
@@ -223,11 +212,11 @@ export const taskController = {
 		}
 	},
 
-	async updateTaskStatus(req: Request, res: Response) {
+	async updateTaskStatus(req: AuthRequest, res: Response) {
 		try {
 			const { taskId } = req.params;
 			const { status } = req.body;
-			const userId = req.user?.id;
+			const userId = req.userId;
 
 			const existingTask = await prisma.task.findFirst({
 				where: {
