@@ -65,7 +65,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
 	const isOverdue = (dueDate?: string) => {
 		if (!dueDate) return false;
 		return new Date(dueDate) < new Date();
-	}; return (
+	};
+
+	const formattedDate = formatDate(task.dueDate);
+	const overdue = isOverdue(task.dueDate);
+
+	return (
 		<div
 			ref={setNodeRef}
 			style={style}
@@ -85,9 +90,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
 				</h4>
 				<div className="flex items-center gap-2">
 					<span className={`
-			text-xs px-3 py-1.5 rounded-full font-semibold shadow-sm border
-			${getPriorityBadgeColor(task.priority)}
-		  `}>
+						text-xs px-3 py-1.5 rounded-full font-semibold shadow-sm border
+						${getPriorityBadgeColor(task.priority)}
+					  `}>
 						{TaskPriorityLabels[task.priority]}
 					</span>
 				</div>
@@ -110,19 +115,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
 								{task.assignedTo.name || task.assignedTo.email}
 							</span>
 						</div>
-					)}				</div>
+					)}
+				</div>
 
-				{task.dueDate && (
+				{formattedDate && (
 					<div className={`
-            flex items-center gap-2 px-3 py-1.5 rounded-full
-            ${isOverdue(task.dueDate)
+							flex items-center gap-2 px-3 py-1.5 rounded-full
+							${overdue
 							? 'text-red-600 bg-red-50 border border-red-200 font-semibold'
 							: 'text-slate-600 bg-slate-50 border border-slate-200'}
-          `}>
+					  `}>
 						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
 						</svg>
-						<span className="font-medium">{formatDate(task.dueDate)}</span>
+						<span className="font-medium">{formattedDate}</span>
 					</div>
 				)}
 			</div>
