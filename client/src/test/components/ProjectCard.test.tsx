@@ -1,19 +1,23 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { ProjectCard } from '../../components/ProjectCard'
 
 describe('ProjectCard', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
 	it('renders project information correctly', () => {
 		render(
 			<ProjectCard
 				name="Test Project"
-				description="A test project description"
+				description="Test Description"
 				keyCode="TEST"
 			/>
 		)
 
 		expect(screen.getByText('Test Project')).toBeInTheDocument()
-		expect(screen.getByText('A test project description')).toBeInTheDocument()
+		expect(screen.getByText('Test Description')).toBeInTheDocument()
 		expect(screen.getByText('TEST')).toBeInTheDocument()
 	})
 
@@ -58,5 +62,18 @@ describe('ProjectCard', () => {
 		const descriptionElement = screen.getByText(longDescription)
 		expect(descriptionElement).toBeInTheDocument()
 		expect(descriptionElement).toHaveClass('h-20', 'overflow-hidden')
+	})
+
+	it('handles empty description', () => {
+		render(
+			<ProjectCard
+				name="Test Project"
+				description=""
+				keyCode="TEST"
+			/>
+		)
+
+		expect(screen.getByText('Test Project')).toBeInTheDocument()
+		expect(screen.getByText('TEST')).toBeInTheDocument()
 	})
 })

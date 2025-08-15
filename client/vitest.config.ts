@@ -15,11 +15,12 @@ export default defineConfig({
 			provider: 'v8',
 			reporter: ['text', 'json', 'html'],
 			include: [
-				'src/components/Modal.tsx',
-				'src/components/ProjectCard.tsx',
-				'src/components/TaskCard.tsx',
-				'src/lib/utils.ts',
-				'src/types/enums.ts',
+				'src/components/**/*.tsx',
+				'src/pages/**/*.tsx',
+				'src/utils/hooks/**/*.ts',
+				'src/lib/**/*.ts',
+				'src/types/**/*.ts',
+				'src/services/**/*.ts',
 			],
 			exclude: [
 				'node_modules/',
@@ -28,7 +29,11 @@ export default defineConfig({
 				'**/*.config.*',
 				'coverage/',
 				'dist/',
-				'build/'
+				'build/',
+				'src/main.tsx',
+				'src/App.tsx',
+				'src/router.tsx',
+				'src/contexts/**/*.tsx',
 			],
 			thresholds: {
 				statements: 100,

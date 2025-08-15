@@ -39,12 +39,13 @@ describe('Project Service', () => {
 
 			const result = await projectService.fetchProjects()
 
-			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects', {
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-			})
+			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects',
+				{
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				})
 			expect(result).toEqual(mockProjects)
 		})
 
@@ -77,12 +78,13 @@ describe('Project Service', () => {
 
 			const result = await projectService.fetchProjectById(1)
 
-			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1', {
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-			})
+			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1',
+				{
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				})
 			expect(result).toEqual(mockProject)
 		})
 
@@ -119,14 +121,15 @@ describe('Project Service', () => {
 
 			const result = await projectService.createProject(projectData)
 
-			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-				body: JSON.stringify(projectData)
-			})
+			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+					body: JSON.stringify(projectData)
+				})
 			expect(result).toEqual(mockCreatedProject)
 		})
 
@@ -168,14 +171,15 @@ describe('Project Service', () => {
 
 			const result = await projectService.updateProject(1, updateData)
 
-			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1', {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-				body: JSON.stringify(updateData)
-			})
+			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1',
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+					body: JSON.stringify(updateData)
+				})
 			expect(result).toEqual(mockUpdatedProject)
 		})
 
@@ -201,13 +205,14 @@ describe('Project Service', () => {
 
 			await projectService.deleteProject(1)
 
-			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1', {
-				method: 'DELETE',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-			})
+			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1',
+				{
+					method: 'DELETE',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				})
 		})
 
 		it('should throw error on deletion failure', async () => {
@@ -254,12 +259,13 @@ describe('Project Service', () => {
 
 			const result = await projectService.fetchProjectMembers(1)
 
-			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1/members', {
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-			})
+			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1/members',
+				{
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				})
 			expect(result).toEqual(mockMembers)
 		})
 	})
@@ -285,14 +291,15 @@ describe('Project Service', () => {
 
 			const result = await projectService.addProjectMember(1, 3)
 
-			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1/members', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-				body: JSON.stringify({ userId: 3 })
-			})
+			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1/members',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+					body: JSON.stringify({ userId: 3 })
+				})
 			expect(result).toEqual(mockAddedMember)
 		})
 	})
@@ -305,13 +312,14 @@ describe('Project Service', () => {
 
 			await projectService.removeProjectMember(1, 2)
 
-			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1/members/2', {
-				method: 'DELETE',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-			})
+			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/projects/1/members/2',
+				{
+					method: 'DELETE',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include',
+				})
 		})
 	})
 })

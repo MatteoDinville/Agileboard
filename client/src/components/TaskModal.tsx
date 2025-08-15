@@ -7,7 +7,7 @@ interface TaskModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	task?: Task | null;
-	onSave: (taskData: Partial<Task>) => void;
+	onSave: (taskData: Partial<Task>) => Promise<void>;
 	projectId: number;
 }
 
@@ -108,7 +108,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 				projectId,
 			};
 
-			onSave(taskData);
+			await onSave(taskData);
 		} catch (error) {
 			console.error('Erreur lors de la sauvegarde:', error);
 		} finally {

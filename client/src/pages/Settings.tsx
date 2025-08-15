@@ -1,20 +1,18 @@
 import { useState, useContext, useEffect } from 'react';
-import
-	{
-		Settings as IconSettings,
-		User as IconUser,
-		Lock as IconLock,
-		Home as IconHome,
-		Camera as IconCamera,
-		Save as IconSave,
-	} from 'lucide-react';
+import {
+Settings as IconSettings,
+User as IconUser,
+Lock as IconLock,
+Home as IconHome,
+Camera as IconCamera,
+Save as IconSave,
+} from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { AuthContext } from '../contexts/AuthContext';
 import { useProfile } from '../utils/hooks/user';
 
 
-export default function SettingsPage()
-{
+export default function SettingsPage() {
 	const navigate = useNavigate();
 	const { user } = useContext(AuthContext);
 	const { user: profileUser, updateProfile, changePassword } = useProfile();
@@ -32,18 +30,15 @@ export default function SettingsPage()
 		confirmPassword: ''
 	});
 
-	useEffect(() =>
-	{
-		if (profileUser)
-		{
+	useEffect(() => {
+		if (profileUser) {
 			setProfileForm({
 				name: profileUser.name || '',
 				firstName: profileUser.name?.split(' ')[0] || '',
 				lastName: profileUser.name?.split(' ').slice(1).join(' ') || '',
 				email: profileUser.email || ''
 			});
-		} else if (user)
-		{
+		} else if (user) {
 			setProfileForm({
 				name: user.name || '',
 				firstName: user.name?.split(' ')[0] || '',
@@ -53,12 +48,10 @@ export default function SettingsPage()
 		}
 	}, [profileUser, user]);
 
-	const handleProfileSubmit = async (e: React.FormEvent) =>
-	{
+	const handleProfileSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		try
-		{
+		try {
 			const fullName = `${profileForm.firstName?.trim() || ''} ${profileForm.lastName?.trim() || ''}`.trim();
 
 			await updateProfile.mutateAsync({
@@ -76,23 +69,19 @@ export default function SettingsPage()
 			`;
 			document.body.appendChild(successMessage);
 
-			setTimeout(() =>
-			{
+			setTimeout(() => {
 				successMessage.remove();
 			}, 3000);
-		} catch (error)
-		{
+		} catch (error) {
 			console.error('Erreur lors de la mise à jour du profil:', error);
 			alert('Erreur lors de la mise à jour du profil');
 		}
 	};
 
-	const handlePasswordSubmit = async (e: React.FormEvent) =>
-	{
+	const handlePasswordSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		if (passwordForm.newPassword !== passwordForm.confirmPassword)
-		{
+		if (passwordForm.newPassword !== passwordForm.confirmPassword) {
 			const errorMessage = document.createElement('div');
 			errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
 			errorMessage.innerHTML = `
@@ -106,8 +95,7 @@ export default function SettingsPage()
 			return;
 		}
 
-		if (passwordForm.newPassword.length < 6)
-		{
+		if (passwordForm.newPassword.length < 6) {
 			const errorMessage = document.createElement('div');
 			errorMessage.className = 'fixed top-4 right-4 bg-orange-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
 			errorMessage.innerHTML = `
@@ -121,8 +109,7 @@ export default function SettingsPage()
 			return;
 		}
 
-		try
-		{
+		try {
 			await changePassword.mutateAsync({
 				currentPassword: passwordForm.currentPassword,
 				newPassword: passwordForm.newPassword
@@ -144,25 +131,20 @@ export default function SettingsPage()
 			`;
 			document.body.appendChild(successMessage);
 			setTimeout(() => successMessage.remove(), 4000);
-		} catch (error: unknown)
-		{
+		} catch (error: unknown) {
 			console.error('Erreur lors du changement de mot de passe:', error);
 
 			const errorMessage = document.createElement('div');
 			errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
 			let errorText = 'Erreur lors du changement de mot de passe';
-			if (error && typeof error === 'object' && 'response' in error)
-			{
+			if (error && typeof error === 'object' && 'response' in error) {
 				const response = error as { response?: { data?: { message?: string } } };
-				if (response.response?.data?.message)
-				{
+				if (response.response?.data?.message) {
 					errorText = response.response.data.message;
 				}
-			} else if (error && typeof error === 'object' && 'message' in error)
-			{
+			} else if (error && typeof error === 'object' && 'message' in error) {
 				const errorObj = error as { message?: string };
-				if (errorObj.message)
-				{
+				if (errorObj.message) {
 					errorText = errorObj.message;
 				}
 			}
@@ -245,151 +227,41 @@ export default function SettingsPage()
 										</div>
 									</div>
 								</div>
-								<form onSubmit={handleProfileSubmit}>
-									<div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
-										<h3 className="text-lg font-medium text-gray-700">Informations personnelles</h3>
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<div>
-												<label className="block text-sm font-medium text-gray-600 mb-1">Prénom</label>
-												<input
-													type="text"
-													value={profileForm.firstName}
-													onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
-													className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-												/>
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-600 mb-1">Nom</label>
-												<input
-													type="text"
-													value={profileForm.lastName}
-													onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
-													className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-												/>
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
-												<input
-													type="email"
-													value={profileForm.email}
-													onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-													className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-												/>
-											</div>
+								<div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
+									<h3 className="text-lg font-medium text-gray-700">Informations personnelles</h3>
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+										<div>
+											<label className="block text-sm font-medium text-gray-600 mb-1">Prénom</label>
+											<input
+												type="text"
+												value={profileForm.firstName}
+												onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
+												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium text-gray-600 mb-1">Nom</label>
+											<input
+												type="text"
+												value={profileForm.lastName}
+												onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
+												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
+											<input
+												type="email"
+												value={profileForm.email}
+												onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+											/>
 										</div>
 									</div>
-									<div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-										<h3 className="text-lg font-medium text-gray-700 flex items-center gap-2 mb-6">
-											<IconLock className="w-5 h-5 text-blue-500" />
-											Changement de mot de passe
-										</h3>
-										<form onSubmit={handlePasswordSubmit} className="space-y-6">
-											<div>
-												<label className="block text-sm font-medium text-gray-600 mb-2">Mot de passe actuel</label>
-												<input
-													type="password"
-													value={passwordForm.currentPassword}
-													onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-													placeholder="Entrez votre mot de passe actuel"
-													className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-													required
-												/>
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-600 mb-2">Nouveau mot de passe</label>
-												<input
-													type="password"
-													value={passwordForm.newPassword}
-													onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-													placeholder="Entrez votre nouveau mot de passe"
-													className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-													required
-													minLength={6}
-												/>
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-600 mb-2">Confirmer le nouveau mot de passe</label>
-												<input
-													type="password"
-													value={passwordForm.confirmPassword}
-													onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-													placeholder="Confirmez votre nouveau mot de passe"
-													className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-													required
-													minLength={6}
-												/>
-											</div>
-
-											{passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword && (
-												<div className="text-red-500 text-sm flex items-center gap-2">
-													<IconLock className="w-4 h-4" />
-													Les mots de passe ne correspondent pas
-												</div>
-											)}
-
-											{passwordForm.newPassword && passwordForm.newPassword.length < 6 && (
-												<div className="text-orange-500 text-sm flex items-center gap-2">
-													<IconLock className="w-4 h-4" />
-													Le mot de passe doit contenir au moins 6 caractères
-												</div>
-											)}
-
-											{passwordForm.newPassword && (
-												<div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-													<h4 className="text-sm font-medium text-blue-800 mb-2">Critères de sécurité :</h4>
-													<ul className="text-sm space-y-1">
-														<li className={`flex items-center gap-2 ${passwordForm.newPassword.length >= 6 ? 'text-green-600' : 'text-gray-500'}`}>
-															<span className={`w-2 h-2 rounded-full ${passwordForm.newPassword.length >= 6 ? 'bg-green-500' : 'bg-gray-300'}`}></span>
-															Au moins 6 caractères
-														</li>
-														<li className={`flex items-center gap-2 ${/[A-Z]/.test(passwordForm.newPassword) ? 'text-green-600' : 'text-gray-500'}`}>
-															<span className={`w-2 h-2 rounded-full ${/[A-Z]/.test(passwordForm.newPassword) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
-															Une majuscule (recommandé)
-														</li>
-														<li className={`flex items-center gap-2 ${/[0-9]/.test(passwordForm.newPassword) ? 'text-green-600' : 'text-gray-500'}`}>
-															<span className={`w-2 h-2 rounded-full ${/[0-9]/.test(passwordForm.newPassword) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
-															Un chiffre (recommandé)
-														</li>
-														<li className={`flex items-center gap-2 ${/[!@#$%^&*(),.?":{}|<>]/.test(passwordForm.newPassword) ? 'text-green-600' : 'text-gray-500'}`}>
-															<span className={`w-2 h-2 rounded-full ${/[!@#$%^&*(),.?":{}|<>]/.test(passwordForm.newPassword) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
-															Un caractère spécial (recommandé)
-														</li>
-													</ul>
-												</div>
-											)}
-
-											<div className="flex justify-end pt-4 border-t border-gray-200">
-												<button
-													type="submit"
-													disabled={
-														changePassword.isPending ||
-														!passwordForm.currentPassword ||
-														!passwordForm.newPassword ||
-														!passwordForm.confirmPassword ||
-														passwordForm.newPassword !== passwordForm.confirmPassword ||
-														passwordForm.newPassword.length < 6
-													}
-													className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:opacity-90 transition-opacity font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-												>
-													{changePassword.isPending ? (
-														<>
-															<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-															Modification...
-														</>
-													) : (
-														<>
-															<IconLock className="w-5 h-5" />
-															Changer le mot de passe
-														</>
-													)}
-												</button>
-											</div>
-										</form>
-									</div>
-
-									<div className="flex justify-end pt-8 border-t border-gray-200 mt-8">
+									<div className="flex justify-end pt-4 border-t border-gray-200">
 										<button
-											type="submit"
+											type="button"
+											onClick={handleProfileSubmit}
 											disabled={updateProfile.isPending}
 											className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:opacity-90 transition-opacity font-medium shadow-lg cursor-pointer disabled:opacity-50"
 										>
@@ -406,7 +278,115 @@ export default function SettingsPage()
 											)}
 										</button>
 									</div>
-								</form>
+								</div>
+								<div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+									<h3 className="text-lg font-medium text-gray-700 flex items-center gap-2 mb-6">
+										<IconLock className="w-5 h-5 text-blue-500" />
+										Changement de mot de passe
+									</h3>
+									<form onSubmit={handlePasswordSubmit} className="space-y-6">
+										<div>
+											<label className="block text-sm font-medium text-gray-600 mb-2">Mot de passe actuel</label>
+											<input
+												type="password"
+												value={passwordForm.currentPassword}
+												onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+												placeholder="Entrez votre mot de passe actuel"
+												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+												required
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium text-gray-600 mb-2">Nouveau mot de passe</label>
+											<input
+												type="password"
+												value={passwordForm.newPassword}
+												onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+												placeholder="Entrez votre nouveau mot de passe"
+												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+												required
+												minLength={6}
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium text-gray-600 mb-2">Confirmer le nouveau mot de passe</label>
+											<input
+												type="password"
+												value={passwordForm.confirmPassword}
+												onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+												placeholder="Confirmez votre nouveau mot de passe"
+												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+												required
+												minLength={6}
+											/>
+										</div>
+
+										{passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword && (
+											<div className="text-red-500 text-sm flex items-center gap-2">
+												<IconLock className="w-4 h-4" />
+												Les mots de passe ne correspondent pas
+											</div>
+										)}
+
+										{passwordForm.newPassword && passwordForm.newPassword.length < 6 && (
+											<div className="text-orange-500 text-sm flex items-center gap-2">
+												<IconLock className="w-4 h-4" />
+												Le mot de passe doit contenir au moins 6 caractères
+											</div>
+										)}
+
+										{passwordForm.newPassword && (
+											<div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+												<h4 className="text-sm font-medium text-blue-800 mb-2">Critères de sécurité :</h4>
+												<ul className="text-sm space-y-1">
+													<li className={`flex items-center gap-2 ${passwordForm.newPassword.length >= 6 ? 'text-green-600' : 'text-gray-500'}`}>
+														<span className={`w-2 h-2 rounded-full ${passwordForm.newPassword.length >= 6 ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+														Au moins 6 caractères
+													</li>
+													<li className={`flex items-center gap-2 ${/[A-Z]/.test(passwordForm.newPassword) ? 'text-green-600' : 'text-gray-500'}`}>
+														<span className={`w-2 h-2 rounded-full ${/[A-Z]/.test(passwordForm.newPassword) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+														Une majuscule (recommandé)
+													</li>
+													<li className={`flex items-center gap-2 ${/[0-9]/.test(passwordForm.newPassword) ? 'text-green-600' : 'text-gray-500'}`}>
+														<span className={`w-2 h-2 rounded-full ${/[0-9]/.test(passwordForm.newPassword) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+														Un chiffre (recommandé)
+													</li>
+													<li className={`flex items-center gap-2 ${/[!@#$%^&*(),.?":{}|<>]/.test(passwordForm.newPassword) ? 'text-green-600' : 'text-gray-500'}`}>
+														<span className={`w-2 h-2 rounded-full ${/[!@#$%^&*(),.?":{}|<>]/.test(passwordForm.newPassword) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+														Un caractère spécial (recommandé)
+													</li>
+												</ul>
+											</div>
+										)}
+
+										<div className="flex justify-end pt-4 border-t border-gray-200">
+											<button
+												type="submit"
+												disabled={
+													changePassword.isPending ||
+													!passwordForm.currentPassword ||
+													!passwordForm.newPassword ||
+													!passwordForm.confirmPassword ||
+													passwordForm.newPassword !== passwordForm.confirmPassword ||
+													passwordForm.newPassword.length < 6
+												}
+												className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:opacity-90 transition-opacity font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+											>
+												{changePassword.isPending ? (
+													<>
+														<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+														Modification...
+													</>
+												) : (
+													<>
+														<IconLock className="w-5 h-5" />
+														Changer le mot de passe
+													</>
+												)}
+											</button>
+										</div>
+									</form>
+								</div>
 							</div>
 						</div>
 					</div>
