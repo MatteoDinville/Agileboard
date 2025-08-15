@@ -1,17 +1,31 @@
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch, useNavigate } from "@tanstack/react-router";
 
 const Login: React.FC = () => {
 	const { loginMutation } = useContext(AuthContext);
+	const navigate = useNavigate();
+	const search = useSearch({ strict: false }) as { redirect?: string; message?: string };
+
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		loginMutation.mutate({ email, password });
+		loginMutation.mutate(
+			{ email, password },
+			{
+				onSuccess: () => {
+					if (search.redirect) {
+						navigate({ to: search.redirect as any });
+					} else {
+						navigate({ to: "/dashboard" });
+					}
+				}
+			}
+		);
 	};
 
 	return (
@@ -28,6 +42,16 @@ const Login: React.FC = () => {
 
 				{/* Form Card */}
 				<div className="bg-white rounded-2xl shadow-xl shadow-indigo-100/50 p-8 border border-gray-100">
+					{/* Message d'invitation si présent */}
+					{search.message && (
+						<div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center space-x-3">
+							<Mail className="w-5 h-5 text-blue-500 flex-shrink-0" />
+							<p className="text-blue-700 text-sm">
+								{search.message}
+							</p>
+						</div>
+					)}
+
 					{loginMutation.isError && (
 						<div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center space-x-3">
 							<AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -105,6 +129,7 @@ const Login: React.FC = () => {
 							Pas encore de compte ?{" "}
 							<Link
 								to="/register"
+								search={search.redirect ? { redirect: search.redirect, message: search.message } : undefined}
 								className="text-blue-600 hover:text-blue-500 font-medium"
 							>
 								Inscrivez-vous

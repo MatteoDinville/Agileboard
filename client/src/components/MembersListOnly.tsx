@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useProjectMembers, useRemoveProjectMember, useAddProjectMember } from "../utils/hooks/project";
 import { useAllUsers } from "../utils/hooks/user";
 import { Mail, Loader2, Users, UserMinus, UserPlus, X, AlertCircle } from "lucide-react";
+import InviteModal from "./InviteModal";
+import PendingInvitations from "./PendingInvitations";
 
 interface MembersListOnlyProps {
 	projectId: number;
@@ -10,6 +12,7 @@ interface MembersListOnlyProps {
 
 const MembersListOnly: React.FC<MembersListOnlyProps> = ({ projectId, isOwner = false }) => {
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [showInviteModal, setShowInviteModal] = useState(false);
 	const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
 	const { data: members, isLoading: membersLoading } = useProjectMembers(projectId);
@@ -72,8 +75,11 @@ const MembersListOnly: React.FC<MembersListOnlyProps> = ({ projectId, isOwner = 
 	}
 
 	return (
-		<div className="w-full space-y-4">
-			{/* En-tête avec bouton d'ajout */}
+		<div className="w-full space-y-6">
+			{/* Invitations en attente */}
+			<PendingInvitations projectId={projectId} isOwner={isOwner} />
+
+			{/* En-tête avec boutons d'ajout */}
 			{isOwner && (
 				<div className="flex justify-between items-center">
 					<div>
@@ -81,13 +87,22 @@ const MembersListOnly: React.FC<MembersListOnlyProps> = ({ projectId, isOwner = 
 							Membres du projet ({members?.length || 0})
 						</h3>
 					</div>
-					<button
-						onClick={() => setShowAddModal(true)}
-						className="inline-flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-					>
-						<UserPlus className="w-4 h-4" />
-						<span>Ajouter</span>
-					</button>
+					<div className="flex space-x-3">
+						<button
+							onClick={() => setShowInviteModal(true)}
+							className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors shadow-md hover:shadow-lg"
+						>
+							<Mail className="w-4 h-4" />
+							<span>Inviter par email</span>
+						</button>
+						<button
+							onClick={() => setShowAddModal(true)}
+							className="inline-flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+						>
+							<UserPlus className="w-4 h-4" />
+							<span>Ajouter membre</span>
+						</button>
+					</div>
 				</div>
 			)}
 
@@ -238,6 +253,13 @@ const MembersListOnly: React.FC<MembersListOnlyProps> = ({ projectId, isOwner = 
 					</div>
 				</div>
 			)}
+
+			{/* Modal d'invitation par email */}
+			<InviteModal
+				projectId={projectId}
+				isOpen={showInviteModal}
+				onClose={() => setShowInviteModal(false)}
+			/>
 		</div>
 	);
 };

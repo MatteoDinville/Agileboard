@@ -23,7 +23,13 @@ export interface Project {
 	priority?: ProjectPriority;
 	createdAt: string;
 	updatedAt: string;
+	ownerId: number;
+	owner?: User;
 	members?: ProjectMember[];
+	_count?: {
+		members: number;
+		tasks: number;
+	};
 }
 
 export interface ProjectInput {

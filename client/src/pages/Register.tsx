@@ -1,10 +1,13 @@
 import React, { useState, useContext } from "react";
 import { User, Mail, Lock, Eye, EyeOff, UserPlus, AlertCircle } from "lucide-react";
 import { AuthContext } from "../contexts/AuthContext";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch, useNavigate } from "@tanstack/react-router";
 
 const Register: React.FC = () => {
 	const { registerMutation } = useContext(AuthContext);
+	const navigate = useNavigate();
+	const search = useSearch({ strict: false }) as { redirect?: string; message?: string };
+
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -12,7 +15,19 @@ const Register: React.FC = () => {
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		registerMutation.mutate({ email, password, name });
+		registerMutation.mutate(
+			{ email, password, name },
+			{
+				onSuccess: () => {
+					// Si on a une redirection (ex: invitation), aller là, sinon dashboard
+					if (search.redirect) {
+						navigate({ to: search.redirect as any });
+					} else {
+						navigate({ to: "/dashboard" });
+					}
+				}
+			}
+		);
 	};
 
 	return (
@@ -29,6 +44,16 @@ const Register: React.FC = () => {
 
 				{/* Form Card */}
 				<div className="bg-white rounded-2xl shadow-xl shadow-emerald-100/50 p-8 border border-gray-100">
+					{/* Message d'invitation si présent */}
+					{search.message && (
+						<div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center space-x-3">
+							<Mail className="w-5 h-5 text-blue-500 flex-shrink-0" />
+							<p className="text-blue-700 text-sm">
+								{search.message}
+							</p>
+						</div>
+					)}
+
 					{registerMutation.isError && (
 						<div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center space-x-3">
 							<AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -124,6 +149,7 @@ const Register: React.FC = () => {
 							Déjà un compte ?{" "}
 							<Link
 								to="/login"
+								search={search.redirect ? { redirect: search.redirect, message: search.message } : undefined}
 								className="text-emerald-600 hover:text-emerald-500 font-medium"
 							>
 								Connectez-vous

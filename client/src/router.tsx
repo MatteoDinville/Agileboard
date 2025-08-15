@@ -17,6 +17,7 @@ import ProjectForm from "./pages/ProjectForm";
 import ProjectDetail from "./pages/ProjectDetail";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import InvitationAcceptPage from "./pages/InvitationAcceptPage";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
@@ -149,6 +150,12 @@ const SettingsRoute = createRoute({
 	component: ProtectedSettingsRoute,
 });
 
+const InviteRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/invite/$token",
+	component: InvitationAcceptPage,
+});
+
 const NotFoundRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '*',
@@ -166,6 +173,7 @@ const routeTree = rootRoute.addChildren([
 	EditProjectRoute,
 	ProjectDetailRoute,
 	SettingsRoute,
+	InviteRoute,
 	NotFoundRoute,
 ]);
 

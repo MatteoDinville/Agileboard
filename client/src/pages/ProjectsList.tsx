@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useProjects, useDeleteProject } from "../utils/hooks/project";
+import { useAuth } from "../contexts/AuthContext";
 import { Link } from "@tanstack/react-router";
 import {
 	Plus,
@@ -13,11 +14,14 @@ import {
 	ChevronDown,
 	AlertCircle,
 	Loader2,
-	Users
+	Users,
+	Crown,
+	UserCheck
 } from "lucide-react";
 
 const ProjectsList: React.FC = () => {
 	const { data: projects, isLoading, isError, error } = useProjects();
+	const { user } = useAuth();
 
 	const deleteMutation = useDeleteProject();
 
@@ -217,6 +221,23 @@ const ProjectsList: React.FC = () => {
 										</div>
 
 										<div className="flex flex-wrap gap-3 mb-6">
+											{/* Indicateur Owner/Membre */}
+											{project.ownerId === user?.id ? (
+												<span className="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-yellow-100 text-yellow-800 border border-yellow-200">
+													<div className="flex items-center gap-1.5">
+														<Crown className="w-3 h-3" />
+														Propriétaire
+													</div>
+												</span>
+											) : (
+												<span className="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-blue-100 text-blue-800 border border-blue-200">
+													<div className="flex items-center gap-1.5">
+														<UserCheck className="w-3 h-3" />
+														Membre
+													</div>
+												</span>
+											)}
+
 											<span className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(project.status).class}`}>
 												<div className="flex items-center gap-1.5">
 													<span className="text-sm">{getStatusColor(project.status).emoji}</span>
@@ -237,9 +258,7 @@ const ProjectsList: React.FC = () => {
 													</div>
 												</span>
 											)}
-										</div>
-
-										<div className="flex items-center justify-between pt-6 border-t border-slate-100">
+										</div>										<div className="flex items-center justify-between pt-6 border-t border-slate-100">
 											<div className="flex items-center space-x-2 text-xs text-slate-500">
 												<div className="p-1.5 bg-slate-100 rounded-lg">
 													<Calendar className="w-3.5 h-3.5" />
@@ -261,21 +280,26 @@ const ProjectsList: React.FC = () => {
 												>
 													<FolderOpen className="w-4 h-4" />
 												</Link>
-												<Link
-													to="/projects/$projectId/edit"
-													params={{ projectId: project.id.toString() }}
-													className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
-													title="Modifier le projet"
-												>
-													<Edit3 className="w-4 h-4" />
-												</Link>
-												<button
-													onClick={() => handleDelete(project.id)}
-													className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
-													title="Supprimer le projet"
-												>
-													<Trash2 className="w-4 h-4" />
-												</button>
+												{/* Actions réservées au propriétaire */}
+												{project.ownerId === user?.id && (
+													<>
+														<Link
+															to="/projects/$projectId/edit"
+															params={{ projectId: project.id.toString() }}
+															className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
+															title="Modifier le projet"
+														>
+															<Edit3 className="w-4 h-4" />
+														</Link>
+														<button
+															onClick={() => handleDelete(project.id)}
+															className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
+															title="Supprimer le projet"
+														>
+															<Trash2 className="w-4 h-4" />
+														</button>
+													</>
+												)}
 											</div>
 										</div>
 									</>

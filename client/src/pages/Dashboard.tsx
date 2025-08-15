@@ -3,9 +3,9 @@ import { AuthContext } from "../contexts/AuthContext";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { User, LogOut, Home, Settings, Bell, Loader, Play, BookmarkCheck } from "lucide-react";
 import { useProjects } from "../utils/hooks/project";
+import UserInvitationsNotifications from "../components/UserInvitationsNotifications";
 
-const Dashboard: React.FC = () =>
-{
+const Dashboard: React.FC = () => {
 	const navigate = useNavigate();
 	const { user, logout } = useContext(AuthContext);
 	const [message, setMessage] = useState<string>("");
@@ -33,12 +33,7 @@ const Dashboard: React.FC = () =>
 						</div>
 
 						<div className="flex items-center space-x-4">
-							<button className="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-300">
-								<Bell className="w-5 h-5" />
-								<span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-semibold leading-none text-white bg-gradient-to-tr from-pink-500 to-red-500 border-2 border-white shadow-lg rounded-full">
-									3
-								</span>
-							</button>
+							<UserInvitationsNotifications />
 							<button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
 								onClick={() => navigate({ to: "/settings" })}
 								title="Paramètres"
@@ -122,7 +117,7 @@ const Dashboard: React.FC = () =>
 								<div>
 									<p className="text-amber-600 text-sm font-medium">Projets en attente</p>
 									<p className="text-2xl pt-2 font-bold text-amber-900">
-                                        5
+										5
 									</p>
 								</div>
 								<div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
@@ -137,7 +132,7 @@ const Dashboard: React.FC = () =>
 								<div>
 									<p className="text-blue-600 text-sm font-medium">Projets en cours</p>
 									<p className="text-2xl pt-2 font-bold text-blue-900">
-                                        7
+										7
 									</p>
 								</div>
 								<div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
