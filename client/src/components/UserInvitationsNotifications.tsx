@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, Check, X, Clock, Mail, ChevronDown } from "lucide-react";
-import { invitationService, InvitationInfo } from "../services/invitation";
+import { Bell, Check, X, Clock, Mail } from "lucide-react";
+import { invitationService } from "../services/invitation";
 import { useAuth } from "../contexts/AuthContext";
 
 interface UserInvitationsNotificationsProps {
@@ -34,6 +34,13 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 		},
 	});
 
+	const declineMutation = useMutation({
+		mutationFn: (token: string) => invitationService.declineInvitation(token),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['user', 'invitations'] });
+		},
+	});
+
 	// Fermer le dropdown si on clique à l'extérieur
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -50,6 +57,10 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 
 	const handleAcceptInvitation = (token: string) => {
 		acceptMutation.mutate(token);
+	};
+
+	const handleDeclineInvitation = (token: string) => {
+		declineMutation.mutate(token);
 	};
 
 	const toggleDropdown = () => {
@@ -123,11 +134,19 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 										<div className="flex space-x-2 pt-2">
 											<button
 												onClick={() => handleAcceptInvitation(invitation.token!)}
-												disabled={acceptMutation.isPending}
+												disabled={acceptMutation.isPending || declineMutation.isPending}
 												className="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm"
 											>
 												<Check className="w-3 h-3" />
 												<span>Accepter</span>
+											</button>
+											<button
+												onClick={() => handleDeclineInvitation(invitation.token!)}
+												disabled={acceptMutation.isPending || declineMutation.isPending}
+												className="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm"
+											>
+												<X className="w-3 h-3" />
+												<span>Décliner</span>
 											</button>
 										</div>
 									</div>
