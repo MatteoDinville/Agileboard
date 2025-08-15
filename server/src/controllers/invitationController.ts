@@ -58,28 +58,8 @@ export const invitationController = {
 					return res.status(409).json({ error: "Cette personne est déjà membre du projet." });
 				}
 
-				// Ajouter directement l'utilisateur existant au projet
-				const newMember = await prisma.projectMember.create({
-					data: {
-						userId: existingUser.id,
-						projectId
-					},
-					include: {
-						user: {
-							select: {
-								id: true,
-								name: true,
-								email: true,
-							}
-						}
-					}
-				});
-
-				return res.status(201).json({
-					type: 'direct_add',
-					member: newMember,
-					message: 'Utilisateur ajouté directement au projet'
-				});
+				// Pour un utilisateur existant, créer quand même une invitation
+				// au lieu de l'ajouter directement - cela permet un workflow cohérent
 			}
 
 			// Vérifier s'il n'y a pas déjà une invitation en attente pour cet email
@@ -307,6 +287,69 @@ export const invitationController = {
 
 			res.json({
 				message: "Invitation acceptée avec succès",
+				project: invitation.project
+			});
+
+		} catch (err) {
+			next(err);
+		}
+	},
+
+	/**
+	 * POST /api/invite/:token/decline
+	 * Décline une invitation (nécessite que l'utilisateur soit connecté)
+	 */
+	declineInvitation: async (req: AuthRequest, res: Response, next: NextFunction) => {
+		try {
+			const userId = req.userId!;
+			const { token } = req.params;
+
+			// Récupérer l'utilisateur connecté
+			const user = await prisma.user.findUnique({
+				where: { id: userId },
+				select: { id: true, email: true, name: true }
+			});
+
+			if (!user) {
+				return res.status(404).json({ error: "Utilisateur non trouvé." });
+			}
+
+			const invitation = await prisma.projectInvitation.findUnique({
+				where: { token },
+				include: {
+					project: {
+						select: {
+							id: true,
+							title: true
+						}
+					}
+				}
+			});
+
+			if (!invitation) {
+				return res.status(404).json({ error: "Invitation non trouvée." });
+			}
+
+			if (invitation.acceptedAt) {
+				return res.status(400).json({ error: "Cette invitation a déjà été acceptée." });
+			}
+
+			if (invitation.expiresAt < new Date()) {
+				return res.status(400).json({ error: "Cette invitation a expiré." });
+			}
+
+			// Vérifier que l'email de l'invitation correspond à l'utilisateur connecté
+			if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
+				return res.status(403).json({ error: "Cette invitation n'est pas pour votre compte." });
+			}
+
+			// Supprimer l'invitation (équivaut à la décliner)
+			await prisma.projectInvitation.delete({
+				where: { id: invitation.id }
+			});
+
+			res.json({
+				message: "Invitation déclinée avec succès",
 				project: invitation.project
 			});
 

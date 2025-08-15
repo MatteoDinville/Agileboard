@@ -117,6 +117,27 @@ export class InvitationService {
 	}
 
 	/**
+	 * POST /api/invite/:token/decline
+	 * Décline une invitation (nécessite d'être connecté)
+	 */
+	async declineInvitation(token: string): Promise<{ message: string; project: any }> {
+		const res = await fetch(`${API_URL}/invite/${token}/decline`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			credentials: "include",
+		});
+
+		if (!res.ok) {
+			const err = await res.json();
+			throw new Error(err.error || "Erreur lors du refus de l'invitation");
+		}
+
+		return res.json();
+	}
+
+	/**
 	 * GET /api/user/invitations
 	 * Récupère les invitations en attente pour l'utilisateur connecté
 	 */

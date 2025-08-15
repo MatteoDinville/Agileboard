@@ -247,11 +247,26 @@ export const projectController = {
 			const projectId = parseInt(req.params.id, 10);
 
 			const project = await prisma.project.findUnique({
-				where: { id: projectId }
+				where: { id: projectId },
+				include: {
+					members: {
+						select: {
+							userId: true
+						}
+					}
+				}
 			});
 
-			if (!project || project.ownerId !== userId) {
-				return res.status(404).json({ error: "Projet non trouvé ou accès refusé." });
+			if (!project) {
+				return res.status(404).json({ error: "Projet non trouvé." });
+			}
+
+			// Vérifier si l'utilisateur est owner ou membre
+			const isOwner = project.ownerId === userId;
+			const isMember = project.members.some(member => member.userId === userId);
+
+			if (!isOwner && !isMember) {
+				return res.status(403).json({ error: "Accès refusé. Vous n'êtes ni propriétaire ni membre de ce projet." });
 			}
 
 			const members = await prisma.projectMember.findMany({

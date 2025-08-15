@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, Link } from "@tanstack/react-router";
 import { useProject, useProjectMembers } from "../utils/hooks/project";
+import { useAuth } from "../contexts/AuthContext";
 import MembersListOnly from "../components/MembersListOnly";
 import KanbanBoard from "../components/KanbanBoard";
 import Backlog from "../components/Backlog";
@@ -29,6 +30,7 @@ const ProjectDetail: React.FC = () => {
 	const [editingTask, setEditingTask] = useState<Task | null>(null);
 
 	const queryClient = useQueryClient();
+	const { user } = useAuth();
 	const { data: project, isLoading, isError, error } = useProject(projectIdNum);
 	const { data: members } = useProjectMembers(projectIdNum);
 
@@ -487,7 +489,7 @@ const ProjectDetail: React.FC = () => {
 										Gérez les membres de votre projet et leurs accès.
 									</p>
 								</div>
-								<MembersListOnly projectId={projectIdNum} isOwner={true} />
+								<MembersListOnly projectId={projectIdNum} isOwner={project.ownerId === user?.id} />
 							</div>
 						)}
 					</div>

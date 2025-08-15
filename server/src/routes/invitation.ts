@@ -12,4 +12,7 @@ router.get("/:token", invitationController.getInvitation);
 // POST /api/invite/:token/accept → accepter une invitation
 router.post("/:token/accept", authenticateToken, invitationController.acceptInvitation);
 
+// POST /api/invite/:token/decline → décliner une invitation
+router.post("/:token/decline", authenticateToken, invitationController.declineInvitation);
+
 export default router;
