@@ -5,10 +5,20 @@ export interface ProjectInvitation {
 	email: string;
 	createdAt: string;
 	expiresAt: string;
+	acceptedAt?: string;
+	declinedAt?: string;
 	invitedBy: {
 		name: string;
 		email: string;
 	};
+}
+
+export interface InvitationHistory {
+	pending: ProjectInvitation[];
+	accepted: ProjectInvitation[];
+	declined: ProjectInvitation[];
+	expired: ProjectInvitation[];
+	total: number;
 }
 
 export interface InvitationInfo {
@@ -71,6 +81,26 @@ export class InvitationService {
 		if (!res.ok) {
 			const err = await res.json();
 			throw new Error(err.error || "Erreur lors de la récupération des invitations");
+		}
+
+		return res.json();
+	}
+
+	/**
+	 * GET /api/projects/:id/invitations/history
+	 * Récupère l'historique complet des invitations pour un projet
+	 */
+	async getProjectInvitationsHistory(projectId: number): Promise<InvitationHistory> {
+		const res = await fetch(`${API_URL}/projects/${projectId}/invitations/history`, {
+			headers: {
+				"Content-Type": "application/json",
+			},
+			credentials: "include",
+		});
+
+		if (!res.ok) {
+			const err = await res.json();
+			throw new Error(err.error || "Erreur lors de la récupération de l'historique des invitations");
 		}
 
 		return res.json();

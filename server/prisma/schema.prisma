@@ -102,6 +102,7 @@ model ProjectInvitation {
     createdAt   DateTime  @default(now())
     expiresAt   DateTime
     acceptedAt  DateTime?
+    declinedAt  DateTime?
 
     project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
     invitedBy User    @relation(fields: [invitedById], references: [id], onDelete: Cascade)

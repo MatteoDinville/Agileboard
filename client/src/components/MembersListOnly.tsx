@@ -4,6 +4,7 @@ import { useAllUsers } from "../utils/hooks/user";
 import { Mail, Loader2, Users, UserMinus, UserPlus, X, AlertCircle } from "lucide-react";
 import InviteModal from "./InviteModal";
 import PendingInvitations from "./PendingInvitations";
+import InvitationHistory from "./InvitationHistory";
 
 interface MembersListOnlyProps {
 	projectId: number;
@@ -260,6 +261,7 @@ const MembersListOnly: React.FC<MembersListOnlyProps> = ({ projectId, isOwner = 
 				isOpen={showInviteModal}
 				onClose={() => setShowInviteModal(false)}
 			/>
+			<InvitationHistory projectId={projectId} isOwner={isOwner} />
 		</div>
 	);
 };

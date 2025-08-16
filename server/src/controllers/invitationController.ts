@@ -72,7 +72,7 @@ export const invitationController = {
 				}
 			});
 
-			if (existingInvitation && !existingInvitation.acceptedAt) {
+			if (existingInvitation && !existingInvitation.acceptedAt && !existingInvitation.declinedAt) {
 				// Si l'invitation n'a pas expiré, la renvoyer
 				if (existingInvitation.expiresAt > new Date()) {
 					// Optionnel : renvoyer l'email
@@ -89,7 +89,7 @@ export const invitationController = {
 						// Continuer même si l'email échoue
 						return res.json({
 							type: 'resent_no_email',
-							message: 'Invitation existante (email non configuré)',
+							message: 'Invitation existante',
 							invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${existingInvitation.token}`,
 							note: 'Configuration email requise pour l\'envoi automatique'
 						});
@@ -140,7 +140,7 @@ export const invitationController = {
 
 				return res.status(201).json({
 					type: 'invitation_created',
-					message: 'Invitation créée (email non configuré)',
+					message: 'Invitation créée',
 					invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${token}`,
 					note: 'Configuration email requise pour l\'envoi automatique'
 				});
@@ -343,9 +343,10 @@ export const invitationController = {
 				return res.status(403).json({ error: "Cette invitation n'est pas pour votre compte." });
 			}
 
-			// Supprimer l'invitation (équivaut à la décliner)
-			await prisma.projectInvitation.delete({
-				where: { id: invitation.id }
+			// Marquer l'invitation comme déclinée au lieu de la supprimer
+			await prisma.projectInvitation.update({
+				where: { id: invitation.id },
+				data: { declinedAt: new Date() }
 			});
 
 			res.json({
@@ -379,6 +380,7 @@ export const invitationController = {
 				where: {
 					projectId,
 					acceptedAt: null,
+					declinedAt: null,
 					expiresAt: { gt: new Date() }
 				},
 				select: {
@@ -429,6 +431,7 @@ export const invitationController = {
 				where: {
 					email: user.email.toLowerCase(),
 					acceptedAt: null,
+					declinedAt: null,
 					expiresAt: { gt: new Date() }
 				},
 				select: {
@@ -469,6 +472,63 @@ export const invitationController = {
 
 		} catch (err) {
 			console.error('❌ Erreur lors de la récupération des invitations utilisateur:', err);
+			next(err);
+		}
+	},
+
+	/**
+	 * GET /api/projects/:id/invitations/history
+	 * Récupère l'historique complet des invitations pour un projet (acceptées, déclinées, en attente)
+	 */
+	getProjectInvitationsHistory: async (req: AuthRequest, res: Response, next: NextFunction) => {
+		try {
+			const currentUserId = req.userId!;
+			const projectId = parseInt(req.params.id, 10);
+
+			const project = await prisma.project.findUnique({
+				where: { id: projectId }
+			});
+
+			if (!project || project.ownerId !== currentUserId) {
+				return res.status(404).json({ error: "Projet non trouvé ou accès refusé." });
+			}
+
+			const invitations = await prisma.projectInvitation.findMany({
+				where: {
+					projectId
+				},
+				select: {
+					id: true,
+					email: true,
+					createdAt: true,
+					expiresAt: true,
+					acceptedAt: true,
+					declinedAt: true,
+					invitedBy: {
+						select: {
+							name: true,
+							email: true
+						}
+					}
+				},
+				orderBy: { createdAt: 'desc' }
+			});
+
+			// Grouper les invitations par statut
+			const pending = invitations.filter(inv => !inv.acceptedAt && !inv.declinedAt && inv.expiresAt > new Date());
+			const accepted = invitations.filter(inv => inv.acceptedAt);
+			const declined = invitations.filter(inv => inv.declinedAt);
+			const expired = invitations.filter(inv => !inv.acceptedAt && !inv.declinedAt && inv.expiresAt <= new Date());
+
+			res.json({
+				pending,
+				accepted,
+				declined,
+				expired,
+				total: invitations.length
+			});
+
+		} catch (err) {
 			next(err);
 		}
 	}

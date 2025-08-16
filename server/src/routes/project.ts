@@ -38,4 +38,7 @@ router.post("/:id/invite", invitationController.sendInvitation);
 // GET /api/projects/:id/invitations → récupérer les invitations en attente
 router.get("/:id/invitations", invitationController.getProjectInvitations);
 
+// GET /api/projects/:id/invitations/history → récupérer l'historique des invitations
+router.get("/:id/invitations/history", invitationController.getProjectInvitationsHistory);
+
 export default router;
