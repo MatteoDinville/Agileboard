@@ -62,17 +62,16 @@ const InviteModal: React.FC<InviteModalProps> = ({ projectId, isOpen, onClose })
 	return (
 		<div className="fixed inset-0 bg-gradient-to-br from-slate-900/20 via-gray-900/40 to-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
 			<div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
-				{/* En-tête */}
 				<div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl">
 					<div className="flex items-center space-x-3">
 						<div className="p-2 bg-blue-100 rounded-lg">
 							<Mail className="w-5 h-5 text-blue-600" />
 						</div>
-						<h3 className="text-lg font-semibold text-gray-900">Inviter par email</h3>
+						<h3 className="text-lg font-semibold text-gray-900">Inviter un nouvel utilisateur</h3>
 					</div>
 					<button
 						onClick={handleClose}
-						className="p-2 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-all duration-200"
+						className="p-2 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-all duration-200 cursor-pointer"
 					>
 						<X className="w-5 h-5" />
 					</button>
@@ -132,13 +131,14 @@ const InviteModal: React.FC<InviteModalProps> = ({ projectId, isOpen, onClose })
 						)}
 
 						{/* Description */}
-						<div className="bg-gray-50 p-4 rounded-xl">
-							<h4 className="text-sm font-semibold text-gray-700 mb-2">Comment ça marche ?</h4>
-							<ul className="text-xs text-gray-600 space-y-1">
-								<li>• Si la personne a déjà un compte, elle sera ajoutée directement</li>
-								<li>• Sinon, elle recevra un email d'invitation à rejoindre le projet</li>
-								<li>• L'invitation expire dans 7 jours</li>
-							</ul>
+						<div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 flex items-start space-x-3">
+							<AlertCircle className="w-5 h-5 text-yellow-500 mt-1 flex-shrink-0" />
+							<div>
+								<h4 className="text-sm font-semibold text-yellow-700 mb-2">Attention</h4>
+								<p className="text-xs text-yellow-700">
+									L'adresse email saisie doit correspondre à un utilisateur ayant déjà un compte sur la plateforme.
+								</p>
+							</div>
 						</div>
 
 						{/* Actions */}
@@ -146,7 +146,7 @@ const InviteModal: React.FC<InviteModalProps> = ({ projectId, isOpen, onClose })
 							<button
 								type="button"
 								onClick={handleClose}
-								className="flex-1 px-6 py-2.5 text-gray-700 bg-gray-100 border-2 border-transparent rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
+								className="flex-1 px-6 py-2.5 text-gray-700 bg-gray-100 border-2 border-transparent rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium cursor-pointer"
 								disabled={isLoading}
 							>
 								Annuler
@@ -154,7 +154,7 @@ const InviteModal: React.FC<InviteModalProps> = ({ projectId, isOpen, onClose })
 							<button
 								type="submit"
 								disabled={isLoading || !email.trim()}
-								className="flex-1 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
+								className="flex-1 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none cursor-pointer"
 							>
 								{isLoading ? (
 									<>
