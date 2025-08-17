@@ -9,7 +9,7 @@ interface InvitationHistoryProps {
 }
 
 const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwner = false }) => {
-	const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'declined' | 'expired'>('pending');
+	const [activeTab, setActiveTab] = useState<'accepted' | 'declined' | 'expired'>('accepted');
 
 	const {
 		data: history,
@@ -19,7 +19,7 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 	} = useQuery({
 		queryKey: ['project-invitations-history', projectId],
 		queryFn: () => invitationService.getProjectInvitationsHistory(projectId),
-		enabled: isOwner, // Ne charger que si l'utilisateur est propriétaire
+		enabled: isOwner,
 	});
 
 	if (!isOwner) {
@@ -72,8 +72,6 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 
 	const getStatusIcon = (status: string) => {
 		switch (status) {
-			case 'pending':
-				return <Clock className="w-4 h-4 text-yellow-600" />;
 			case 'accepted':
 				return <Check className="w-4 h-4 text-green-600" />;
 			case 'declined':
@@ -87,8 +85,6 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
-			case 'pending':
-				return 'bg-yellow-100 text-yellow-800 border-yellow-200';
 			case 'accepted':
 				return 'bg-green-100 text-green-800 border-green-200';
 			case 'declined':
@@ -102,8 +98,6 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 
 	const getStatusLabel = (status: string) => {
 		switch (status) {
-			case 'pending':
-				return 'En attente';
 			case 'accepted':
 				return 'Acceptée';
 			case 'declined':
@@ -116,7 +110,6 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 	};
 
 	const tabs = [
-		{ key: 'pending' as const, label: 'En attente', count: history.pending.length },
 		{ key: 'accepted' as const, label: 'Acceptées', count: history.accepted.length },
 		{ key: 'declined' as const, label: 'Déclinées', count: history.declined.length },
 		{ key: 'expired' as const, label: 'Expirées', count: history.expired.length },
@@ -151,9 +144,9 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 							<button
 								key={tab.key}
 								onClick={() => setActiveTab(tab.key)}
-								className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === tab.key
-										? 'bg-white text-gray-900 shadow-sm'
-										: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+								className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${activeTab === tab.key
+									? 'bg-white text-gray-900 shadow-sm'
+									: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
 									}`}
 							>
 								{tab.label} ({tab.count})
@@ -174,7 +167,6 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 							Aucune invitation {getStatusLabel(activeTab).toLowerCase()}
 						</h4>
 						<p className="text-gray-600 text-sm">
-							{activeTab === 'pending' && "Il n'y a pas d'invitations en attente pour ce projet."}
 							{activeTab === 'accepted' && "Aucune invitation n'a encore été acceptée."}
 							{activeTab === 'declined' && "Aucune invitation n'a été déclinée."}
 							{activeTab === 'expired' && "Aucune invitation n'a expiré."}
