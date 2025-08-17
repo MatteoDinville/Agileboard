@@ -23,7 +23,8 @@ import {
 
 const ProjectDetail: React.FC = () => {
 	const { projectId } = useParams({ from: "/projects/$projectId" });
-	const projectIdNum = Number(projectId); const [activeTab, setActiveTab] = useState<"overview" | "kanban" | "backlog" | "members">(
+	const projectIdNum = Number(projectId);
+	const [activeTab, setActiveTab] = useState<"overview" | "kanban" | "backlog" | "members">(
 		"overview"
 	);
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -191,15 +192,16 @@ const ProjectDetail: React.FC = () => {
 								</h1>
 							</div>
 						</div>
-
-						<Link
-							to="/projects/$projectId/edit"
-							params={{ projectId: projectId }}
-							className="flex items-center space-x-2 bg-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-colors shadow-lg"
-						>
-							<Edit3 className="w-4 h-4" />
-							<span className="font-medium">Modifier</span>
-						</Link>
+						{project.ownerId === user?.id && (
+							<Link
+								to="/projects/$projectId/edit"
+								params={{ projectId: projectId }}
+								className="flex items-center space-x-2 bg-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-colors shadow-lg"
+							>
+								<Edit3 className="w-4 h-4" />
+								<span className="font-medium">Modifier</span>
+							</Link>
+						)}
 					</div>
 				</div>
 			</header>{" "}
@@ -451,18 +453,33 @@ const ProjectDetail: React.FC = () => {
 													<p className="text-sm text-gray-500">Liste des tâches</p>
 												</div>
 											</button>
-											<button
-												onClick={() => setActiveTab("members")}
-												className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 group cursor-pointer"
-											>
-												<div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-													<Users className="w-4 h-4 text-purple-600" />
-												</div>
-												<div className="text-left">
-													<p className="font-medium text-gray-900">Gérer l'équipe</p>
-													<p className="text-sm text-gray-500">Ajouter/retirer des membres</p>
-												</div>
-											</button>
+											{project.ownerId == user?.id ? (
+												<button
+													onClick={() => setActiveTab("members")}
+													className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 group cursor-pointer"
+												>
+													<div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+														<Users className="w-4 h-4 text-purple-600" />
+													</div>
+													<div className="text-left">
+														<p className="font-medium text-gray-900">Gérer l'équipe</p>
+														<p className="text-sm text-gray-500">Ajouter/retirer des membres</p>
+													</div>
+												</button>
+											) : (
+												<button
+													onClick={() => setActiveTab("members")}
+													className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 group cursor-pointer"
+												>
+													<div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+														<Users className="w-4 h-4 text-purple-600" />
+													</div>
+													<div className="text-left">
+														<p className="font-medium text-gray-900">Voir les membres</p>
+														<p className="text-sm text-gray-500">Consulter les membres de l'équipe</p>
+													</div>
+												</button>
+											)}
 										</div>
 									</div>
 								</div>
