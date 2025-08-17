@@ -16,7 +16,8 @@ import {
 	Loader2,
 	Users,
 	Crown,
-	UserCheck
+	UserCheck,
+	ArrowLeft
 } from "lucide-react";
 
 const ProjectsList: React.FC = () => {
@@ -295,16 +296,24 @@ const ProjectsList: React.FC = () => {
 			<header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between items-center h-16">
-						<div className="flex items-center space-x-3">
-							<div className="w-8 h-8 bg-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-								<Link to="/dashboard" className="text-white">
+						<div className="flex items-center space-x-4">
+							<Link
+								to="/dashboard"
+								className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+							>
+								<ArrowLeft className="w-5 h-5" />
+								<span>Retour</span>
+							</Link>
+							<div className="w-px h-6 bg-gray-300"></div>
+							<div className="flex items-center space-x-3">
+								<div className="w-8 h-8 bg-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
 									<FolderOpen className="w-4 h-4 text-white" />
-								</Link>
+								</div>
+								<h1 className="text-xl font-semibold text-gray-900">Projets</h1>
+								<span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+									{projects?.length}
+								</span>
 							</div>
-							<h1 className="text-xl font-semibold text-gray-900">Mes Projets</h1>
-							<span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-								{filteredProjects.length}
-							</span>
 						</div>
 
 						<Link
