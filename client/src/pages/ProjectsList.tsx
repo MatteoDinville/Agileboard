@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useProjects, useDeleteProject } from "../utils/hooks/project";
 import { useAuth } from "../contexts/AuthContext";
 import { Link } from "@tanstack/react-router";
@@ -59,6 +59,213 @@ const ProjectsList: React.FC = () => {
 		const matchesFilter = filterStatus === "Tous" || project.status === filterStatus;
 		return matchesSearch && matchesFilter;
 	}) || [];
+
+	// Séparer les projets en propriétaire vs membre
+	const { ownedProjects, memberProjects } = useMemo(() => {
+		const owned = filteredProjects.filter(project => project.ownerId === user?.id);
+		const member = filteredProjects.filter(project => project.ownerId !== user?.id);
+		return { ownedProjects: owned, memberProjects: member };
+	}, [filteredProjects, user?.id]);
+
+	const ProjectCard = ({ project, isOwner }: { project: any; isOwner: boolean }) => {
+		const cardStyles = isOwner
+			? "bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-200/60 shadow-amber-100/50"
+			: "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200/60 shadow-blue-100/50";
+
+		const headerIcon = isOwner ? (
+			<div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center shadow-lg">
+				<Crown className="w-4 h-4 text-white" />
+			</div>
+		) : (
+			<div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center shadow-lg">
+				<UserCheck className="w-4 h-4 text-white" />
+			</div>
+		);
+
+		return (
+			<div className={`${cardStyles} rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group ${viewMode === "list" ? "p-8" : "p-7"}`}>
+				{viewMode === "grid" ? (
+					<>
+						<div className="flex items-start justify-between mb-6">
+							{headerIcon}
+							<div className="flex items-center space-x-1">
+								<Link
+									to="/projects/$projectId"
+									params={{ projectId: project.id.toString() }}
+									className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-white/80 rounded-xl transition-all duration-200 hover:scale-110"
+									title="Voir les détails du projet"
+								>
+									<FolderOpen className="w-4 h-4" />
+								</Link>
+								{isOwner && (
+									<>
+										<Link
+											to="/projects/$projectId/edit"
+											params={{ projectId: project.id.toString() }}
+											className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-white/80 rounded-xl transition-all duration-200 hover:scale-110"
+											title="Modifier le projet"
+										>
+											<Edit3 className="w-4 h-4" />
+										</Link>
+										<button
+											onClick={() => handleDelete(project.id)}
+											className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-110"
+											title="Supprimer le projet"
+										>
+											<Trash2 className="w-4 h-4" />
+										</button>
+									</>
+								)}
+							</div>
+						</div>
+
+						<div className="mb-6">
+							<Link
+								to="/projects/$projectId"
+								params={{ projectId: project.id.toString() }}
+								className="block"
+							>
+								<h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-200 hover:cursor-pointer">
+									{project.title}
+								</h3>
+							</Link>
+							<p className="text-slate-600 text-sm leading-relaxed line-clamp-3">
+								{project.description ?? "Aucune description fournie pour ce projet"}
+							</p>
+						</div>
+
+						<div className="flex flex-wrap gap-3 mb-6">
+							<span className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(project.status).class}`}>
+								<div className="flex items-center gap-1.5">
+									<span className="text-sm">{getStatusColor(project.status).emoji}</span>
+									{project.status ?? "Non défini"}
+								</div>
+							</span>
+							<span className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPriorityColor(project.priority).class}`}>
+								<div className="flex items-center gap-1.5">
+									<span className="text-sm">{getPriorityColor(project.priority).emoji}</span>
+									{project.priority ?? "Non définie"}
+								</div>
+							</span>
+							{project.members && project.members.length > 0 && (
+								<span className="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-purple-100 text-purple-800">
+									<div className="flex items-center gap-1.5">
+										<Users className="w-3 h-3" />
+										{project.members.length} membre{project.members.length > 1 ? 's' : ''}
+									</div>
+								</span>
+							)}
+						</div>
+
+						<div className="flex items-center justify-between pt-6 border-t border-slate-100">
+							<div className="flex items-center space-x-2 text-xs text-slate-500">
+								<div className="p-1.5 bg-slate-100 rounded-lg">
+									<Calendar className="w-3.5 h-3.5" />
+								</div>
+								<span className="font-medium">
+									{new Date(project.updatedAt).toLocaleDateString('fr-FR', {
+										day: 'numeric',
+										month: 'short',
+										year: 'numeric'
+									})}
+								</span>
+							</div>
+						</div>
+					</>
+				) : (
+					<div className="flex items-start justify-between">
+						<div className="flex items-start space-x-4 flex-1">
+							{headerIcon}
+							<div className="flex-1">
+								<Link
+									to="/projects/$projectId"
+									params={{ projectId: project.id.toString() }}
+									className="block"
+								>
+									<h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-200 hover:cursor-pointer">
+										{project.title}
+									</h3>
+								</Link>
+								<p className="text-slate-600 text-sm leading-relaxed mb-4">
+									{project.description ?? "Aucune description fournie pour ce projet"}
+								</p>
+
+								<div className="flex items-center justify-between">
+									<div className="flex gap-3">
+										<span className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(project.status).class}`}>
+											<div className="flex items-center gap-1.5">
+												<span className="text-sm">{getStatusColor(project.status).emoji}</span>
+												{project.status ?? "Non défini"}
+											</div>
+										</span>
+										<span className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPriorityColor(project.priority).class}`}>
+											<div className="flex items-center gap-1.5">
+												<span className="text-sm">{getPriorityColor(project.priority).emoji}</span>
+												{project.priority ?? "Non définie"}
+											</div>
+										</span>
+										{project.members && project.members.length > 0 && (
+											<span className="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-purple-100 text-purple-800">
+												<div className="flex items-center gap-1.5">
+													<Users className="w-3 h-3" />
+													{project.members.length} membre{project.members.length > 1 ? 's' : ''}
+												</div>
+											</span>
+										)}
+									</div>
+
+									<div className="flex items-center space-x-3 text-xs text-slate-500">
+										<div className="flex items-center space-x-2">
+											<div className="p-1.5 bg-slate-100 rounded-lg">
+												<Calendar className="w-3.5 h-3.5" />
+											</div>
+											<span className="font-medium">
+												Modifié le {new Date(project.updatedAt).toLocaleDateString('fr-FR', {
+													day: 'numeric',
+													month: 'short',
+													year: 'numeric'
+												})}
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div className="flex items-center space-x-1 ml-4">
+							<Link
+								to="/projects/$projectId"
+								params={{ projectId: project.id.toString() }}
+								className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-white/80 rounded-xl transition-all duration-200 hover:scale-110"
+								title="Voir les détails du projet"
+							>
+								<FolderOpen className="w-4 h-4" />
+							</Link>
+							{isOwner && (
+								<>
+									<Link
+										to="/projects/$projectId/edit"
+										params={{ projectId: project.id.toString() }}
+										className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-white/80 rounded-xl transition-all duration-200 hover:scale-110"
+										title="Modifier le projet"
+									>
+										<Edit3 className="w-4 h-4" />
+									</Link>
+									<button
+										onClick={() => handleDelete(project.id)}
+										className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-110"
+										title="Supprimer le projet"
+									>
+										<Trash2 className="w-4 h-4" />
+									</button>
+								</>
+							)}
+						</div>
+					</div>
+				)}
+			</div>
+		);
+	};
 
 	if (isLoading) {
 		return (
@@ -190,209 +397,66 @@ const ProjectsList: React.FC = () => {
 				)}
 
 				{filteredProjects.length > 0 && (
-					<div className={
-						viewMode === "grid"
-							? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-							: "space-y-6"
-					}>
-						{filteredProjects.map((project) => (
-							<div
-								key={project.id}
-								className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group ${viewMode === "list" ? "p-8" : "p-7"
-									}`}
-							>
-								{viewMode === "grid" ? (
-									<>
-										<div className="flex justify-between items-start mb-6">
-											<div className="flex-1">
-												<Link
-													to="/projects/$projectId"
-													params={{ projectId: project.id.toString() }}
-													className="block"
-												>
-													<h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:bg-blue-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-200 hover:cursor-pointer">
-														{project.title}
-													</h3>
-												</Link>
-												<p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-4">
-													{project.description ?? "Aucune description fournie pour ce projet"}
-												</p>
-											</div>
-										</div>
-
-										<div className="flex flex-wrap gap-3 mb-6">
-											{/* Indicateur Owner/Membre */}
-											{project.ownerId === user?.id ? (
-												<span className="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-yellow-100 text-yellow-800 border border-yellow-200">
-													<div className="flex items-center gap-1.5">
-														<Crown className="w-3 h-3" />
-														Propriétaire
-													</div>
-												</span>
-											) : (
-												<span className="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-blue-100 text-blue-800 border border-blue-200">
-													<div className="flex items-center gap-1.5">
-														<UserCheck className="w-3 h-3" />
-														Membre
-													</div>
-												</span>
-											)}
-
-											<span className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(project.status).class}`}>
-												<div className="flex items-center gap-1.5">
-													<span className="text-sm">{getStatusColor(project.status).emoji}</span>
-													{project.status ?? "Non défini"}
-												</div>
-											</span>
-											<span className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPriorityColor(project.priority).class}`}>
-												<div className="flex items-center gap-1.5">
-													<span className="text-sm">{getPriorityColor(project.priority).emoji}</span>
-													{project.priority ?? "Non définie"}
-												</div>
-											</span>
-											{project.members && project.members.length > 0 && (
-												<span className="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-purple-100 text-purple-800">
-													<div className="flex items-center gap-1.5">
-														<Users className="w-3 h-3" />
-														{project.members.length} membre{project.members.length > 1 ? 's' : ''}
-													</div>
-												</span>
-											)}
-										</div>										<div className="flex items-center justify-between pt-6 border-t border-slate-100">
-											<div className="flex items-center space-x-2 text-xs text-slate-500">
-												<div className="p-1.5 bg-slate-100 rounded-lg">
-													<Calendar className="w-3.5 h-3.5" />
-												</div>
-												<span className="font-medium">
-													{new Date(project.updatedAt).toLocaleDateString('fr-FR', {
-														day: 'numeric',
-														month: 'short',
-														year: 'numeric'
-													})}
-												</span>
-											</div>
-											<div className="flex items-center space-x-1">
-												<Link
-													to="/projects/$projectId"
-													params={{ projectId: project.id.toString() }}
-													className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
-													title="Voir les détails du projet"
-												>
-													<FolderOpen className="w-4 h-4" />
-												</Link>
-												{/* Actions réservées au propriétaire */}
-												{project.ownerId === user?.id && (
-													<>
-														<Link
-															to="/projects/$projectId/edit"
-															params={{ projectId: project.id.toString() }}
-															className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
-															title="Modifier le projet"
-														>
-															<Edit3 className="w-4 h-4" />
-														</Link>
-														<button
-															onClick={() => handleDelete(project.id)}
-															className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
-															title="Supprimer le projet"
-														>
-															<Trash2 className="w-4 h-4" />
-														</button>
-													</>
-												)}
-											</div>
-										</div>
-									</>
-								) : (
-									<div className="flex items-start justify-between">
-										<div className="flex-1 pr-6">
-											<div className="flex items-start justify-between mb-4">
-												<div className="flex-1">
-													<Link
-														to="/projects/$projectId"
-														params={{ projectId: project.id.toString() }}
-														className="block"
-													>
-														<h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-200 hover:cursor-pointer">
-															{project.title}
-														</h3>
-													</Link>
-													<p className="text-slate-600 text-sm leading-relaxed mb-3">
-														{project.description ?? "Aucune description fournie pour ce projet"}
-													</p>
-												</div>
-											</div>
-
-											<div className="flex items-center justify-between">
-												<div className="flex gap-3">
-													<span className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(project.status).class}`}>
-														<div className="flex items-center gap-1.5">
-															<span className="text-sm">{getStatusColor(project.status).emoji}</span>
-															{project.status ?? "Non défini"}
-														</div>
-													</span>
-													<span className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPriorityColor(project.priority).class}`}>
-														<div className="flex items-center gap-1.5">
-															<span className="text-sm">{getPriorityColor(project.priority).emoji}</span>
-															{project.priority ?? "Non définie"}
-														</div>
-													</span>
-													{project.members && project.members.length > 0 && (
-														<span className="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-purple-100 text-purple-800">
-															<div className="flex items-center gap-1.5">
-																<Users className="w-3 h-3" />
-																{project.members.length} membre{project.members.length > 1 ? 's' : ''}
-															</div>
-														</span>
-													)}
-												</div>
-
-												<div className="flex items-center space-x-3 text-xs text-slate-500">
-													<div className="flex items-center space-x-2">
-														<div className="p-1.5 bg-slate-100 rounded-lg">
-															<Calendar className="w-3.5 h-3.5" />
-														</div>
-														<span className="font-medium">
-															Modifié le {new Date(project.updatedAt).toLocaleDateString('fr-FR', {
-																day: 'numeric',
-																month: 'short',
-																year: 'numeric'
-															})}
-														</span>
-													</div>
-												</div>
-											</div>
-										</div>
-
-										<div className="flex items-center space-x-1 ml-4">
-											<Link
-												to="/projects/$projectId"
-												params={{ projectId: project.id.toString() }}
-												className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
-												title="Voir les détails du projet"
-											>
-												<FolderOpen className="w-4 h-4" />
-											</Link>
-											<Link
-												to="/projects/$projectId/edit"
-												params={{ projectId: project.id.toString() }}
-												className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-110"
-												title="Modifier le projet"
-											>
-												<Edit3 className="w-4 h-4" />
-											</Link>
-											<button
-												onClick={() => handleDelete(project.id)}
-												className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-110"
-												title="Supprimer le projet"
-											>
-												<Trash2 className="w-4 h-4" />
-											</button>
-										</div>
+					<div className="space-y-12">
+						{/* Section Mes Projets (Propriétaire) */}
+						{ownedProjects.length > 0 && (
+							<section>
+								<div className="flex items-center space-x-3 mb-6">
+									<div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
+										<Crown className="w-5 h-5 text-white" />
 									</div>
-								)}
-							</div>
-						))}
+									<div>
+										<div className="flex items-center space-x-2">
+											<h2 className="text-2xl font-bold text-gray-900">Mes Projets</h2>
+											<span className="bg-amber-100 text-amber-800 text-xs font-medium px-3 py-1 rounded-full">
+												{ownedProjects.length}
+											</span>
+										</div>
+										<p className="text-gray-600 text-sm">Projets dont vous êtes propriétaire</p>
+									</div>
+								</div>
+
+								<div className={
+									viewMode === "grid"
+										? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+										: "space-y-6"
+								}>
+									{ownedProjects.map((project) => (
+										<ProjectCard key={project.id} project={project} isOwner={true} />
+									))}
+								</div>
+							</section>
+						)}
+
+						{/* Section Projets Collaboratifs (Membre) */}
+						{memberProjects.length > 0 && (
+							<section>
+								<div className="flex items-center space-x-3 mb-6">
+									<div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+										<UserCheck className="w-5 h-5 text-white" />
+									</div>
+									<div>
+										<div className="flex items-center space-x-2">
+											<h2 className="text-2xl font-bold text-gray-900">Projets Collaboratifs</h2>
+											<span className="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full">
+												{memberProjects.length}
+											</span>
+										</div>
+										<p className="text-gray-600 text-sm">Projets où vous êtes membre</p>
+									</div>
+								</div>
+
+								<div className={
+									viewMode === "grid"
+										? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+										: "space-y-6"
+								}>
+									{memberProjects.map((project) => (
+										<ProjectCard key={project.id} project={project} isOwner={false} />
+									))}
+								</div>
+							</section>
+						)}
 					</div>
 				)}
 			</main>
