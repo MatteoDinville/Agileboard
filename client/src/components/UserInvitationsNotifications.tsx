@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Check, X, Clock, Mail } from "lucide-react";
 import { invitationService } from "../services/invitation";
 import { useAuth } from "../contexts/AuthContext";
+import toast from "react-hot-toast";
 
 interface UserInvitationsNotificationsProps {
 	className?: string;
@@ -27,17 +28,44 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 	// Mutation pour accepter une invitation
 	const acceptMutation = useMutation({
 		mutationFn: (token: string) => invitationService.acceptInvitation(token),
-		onSuccess: () => {
+		onSuccess: (_, token) => {
 			queryClient.invalidateQueries({ queryKey: ['user', 'invitations'] });
 			queryClient.invalidateQueries({ queryKey: ['projects'] });
+
+			const invitation = invitations.find(inv => inv.token === token);
+			const projectName = invitation?.project?.title || 'le projet';
+
+			toast.success(`🎉 Vous avez rejoint le projet ${projectName} avec succès !`, {
+				duration: 5000,
+			});
+
 			setIsOpen(false);
+		},
+		onError: (error: unknown) => {
+			const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'acceptation de l\'invitation';
+			toast.error(`❌ ${errorMessage}`, {
+				duration: 5000,
+			});
 		},
 	});
 
 	const declineMutation = useMutation({
 		mutationFn: (token: string) => invitationService.declineInvitation(token),
-		onSuccess: () => {
+		onSuccess: (_, token) => {
 			queryClient.invalidateQueries({ queryKey: ['user', 'invitations'] });
+
+			const invitation = invitations.find(inv => inv.token === token);
+			const projectName = invitation?.project?.title || 'le projet';
+
+			toast.success(`✋ Invitation à ${projectName} déclinée`, {
+				duration: 4000,
+			});
+		},
+		onError: (error: unknown) => {
+			const errorMessage = error instanceof Error ? error.message : 'Erreur lors du refus de l\'invitation';
+			toast.error(`❌ ${errorMessage}`, {
+				duration: 5000,
+			});
 		},
 	});
 

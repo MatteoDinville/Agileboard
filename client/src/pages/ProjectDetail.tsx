@@ -6,6 +6,7 @@ import MembersListOnly from "../components/MembersListOnly";
 import KanbanBoard from "../components/KanbanBoard";
 import Backlog from "../components/Backlog";
 import TaskModal from "../components/TaskModal";
+import ProjectDetailSkeleton from "../components/skeleton/ProjectDetailSkeleton";
 import { taskService, type Task, type CreateTaskData, type UpdateTaskData } from "../services/task";
 import { useQueryClient } from "@tanstack/react-query";
 import { TaskStatus } from "../types/enums";
@@ -14,7 +15,6 @@ import {
 	Edit3,
 	Calendar,
 	AlertCircle,
-	Loader2,
 	FolderOpen,
 	LayoutGrid,
 	Users,
@@ -36,14 +36,7 @@ const ProjectDetail: React.FC = () => {
 	const { data: members } = useProjectMembers(projectIdNum);
 
 	if (isLoading) {
-		return (
-			<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
-				<div className="text-center">
-					<Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-					<p className="text-gray-600">Chargement du projet…</p>
-				</div>
-			</div>
-		);
+		return <ProjectDetailSkeleton />;
 	}
 
 	if (isError || !project) {
@@ -174,20 +167,20 @@ const ProjectDetail: React.FC = () => {
 			<header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between items-center h-16">
-						<div className="flex items-center space-x-4">
+						<div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
 							<Link
 								to="/projects"
-								className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+								className="flex items-center space-x-1 sm:space-x-2 text-gray-600 hover:text-gray-900 transition-colors flex-shrink-0"
 							>
-								<ArrowLeft className="w-5 h-5" />
-								<span>Retour</span>
+								<ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+								<span className="hidden sm:block">Retour</span>
 							</Link>
-							<div className="w-px h-6 bg-gray-300"></div>
-							<div className="flex items-center space-x-3">
-								<div className="w-8 h-8 bg-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-									<FolderOpen className="w-4 h-4 text-white" />
+							<div className="w-px h-4 sm:h-6 bg-gray-300 hidden sm:block"></div>
+							<div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+								<div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+									<FolderOpen className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
 								</div>
-								<h1 className="text-xl font-semibold text-gray-900">
+								<h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
 									{project.title}
 								</h1>
 							</div>
@@ -196,33 +189,33 @@ const ProjectDetail: React.FC = () => {
 							<Link
 								to="/projects/$projectId/edit"
 								params={{ projectId: projectId }}
-								className="flex items-center space-x-2 bg-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-colors shadow-lg"
+								className="flex items-center space-x-1 sm:space-x-2 bg-blue-600 to-purple-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-colors shadow-lg flex-shrink-0"
 							>
 								<Edit3 className="w-4 h-4" />
-								<span className="font-medium">Modifier</span>
+								<span className="font-medium hidden sm:block">Modifier</span>
 							</Link>
 						)}
 					</div>
 				</div>
 			</header>{" "}
-			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-				<div className="bg-white rounded-2xl shadow-lg border border-gray-100 mb-8">
+			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+				<div className="bg-white rounded-2xl shadow-lg border border-gray-100 mb-6 sm:mb-8">
 					<div className="border-b border-gray-200">
-						{" "}
-						<nav className="flex space-x-8 px-8 py-4">
+						<nav className="flex space-x-2 sm:space-x-8 px-4 sm:px-8 py-3 sm:py-4 overflow-x-auto">
 							<button
 								onClick={() => setActiveTab("overview")}
-								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm ${activeTab === "overview"
+								className={`flex items-center space-x-1 sm:space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm whitespace-nowrap ${activeTab === "overview"
 									? "border-blue-500 text-blue-600"
 									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
 									} transition-colors`}
 							>
 								<FolderOpen className="w-4 h-4" />
-								<span>Vue d'ensemble</span>
+								<span className="hidden sm:inline">Vue d'ensemble</span>
+								<span className="sm:hidden">Vue</span>
 							</button>
 							<button
 								onClick={() => setActiveTab("kanban")}
-								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm ${activeTab === "kanban"
+								className={`flex items-center space-x-1 sm:space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm whitespace-nowrap ${activeTab === "kanban"
 									? "border-blue-500 text-blue-600"
 									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
 									} transition-colors`}
@@ -232,7 +225,7 @@ const ProjectDetail: React.FC = () => {
 							</button>
 							<button
 								onClick={() => setActiveTab("backlog")}
-								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm ${activeTab === "backlog"
+								className={`flex items-center space-x-1 sm:space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm whitespace-nowrap ${activeTab === "backlog"
 									? "border-blue-500 text-blue-600"
 									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
 									} transition-colors`}
@@ -242,7 +235,7 @@ const ProjectDetail: React.FC = () => {
 							</button>
 							<button
 								onClick={() => setActiveTab("members")}
-								className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm ${activeTab === "members"
+								className={`flex items-center space-x-1 sm:space-x-2 py-2 px-1 border-b-2 font-medium cursor-pointer text-sm whitespace-nowrap ${activeTab === "members"
 									? "border-blue-500 text-blue-600"
 									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
 									} transition-colors`}
@@ -252,19 +245,30 @@ const ProjectDetail: React.FC = () => {
 							</button>
 						</nav>
 					</div>{" "}
-					<div className="p-8">
+					<div className="p-4 sm:p-6 lg:p-8">
 						{activeTab === "overview" && (
-							<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-								<div className="lg:col-span-2 space-y-8">
+							<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+								<div className="lg:col-span-2 space-y-6 lg:space-y-8">
 									{/* Badges et informations principales */}
-									<div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-										<div className="flex flex-wrap gap-4 mb-6">
+									<div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-100 flex justify-center">
+										<div className="flex flex-wrap gap-2 sm:gap-4 items-center justify-center">
+											{project.ownerId === user?.id && (
+												<span
+													className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-sm border bg-orange-50 text-orange-800 border-orange-200`}
+												>
+													<div className="flex items-center gap-1 sm:gap-2">
+														<span className="font-medium">
+															👑 <span className="hidden sm:inline">Propriétaire</span>
+														</span>
+													</div>
+												</span>
+											)}
 											<span
-												className={`px-4 py-2 rounded-full text-sm font-semibold shadow-sm border ${getStatusColor(project.status).class
+												className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-sm border ${getStatusColor(project.status).class
 													}`}
 											>
-												<div className="flex items-center gap-2">
-													<span className="text-base">
+												<div className="flex items-center gap-1 sm:gap-2">
+													<span className="text-sm sm:text-base">
 														{getStatusColor(project.status).emoji}
 													</span>
 													<span className="font-medium">
@@ -273,10 +277,10 @@ const ProjectDetail: React.FC = () => {
 												</div>
 											</span>
 											<span
-												className={`px-4 py-2 rounded-full text-sm font-semibold shadow-sm border ${getPriorityColor(project.priority).class
+												className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-sm border ${getPriorityColor(project.priority).class
 													}`}
 											>
-												<div className="flex items-center gap-2">
+												<div className="flex items-center gap-1 sm:gap-2">
 													<span className="text-base">
 														{getPriorityColor(project.priority).emoji}
 													</span>
@@ -386,6 +390,30 @@ const ProjectDetail: React.FC = () => {
 											<h3 className="text-lg font-bold text-gray-900">Équipe</h3>
 										</div>
 										<div className="space-y-3">
+											{project.owner && project.ownerId !== user?.id && (
+												<div className="flex items-center space-x-3 p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+													<div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center">
+														<span className="text-xs font-semibold text-white">
+															{(project.owner.name || project.owner.email).charAt(0).toUpperCase()}
+														</span>
+													</div>
+													<div className="flex-1 min-w-0">
+														<div className="flex items-center gap-2">
+															<p className="text-sm font-medium text-gray-900 truncate">
+																{project.owner.name || "Propriétaire"}
+															</p>
+															<span className="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full">
+																👑 Propriétaire
+															</span>
+														</div>
+														<p className="text-xs text-gray-500 truncate">
+															{project.owner.email}
+														</p>
+													</div>
+												</div>
+											)}
+
+											{/* Membres du projet */}
 											{members && members.length > 0 ? (
 												<>
 													{members.slice(0, 3).map((member) => (

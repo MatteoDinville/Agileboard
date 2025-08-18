@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useTaskStatistics, useProjectStatistics } from "../utils/hooks/task";
 import UserInvitationsNotifications from "../components/UserInvitationsNotifications";
+import toast from "react-hot-toast";
 
 const Dashboard: React.FC = () => {
 	const navigate = useNavigate();
@@ -21,6 +22,9 @@ const Dashboard: React.FC = () => {
 	}, [user]);
 
 	const handleLogout = () => {
+		toast.success('À bientôt ! 👋', {
+			duration: 2000,
+		});
 		logout();
 	};
 

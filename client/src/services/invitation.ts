@@ -38,7 +38,7 @@ export interface InvitationInfo {
 }
 
 export interface InvitationResponse {
-	type: 'invitation_sent' | 'direct_add' | 'resent';
+	type: 'invitation_created' | 'resent_no_email' | 'resent' | 'invitation_sent';
 	message: string;
 	member?: any;
 }

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Mail, UserPlus, X, Loader2, Check, AlertCircle } from "lucide-react";
-import { invitationService, InvitationResponse } from "../services/invitation";
+import { Mail, UserPlus, X, Loader2, AlertCircle } from "lucide-react";
+import { invitationService } from "../services/invitation";
 import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 interface InviteModalProps {
 	projectId: number;
@@ -12,7 +13,6 @@ interface InviteModalProps {
 const InviteModal: React.FC<InviteModalProps> = ({ projectId, isOpen, onClose }) => {
 	const [email, setEmail] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
-	const [result, setResult] = useState<InvitationResponse | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
@@ -27,24 +27,55 @@ const InviteModal: React.FC<InviteModalProps> = ({ projectId, isOpen, onClose })
 
 		setIsLoading(true);
 		setError(null);
-		setResult(null);
 
 		try {
 			const response = await invitationService.sendInvitation(projectId, email);
-			setResult(response);
 
 			queryClient.invalidateQueries({ queryKey: ['project-members', projectId] });
 			queryClient.invalidateQueries({ queryKey: ['project-invitations', projectId] });
 
+			if (response.type === 'invitation_created' || response.type === 'invitation_sent') {
+				toast.success('📧 Invitation envoyée avec succès !', {
+					duration: 5000,
+				});
+			} else if (response.type === 'resent_no_email') {
+				toast('Une invitation pour cet email existe déjà.', {
+					duration: 5000,
+					icon: '📩',
+					style: {
+						background: '#f59e0b',
+						color: '#fff',
+					},
+				});
+			} else if (response.type === 'resent') {
+				toast.success('🔄 Invitation renvoyée avec succès !', {
+					duration: 5000,
+				});
+			} else {
+				toast.success('✅ Invitation traitée avec succès !', {
+					duration: 5000,
+				});
+			}
+
 			setTimeout(() => {
-				setEmail("");
-				setResult(null);
-				if (response.type === 'direct_add') {
-					onClose();
-				}
-			}, 2000);
-		} catch (err: any) {
-			setError(err.message);
+				handleClose();
+			}, 500);
+
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue';
+
+			if (errorMessage.includes('vous-même') || errorMessage.includes('propre projet')) {
+				setError(errorMessage);
+			}
+			else if (errorMessage.includes('déjà membre du projet')) {
+				setError(errorMessage);
+			}
+			else {
+				setError(errorMessage);
+				toast.error(`❌ ${errorMessage}`, {
+					duration: 6000,
+				});
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -53,7 +84,6 @@ const InviteModal: React.FC<InviteModalProps> = ({ projectId, isOpen, onClose })
 	const handleClose = () => {
 		setEmail("");
 		setError(null);
-		setResult(null);
 		onClose();
 	};
 

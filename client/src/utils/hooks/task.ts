@@ -3,6 +3,7 @@ import { taskService } from "../../services/task";
 import { useProjects } from "./project";
 import { TaskStatus, TaskPriority } from "../../types/enums";
 import type { Task } from "../../services/task";
+import toast from "react-hot-toast";
 
 export interface TaskStatistics {
 	totalTasks: number;
@@ -32,15 +33,20 @@ export function useAllUserTasks() {
 				return [];
 			}
 
-			// Récupérer toutes les tâches de tous les projets de l'utilisateur
-			const allTasksPromises = projects.map(project =>
-				taskService.getProjectTasks(project.id)
-			);
+			try {
+				const allTasksPromises = projects.map(project =>
+					taskService.getProjectTasks(project.id)
+				);
 
-			const allTasksArrays = await Promise.all(allTasksPromises);
+				const allTasksArrays = await Promise.all(allTasksPromises);
 
-			// Aplatir le tableau de tableaux en un seul tableau
-			return allTasksArrays.flat();
+				return allTasksArrays.flat();
+			} catch (error) {
+				toast.error(`❌ Erreur lors du chargement des tâches: ${error instanceof Error ? error.message : 'Erreur inconnue'}`, {
+					duration: 5000,
+				});
+				throw error;
+			}
 		},
 		enabled: !!projects && projects.length > 0,
 		staleTime: 1000 * 60 * 5, // 5 minutes
@@ -56,29 +62,29 @@ export function useTaskStatistics(): TaskStatistics {
 
 	const totalTasks = tasks.length;
 
-	const completedTasks = tasks.filter(task =>
+	const completedTasks = tasks.filter((task: Task) =>
 		task.status === TaskStatus.TERMINE
 	).length;
 
-	const pendingTasks = tasks.filter(task =>
+	const pendingTasks = tasks.filter((task: Task) =>
 		task.status === TaskStatus.A_FAIRE
 	).length;
 
-	const inProgressTasks = tasks.filter(task =>
+	const inProgressTasks = tasks.filter((task: Task) =>
 		task.status === TaskStatus.EN_COURS
 	).length;
 
-	const urgentTasks = tasks.filter(task =>
+	const urgentTasks = tasks.filter((task: Task) =>
 		task.priority === TaskPriority.URGENTE
 	).length;
 
-	const overdueTasks = tasks.filter(task => {
+	const overdueTasks = tasks.filter((task: Task) => {
 		if (!task.dueDate) return false;
 		const dueDate = new Date(task.dueDate);
 		return dueDate < currentDate && task.status !== TaskStatus.TERMINE;
 	}).length;
 
-	const tasksThisMonth = tasks.filter(task => {
+	const tasksThisMonth = tasks.filter((task: Task) => {
 		const createdDate = new Date(task.createdAt);
 		return createdDate.getMonth() === currentMonth &&
 			createdDate.getFullYear() === currentYear;
@@ -96,9 +102,7 @@ export function useTaskStatistics(): TaskStatistics {
 		tasksThisMonth,
 		completionRate
 	};
-}
-
-export function useProjectStatistics(): ProjectStatistics {
+} export function useProjectStatistics(): ProjectStatistics {
 	const { data: projects = [] } = useProjects();
 
 	const totalProjects = projects.length;
