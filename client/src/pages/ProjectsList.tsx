@@ -109,7 +109,7 @@ const ProjectsList: React.FC = () => {
 										</Link>
 										<button
 											onClick={() => handleDelete(project.id)}
-											className="p-1.5 sm:p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
+											className="p-1.5 sm:p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
 											title="Supprimer le projet"
 										>
 											<Trash2 className="w-4 h-4" />
@@ -260,7 +260,7 @@ const ProjectsList: React.FC = () => {
 										</Link>
 										<button
 											onClick={() => handleDelete(project.id)}
-											className="p-1.5 sm:p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
+											className="p-1.5 sm:p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
 											title="Supprimer le projet"
 										>
 											<Trash2 className="w-4 h-4" />
