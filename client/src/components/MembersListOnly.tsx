@@ -4,6 +4,7 @@ import { Mail, Loader2, Users, UserMinus } from "lucide-react";
 import InviteModal from "./InviteModal";
 import PendingInvitations from "./PendingInvitations";
 import InvitationHistory from "./InvitationHistory";
+import toast from "react-hot-toast";
 
 interface MembersListOnlyProps {
 	projectId: number;
@@ -17,8 +18,20 @@ const MembersListOnly: React.FC<MembersListOnlyProps> = ({ projectId, isOwner = 
 	const removeMemberMutation = useRemoveProjectMember();
 
 	const handleRemoveMember = (userId: number) => {
-		if (confirm("Voulez-vous vraiment retirer ce membre du projet ?")) {
-			removeMemberMutation.mutate({ projectId, userId });
+		try {
+			if (confirm("Voulez-vous vraiment retirer ce membre du projet ?")) {
+				removeMemberMutation.mutate({ projectId, userId });
+				toast.success("Membre retiré avec succès", {
+					icon: <UserMinus className="text-red-600 w-6 h-6" />,
+					duration: 5000,
+					style: {
+						backgroundColor: "#ffebee",
+						border: "1px solid #ef9a9a",
+					},
+				});
+			}
+		} catch {
+			toast.error("Erreur lors de la suppression du membre");
 		}
 	};
 

@@ -1,5 +1,3 @@
-// frontend/src/pages/ProjectForm.tsx
-
 import React, { useEffect, useState } from "react";
 import {
 	useCreateProject,
@@ -50,7 +48,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 				{ id: projectId, data: { title, description, status, priority } },
 				{
 					onSuccess: () => {
-						navigate({ to: "/projects" });
+						navigate({ to: `/projects/${projectId}` });
 					},
 				}
 			);

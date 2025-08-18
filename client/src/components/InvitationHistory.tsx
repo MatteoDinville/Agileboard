@@ -130,9 +130,6 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 							<h3 className="text-base sm:text-lg font-semibold text-gray-900">
 								Historique des invitations
 							</h3>
-							<p className="text-sm text-gray-600">
-								{history.total} invitation{history.total > 1 ? 's' : ''} au total
-							</p>
 						</div>
 					</div>
 				</div>
@@ -167,9 +164,9 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 							Aucune invitation {getStatusLabel(activeTab).toLowerCase()}
 						</h4>
 						<p className="text-gray-600 text-sm">
-							{activeTab === 'accepted' && "Aucune invitation n'a encore été acceptée."}
-							{activeTab === 'declined' && "Aucune invitation n'a été déclinée."}
-							{activeTab === 'expired' && "Aucune invitation n'a expiré."}
+							{activeTab === 'accepted'}
+							{activeTab === 'declined'}
+							{activeTab === 'expired'}
 						</p>
 					</div>
 				) : (

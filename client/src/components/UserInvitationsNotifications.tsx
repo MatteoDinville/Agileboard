@@ -35,8 +35,12 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 			const invitation = invitations.find(inv => inv.token === token);
 			const projectName = invitation?.project?.title || 'le projet';
 
-			toast.success(`🎉 Vous avez rejoint le projet ${projectName} avec succès !`, {
+			toast.success(`Vous avez rejoint le projet ${projectName} avec succès 🎉 !`, {
+				icon: <Check className="text-green-500 w-10 h-10" />,
 				duration: 5000,
+				style: {
+					background: '#DCFCE7',
+				},
 			});
 
 			setIsOpen(false);
@@ -163,7 +167,7 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 											<button
 												onClick={() => handleAcceptInvitation(invitation.token!)}
 												disabled={acceptMutation.isPending || declineMutation.isPending}
-												className="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm"
+												className="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm cursor-pointer"
 											>
 												<Check className="w-3 h-3" />
 												<span>Accepter</span>
@@ -171,7 +175,7 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 											<button
 												onClick={() => handleDeclineInvitation(invitation.token!)}
 												disabled={acceptMutation.isPending || declineMutation.isPending}
-												className="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm"
+												className="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm cursor-pointer"
 											>
 												<X className="w-3 h-3" />
 												<span>Décliner</span>

@@ -1,7 +1,8 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Mail, Clock, User, Loader2, AlertCircle, Trash2, RefreshCw } from "lucide-react";
+import { Mail, Clock, User, Loader2, AlertCircle, Trash2, RefreshCw, Check } from "lucide-react";
 import { invitationService, ProjectInvitation } from "../services/invitation";
+import toast from "react-hot-toast";
 
 interface PendingInvitationsProps {
 	projectId: number;
@@ -24,7 +25,11 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOw
 			invitationService.deleteInvitation(projectId, invitationId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['project-invitations', projectId] });
-			toast.success('🗑️ Invitation supprimée avec succès !', {
+			toast.success('Invitation supprimée avec succès 🗑️ !', {
+				icon: <Check className="text-green-500" />,
+				style: {
+					background: '#DCFCE7',
+				},
 				duration: 4000,
 			});
 		},
@@ -151,6 +156,17 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOw
 								}`}>
 								{getTimeUntilExpiry(invitation.expiresAt)}
 							</span>
+
+							<div className="flex gap-1 sm:gap-2">
+								<button
+									onClick={() => handleDeleteInvitation(invitation.id, invitation.email)}
+									disabled={deleteInvitationMutation.isPending}
+									title="Supprimer l'invitation"
+									className="group"
+								>
+									<Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 cursor-pointer transition-transform duration-150 group-hover:scale-125" />
+								</button>
+							</div>
 						</div>
 					</div>
 				))}
