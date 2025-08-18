@@ -60,6 +60,14 @@ export class InvitationService {
 
 		if (!res.ok) {
 			const err = await res.json();
+
+			if (res.status === 409) {
+				if (err.type) {
+					return err; // Retourner la réponse pour gérer le renvoi d'invitation
+				}
+				throw new Error(err.error || "Erreur lors de l'envoi de l'invitation");
+			}
+
 			throw new Error(err.error || "Erreur lors de l'envoi de l'invitation");
 		}
 
@@ -185,6 +193,25 @@ export class InvitationService {
 		}
 
 		return res.json();
+	}
+
+	/**
+	 * DELETE /api/projects/:id/invitations/:invitationId
+	 * Supprime une invitation en attente
+	 */
+	async deleteInvitation(projectId: number, invitationId: number): Promise<void> {
+		const res = await fetch(`${API_URL}/projects/${projectId}/invitations/${invitationId}`, {
+			method: "DELETE",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			credentials: "include",
+		});
+
+		if (!res.ok) {
+			const err = await res.json();
+			throw new Error(err.error || "Erreur lors de la suppression de l'invitation");
+		}
 	}
 }
 

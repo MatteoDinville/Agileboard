@@ -38,12 +38,20 @@ export const invitationController = {
 				return res.status(404).json({ error: "Projet non trouvé ou accès refusé." });
 			}
 
+			if (email.toLowerCase() === project.owner.email.toLowerCase()) {
+				return res.status(400).json({ error: "Vous ne pouvez pas vous inviter vous-même à votre propre projet." });
+			}
+
 			// Vérifier si l'utilisateur avec cet email existe déjà
 			const existingUser = await prisma.user.findUnique({
 				where: { email: email.toLowerCase() }
 			});
 
 			if (existingUser) {
+				if (existingUser.id === currentUserId) {
+					return res.status(400).json({ error: "Vous ne pouvez pas vous inviter vous-même à votre propre projet." });
+				}
+
 				// Si l'utilisateur existe, vérifier s'il n'est pas déjà membre
 				const existingMember = await prisma.projectMember.findUnique({
 					where: {
@@ -105,6 +113,10 @@ export const invitationController = {
 						where: { id: existingInvitation.id }
 					});
 				}
+			} else if (existingInvitation && (existingInvitation.acceptedAt || existingInvitation.declinedAt)) {
+				await prisma.projectInvitation.delete({
+					where: { id: existingInvitation.id }
+				});
 			}
 
 			// Créer une nouvelle invitation
@@ -531,5 +543,42 @@ export const invitationController = {
 		} catch (err) {
 			next(err);
 		}
-	}
+	},
+
+	/**
+	 * DELETE /api/projects/:id/invitations/:invitationId
+	 * Supprime une invitation en attente
+	 */
+	deleteInvitation: async (req: AuthRequest, res: Response, next: NextFunction) => {
+		try {
+			const currentUserId = req.userId!;
+			const projectId = parseInt(req.params.id, 10);
+			const invitationId = parseInt(req.params.invitationId, 10);
+
+			const project = await prisma.project.findUnique({
+				where: { id: projectId }
+			});
+
+			if (!project || project.ownerId !== currentUserId) {
+				return res.status(404).json({ error: "Projet non trouvé ou accès refusé." });
+			}
+
+			const invitation = await prisma.projectInvitation.findUnique({
+				where: { id: invitationId }
+			});
+
+			if (!invitation || invitation.projectId !== projectId) {
+				return res.status(404).json({ error: "Invitation non trouvée." });
+			}
+
+			await prisma.projectInvitation.delete({
+				where: { id: invitationId }
+			});
+
+			res.status(204).send();
+
+		} catch (err) {
+			next(err);
+		}
+	},
 };

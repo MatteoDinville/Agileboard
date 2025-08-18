@@ -41,4 +41,7 @@ router.get("/:id/invitations", invitationController.getProjectInvitations);
 // GET /api/projects/:id/invitations/history → récupérer l'historique des invitations
 router.get("/:id/invitations/history", invitationController.getProjectInvitationsHistory);
 
+// DELETE /api/projects/:id/invitations/:invitationId → supprimer une invitation
+router.delete("/:id/invitations/:invitationId", invitationController.deleteInvitation);
+
 export default router;

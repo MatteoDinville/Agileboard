@@ -387,14 +387,27 @@ export const projectController = {
 				return res.status(404).json({ error: "Membre non trouvé dans ce projet." });
 			}
 
-			await prisma.projectMember.delete({
-				where: {
-					userId_projectId: {
-						userId: memberUserId,
-						projectId
-					}
-				}
+			const userToRemove = await prisma.user.findUnique({
+				where: { id: memberUserId },
+				select: { email: true }
 			});
+
+			await prisma.$transaction([
+				prisma.projectMember.delete({
+					where: {
+						userId_projectId: {
+							userId: memberUserId,
+							projectId
+						}
+					}
+				}),
+				...(userToRemove ? [prisma.projectInvitation.deleteMany({
+					where: {
+						projectId: projectId,
+						email: userToRemove.email.toLowerCase()
+					}
+				})] : [])
+			]);
 
 			res.status(204).send();
 		} catch (err) {

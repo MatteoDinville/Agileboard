@@ -19,6 +19,29 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOw
 		enabled: isOwner,
 	});
 
+	const deleteInvitationMutation = useMutation({
+		mutationFn: ({ invitationId }: { invitationId: number }) =>
+			invitationService.deleteInvitation(projectId, invitationId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['project-invitations', projectId] });
+			toast.success('🗑️ Invitation supprimée avec succès !', {
+				duration: 4000,
+			});
+		},
+		onError: (error: Error) => {
+			toast.error(`❌ ${error.message}`, {
+				duration: 6000,
+			});
+		}
+	});
+
+
+	const handleDeleteInvitation = (invitationId: number, email: string) => {
+		if (confirm(`Voulez-vous vraiment supprimer l'invitation pour ${email} ?`)) {
+			deleteInvitationMutation.mutate({ invitationId });
+		}
+	};
+
 	if (!isOwner) {
 		return null;
 	}
