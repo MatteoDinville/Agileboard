@@ -44,13 +44,13 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 
 	if (isError || !history) {
 		return (
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-				<div className="flex items-center space-x-3 mb-4">
-					<div className="p-2 bg-red-100 rounded-lg">
-						<X className="w-5 h-5 text-red-600" />
+			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+				<div className="flex items-center space-x-2 sm:space-x-3 mb-4">
+					<div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
+						<X className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
 					</div>
 					<div>
-						<h3 className="text-lg font-semibold text-gray-900">Historique des invitations</h3>
+						<h3 className="text-base sm:text-lg font-semibold text-gray-900">Historique des invitations</h3>
 						<p className="text-sm text-red-600">
 							{error instanceof Error ? error.message : "Erreur lors du chargement"}
 						</p>
@@ -120,14 +120,14 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 	return (
 		<div className="bg-white rounded-xl shadow-sm border border-gray-200">
 			{/* En-tête */}
-			<div className="p-6 border-b border-gray-200">
+			<div className="p-4 sm:p-6 border-b border-gray-200">
 				<div className="flex items-center justify-between">
-					<div className="flex items-center space-x-3">
-						<div className="p-2 bg-indigo-100 rounded-lg">
-							<History className="w-5 h-5 text-indigo-600" />
+					<div className="flex items-center space-x-2 sm:space-x-3">
+						<div className="p-1.5 sm:p-2 bg-indigo-100 rounded-lg">
+							<History className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
 						</div>
 						<div>
-							<h3 className="text-lg font-semibold text-gray-900">
+							<h3 className="text-base sm:text-lg font-semibold text-gray-900">
 								Historique des invitations
 							</h3>
 							<p className="text-sm text-gray-600">
@@ -139,12 +139,12 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 
 				{/* Onglets */}
 				<div className="mt-4">
-					<div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+					<div className="flex space-x-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
 						{tabs.map((tab) => (
 							<button
 								key={tab.key}
 								onClick={() => setActiveTab(tab.key)}
-								className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${activeTab === tab.key
+								className={`flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap ${activeTab === tab.key
 									? 'bg-white text-gray-900 shadow-sm'
 									: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
 									}`}
@@ -157,13 +157,13 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 			</div>
 
 			{/* Contenu */}
-			<div className="p-6">
+			<div className="p-4 sm:p-6">
 				{currentInvitations.length === 0 ? (
-					<div className="text-center py-8">
-						<div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+					<div className="text-center py-6 sm:py-8">
+						<div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
 							{getStatusIcon(activeTab)}
 						</div>
-						<h4 className="text-lg font-medium text-gray-900 mb-2">
+						<h4 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
 							Aucune invitation {getStatusLabel(activeTab).toLowerCase()}
 						</h4>
 						<p className="text-gray-600 text-sm">
@@ -173,46 +173,48 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 						</p>
 					</div>
 				) : (
-					<div className="space-y-4">
+					<div className="space-y-3 sm:space-y-4">
 						{currentInvitations.map((invitation) => (
 							<div
 								key={invitation.id}
-								className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+								className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors"
 							>
-								<div className="flex items-start justify-between">
-									<div className="flex-1">
-										<div className="flex items-center space-x-3 mb-2">
-											<Mail className="w-4 h-4 text-gray-400" />
-											<span className="font-medium text-gray-900">
-												{invitation.email}
-											</span>
-											<span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(activeTab)}`}>
+								<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
+									<div className="flex-1 min-w-0">
+										<div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
+											<div className="flex items-center space-x-2">
+												<Mail className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" />
+												<span className="font-medium text-gray-900 text-sm sm:text-base truncate">
+													{invitation.email}
+												</span>
+											</div>
+											<span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(activeTab)} self-start`}>
 												{getStatusLabel(activeTab)}
 											</span>
 										</div>
 
-										<div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-											<div className="flex items-center space-x-2">
-												<User className="w-3 h-3" />
-												<span>Invité par {invitation.invitedBy.name || invitation.invitedBy.email}</span>
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+											<div className="flex items-center space-x-1 sm:space-x-2">
+												<User className="w-3 h-3 flex-shrink-0" />
+												<span className="truncate">Invité par {invitation.invitedBy.name || invitation.invitedBy.email}</span>
 											</div>
-											<div className="flex items-center space-x-2">
-												<Calendar className="w-3 h-3" />
+											<div className="flex items-center space-x-1 sm:space-x-2">
+												<Calendar className="w-3 h-3 flex-shrink-0" />
 												<span>Créée le {formatDate(invitation.createdAt)}</span>
 											</div>
-											<div className="flex items-center space-x-2">
-												<Clock className="w-3 h-3" />
+											<div className="flex items-center space-x-1 sm:space-x-2">
+												<Clock className="w-3 h-3 flex-shrink-0" />
 												<span>Expire le {formatDate(invitation.expiresAt)}</span>
 											</div>
 											{invitation.acceptedAt && (
-												<div className="flex items-center space-x-2">
-													<Check className="w-3 h-3 text-green-600" />
+												<div className="flex items-center space-x-1 sm:space-x-2">
+													<Check className="w-3 h-3 text-green-600 flex-shrink-0" />
 													<span>Acceptée le {formatDate(invitation.acceptedAt)}</span>
 												</div>
 											)}
 											{invitation.declinedAt && (
-												<div className="flex items-center space-x-2">
-													<X className="w-3 h-3 text-red-600" />
+												<div className="flex items-center space-x-1 sm:space-x-2">
+													<X className="w-3 h-3 text-red-600 flex-shrink-0" />
 													<span>Déclinée le {formatDate(invitation.declinedAt)}</span>
 												</div>
 											)}
