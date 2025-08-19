@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
 import { emailService } from "../services/emailService";
 import { AuthRequest } from "../middleware/auth.middleware";
+import { emitWarning } from "process";
 
 let prisma: PrismaClient = new PrismaClient();
 export function setPrismaInstance(instance: PrismaClient) {
@@ -11,7 +12,7 @@ export function setPrismaInstance(instance: PrismaClient) {
 export const invitationController = {
 	/**
 	 * POST /api/projects/:id/invite
-	 * Envoie une invitation par email pour rejoindre un projet
+	 * Crée une invitation pour rejoindre un projet
 	 * Corps attendu : { email: string }
 	 */
 	sendInvitation: async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -24,7 +25,6 @@ export const invitationController = {
 				return res.status(400).json({ error: "Email valide requis." });
 			}
 
-			// Vérifier que le projet existe et que l'utilisateur en est propriétaire
 			const project = await prisma.project.findUnique({
 				where: { id: projectId },
 				include: {
@@ -42,7 +42,6 @@ export const invitationController = {
 				return res.status(400).json({ error: "Vous ne pouvez pas vous inviter vous-même à votre propre projet." });
 			}
 
-			// Vérifier si l'utilisateur avec cet email existe déjà
 			const existingUser = await prisma.user.findUnique({
 				where: { email: email.toLowerCase() }
 			});
@@ -52,7 +51,6 @@ export const invitationController = {
 					return res.status(400).json({ error: "Vous ne pouvez pas vous inviter vous-même à votre propre projet." });
 				}
 
-				// Si l'utilisateur existe, vérifier s'il n'est pas déjà membre
 				const existingMember = await prisma.projectMember.findUnique({
 					where: {
 						userId_projectId: {
@@ -65,12 +63,7 @@ export const invitationController = {
 				if (existingMember) {
 					return res.status(409).json({ error: "Cette personne est déjà membre du projet." });
 				}
-
-				// Pour un utilisateur existant, créer quand même une invitation
-				// au lieu de l'ajouter directement - cela permet un workflow cohérent
 			}
-
-			// Vérifier s'il n'y a pas déjà une invitation en attente pour cet email
 			const existingInvitation = await prisma.projectInvitation.findUnique({
 				where: {
 					email_projectId: {
@@ -81,34 +74,31 @@ export const invitationController = {
 			});
 
 			if (existingInvitation && !existingInvitation.acceptedAt && !existingInvitation.declinedAt) {
-				// Si l'invitation n'a pas expiré, la renvoyer
 				if (existingInvitation.expiresAt > new Date()) {
-					// Optionnel : renvoyer l'email
-					try {
-						await emailService.sendProjectInvitation(
-							email.toLowerCase(),
-							project.owner.name || project.owner.email,
-							project.title,
-							existingInvitation.token
-						);
-						console.log(`✅ Email d'invitation renvoyé à ${email.toLowerCase()}`);
-					} catch (emailError) {
-						console.warn('Erreur envoi email:', emailError);
-						// Continuer même si l'email échoue
-						return res.json({
-							type: 'resent_no_email',
-							message: 'Invitation existante',
-							invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${existingInvitation.token}`,
-							note: 'Configuration email requise pour l\'envoi automatique'
+					if (existingUser) {
+						const isStillMember = await prisma.projectMember.findUnique({
+							where: {
+								userId_projectId: {
+									userId: existingUser.id,
+									projectId
+								}
+							}
 						});
+
+						if (isStillMember) {
+							await prisma.projectInvitation.delete({
+								where: { id: existingInvitation.id }
+							});
+							return res.status(409).json({ error: "Cette personne est déjà membre du projet." });
+						}
 					}
 
-					return res.json({
-						type: 'resent',
-						message: 'Invitation renvoyée par email'
+					return res.status(409).json({
+						type: 'pending_invitation_exists',
+						message: 'Une invitation est déjà en attente pour cet email.',
+						invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${existingInvitation.token}`
 					});
 				} else {
-					// Supprimer l'ancienne invitation expirée
 					await prisma.projectInvitation.delete({
 						where: { id: existingInvitation.id }
 					});
@@ -119,48 +109,24 @@ export const invitationController = {
 				});
 			}
 
-			// Créer une nouvelle invitation
 			const token = emailService.generateInvitationToken();
 			const expiresAt = new Date();
-			expiresAt.setDate(expiresAt.getDate() + 7); // Expire dans 7 jours
+			expiresAt.setDate(expiresAt.getDate() + 7);
 
-			const invitation = await prisma.projectInvitation.create({
+			await prisma.projectInvitation.create({
 				data: {
 					email: email.toLowerCase(),
-					token,
 					projectId,
 					invitedById: currentUserId,
+					token,
 					expiresAt
 				}
 			});
 
-			// Envoyer l'email d'invitation
-			try {
-				await emailService.sendProjectInvitation(
-					email.toLowerCase(),
-					project.owner.name || project.owner.email,
-					project.title,
-					token
-				);
-				console.log(`✅ Email d'invitation envoyé à ${email.toLowerCase()}`);
-			} catch (emailError) {
-				console.error('Erreur envoi email:', emailError);
-
-				// Ne pas supprimer l'invitation si l'email échoue
-				// L'utilisateur peut toujours utiliser le lien directement
-				console.warn(`⚠️ Email non envoyé à ${email.toLowerCase()}, mais l'invitation est créée avec le token: ${token}`);
-
-				return res.status(201).json({
-					type: 'invitation_created',
-					message: 'Invitation créée',
-					invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${token}`,
-					note: 'Configuration email requise pour l\'envoi automatique'
-				});
-			}
-
 			res.status(201).json({
-				type: 'invitation_sent',
-				message: 'Invitation envoyée par email'
+				type: 'invitation_created',
+				message: 'Invitation créée avec succès',
+				invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${token}`
 			});
 
 		} catch (err) {
@@ -229,7 +195,6 @@ export const invitationController = {
 			const userId = req.userId!;
 			const { token } = req.params;
 
-			// Récupérer l'utilisateur connecté
 			const user = await prisma.user.findUnique({
 				where: { id: userId },
 				select: { id: true, email: true, name: true }
@@ -258,12 +223,10 @@ export const invitationController = {
 				return res.status(400).json({ error: "Cette invitation a expiré." });
 			}
 
-			// Vérifier que l'email de l'invitation correspond à l'utilisateur connecté
 			if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
 				return res.status(403).json({ error: "Cette invitation n'est pas pour votre compte." });
 			}
 
-			// Vérifier si l'utilisateur n'est pas déjà membre
 			const existingMember = await prisma.projectMember.findUnique({
 				where: {
 					userId_projectId: {
@@ -274,7 +237,6 @@ export const invitationController = {
 			});
 
 			if (existingMember) {
-				// Marquer l'invitation comme acceptée même si l'utilisateur est déjà membre
 				await prisma.projectInvitation.update({
 					where: { id: invitation.id },
 					data: { acceptedAt: new Date() }
@@ -283,7 +245,6 @@ export const invitationController = {
 				return res.status(400).json({ error: "Vous êtes déjà membre de ce projet." });
 			}
 
-			// Transaction pour ajouter le membre et marquer l'invitation comme acceptée
 			await prisma.$transaction([
 				prisma.projectMember.create({
 					data: {
@@ -316,7 +277,6 @@ export const invitationController = {
 			const userId = req.userId!;
 			const { token } = req.params;
 
-			// Récupérer l'utilisateur connecté
 			const user = await prisma.user.findUnique({
 				where: { id: userId },
 				select: { id: true, email: true, name: true }
@@ -350,12 +310,10 @@ export const invitationController = {
 				return res.status(400).json({ error: "Cette invitation a expiré." });
 			}
 
-			// Vérifier que l'email de l'invitation correspond à l'utilisateur connecté
 			if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
 				return res.status(403).json({ error: "Cette invitation n'est pas pour votre compte." });
 			}
 
-			// Marquer l'invitation comme déclinée au lieu de la supprimer
 			await prisma.projectInvitation.update({
 				where: { id: invitation.id },
 				data: { declinedAt: new Date() }
@@ -424,20 +382,15 @@ export const invitationController = {
 	getUserInvitations: async (req: AuthRequest, res: Response, next: NextFunction) => {
 		try {
 			const currentUserId = req.userId!;
-			console.log(`🔍 Recherche des invitations pour l'utilisateur ${currentUserId}`);
 
-			// Récupérer l'utilisateur pour obtenir son email
 			const user = await prisma.user.findUnique({
 				where: { id: currentUserId },
 				select: { email: true }
 			});
 
 			if (!user) {
-				console.log(`❌ Utilisateur ${currentUserId} non trouvé`);
 				return res.status(404).json({ error: "Utilisateur non trouvé." });
 			}
-
-			console.log(`📧 Recherche des invitations pour l'email: ${user.email}`);
 
 			const invitations = await prisma.projectInvitation.findMany({
 				where: {
@@ -469,9 +422,6 @@ export const invitationController = {
 				orderBy: { createdAt: 'desc' }
 			});
 
-			console.log(`📨 Trouvé ${invitations.length} invitation(s) pour ${user.email}`);
-
-			// Formater les données pour correspondre à l'interface InvitationInfo
 			const formattedInvitations = invitations.map(inv => ({
 				email: inv.email,
 				project: inv.project,
@@ -483,7 +433,6 @@ export const invitationController = {
 			res.json(formattedInvitations);
 
 		} catch (err) {
-			console.error('❌ Erreur lors de la récupération des invitations utilisateur:', err);
 			next(err);
 		}
 	},
@@ -526,7 +475,6 @@ export const invitationController = {
 				orderBy: { createdAt: 'desc' }
 			});
 
-			// Grouper les invitations par statut
 			const pending = invitations.filter(inv => !inv.acceptedAt && !inv.declinedAt && inv.expiresAt > new Date());
 			const accepted = invitations.filter(inv => inv.acceptedAt);
 			const declined = invitations.filter(inv => inv.declinedAt);

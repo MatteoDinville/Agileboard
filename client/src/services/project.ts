@@ -39,58 +39,44 @@ export interface ProjectInput {
 	priority?: ProjectPriority;
 }
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+import { api } from "./api";
+import { AxiosError } from "axios";
 
 export const projectService = {
 	/**
 	 * GET /api/projects
 	 */
 	async fetchProjects(): Promise<Project[]> {
-		const res = await fetch(`${API_URL}/projects`, {
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include",
-		});
-		if (!res.ok) {
-			throw new Error("Erreur lors de la récupération des projets");
+		try {
+			const { data } = await api.get("/projects");
+			return data;
+		} catch (error: unknown) {
+			throw new Error((error as AxiosError<{ error?: string }>).response?.data?.error || "Erreur lors de la récupération des projets");
 		}
-		return res.json();
 	},
 
 	/**
 	 * GET /api/projects/:id
 	 */
 	async fetchProjectById(id: number): Promise<Project> {
-		const res = await fetch(`${API_URL}/projects/${id}`, {
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include",
-		});
-		if (!res.ok) {
-			throw new Error("Erreur : Projet introuvable ou accès refusé");
+		try {
+			const { data } = await api.get(`/projects/${id}`);
+			return data;
+		} catch (error: unknown) {
+			throw new Error((error as AxiosError<{ error?: string }>).response?.data?.error || "Erreur : Projet introuvable ou accès refusé");
 		}
-		return res.json();
 	},
 
 	/**
 	 * POST /api/projects
 	 */
 	async createProject(data: ProjectInput): Promise<Project> {
-		const res = await fetch(`${API_URL}/projects`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include",
-			body: JSON.stringify(data),
-		});
-		if (!res.ok) {
-			const err = await res.json();
-			throw new Error(err.error || "Erreur création projet");
+		try {
+			const { data: response } = await api.post("/projects", data);
+			return response;
+		} catch (error: unknown) {
+			throw new Error((error as AxiosError<{ error?: string }>).response?.data?.error || "Erreur création projet");
 		}
-		return res.json();
 	},
 
 	/**
@@ -100,35 +86,22 @@ export const projectService = {
 		id: number,
 		data: ProjectInput
 	): Promise<Project> {
-		const res = await fetch(`${API_URL}/projects/${id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include",
-			body: JSON.stringify(data),
-		});
-		if (!res.ok) {
-			const err = await res.json();
-			throw new Error(err.error || "Erreur mise à jour projet");
+		try {
+			const { data: response } = await api.put(`/projects/${id}`, data);
+			return response;
+		} catch (error: unknown) {
+			throw new Error((error as AxiosError<{ error?: string }>).response?.data?.error || "Erreur mise à jour projet");
 		}
-		return res.json();
 	},
 
 	/**
 	 * DELETE /api/projects/:id
 	 */
 	async deleteProject(id: number): Promise<void> {
-		const res = await fetch(`${API_URL}/projects/${id}`, {
-			method: "DELETE",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include",
-		});
-		if (!res.ok) {
-			const err = await res.json();
-			throw new Error(err.error || "Erreur suppression projet");
+		try {
+			await api.delete(`/projects/${id}`);
+		} catch (error: unknown) {
+			throw new Error((error as AxiosError<{ error?: string }>).response?.data?.error || "Erreur suppression projet");
 		}
 	},
 
@@ -136,51 +109,34 @@ export const projectService = {
 	 * GET /api/projects/:id/members
 	 */
 	async fetchProjectMembers(projectId: number): Promise<ProjectMember[]> {
-		const res = await fetch(`${API_URL}/projects/${projectId}/members`, {
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include",
-		});
-		if (!res.ok) {
-			throw new Error("Erreur lors de la récupération des membres");
+		try {
+			const { data } = await api.get(`/projects/${projectId}/members`);
+			return data;
+		} catch (error: unknown) {
+			throw new Error((error as AxiosError<{ error?: string }>).response?.data?.error || "Erreur lors de la récupération des membres");
 		}
-		return res.json();
 	},
 
 	/**
 	 * POST /api/projects/:id/members
 	 */
 	async addProjectMember(projectId: number, userId: number): Promise<ProjectMember> {
-		const res = await fetch(`${API_URL}/projects/${projectId}/members`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include",
-			body: JSON.stringify({ userId }),
-		});
-		if (!res.ok) {
-			const err = await res.json();
-			throw new Error(err.error || "Erreur ajout membre");
+		try {
+			const { data } = await api.post(`/projects/${projectId}/members`, { userId });
+			return data;
+		} catch (error: unknown) {
+			throw new Error((error as AxiosError<{ error?: string }>).response?.data?.error || "Erreur ajout membre");
 		}
-		return res.json();
 	},
 
 	/**
 	 * DELETE /api/projects/:id/members/:userId
 	 */
 	async removeProjectMember(projectId: number, userId: number): Promise<void> {
-		const res = await fetch(`${API_URL}/projects/${projectId}/members/${userId}`, {
-			method: "DELETE",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include",
-		});
-		if (!res.ok) {
-			const err = await res.json();
-			throw new Error(err.error || "Erreur suppression membre");
+		try {
+			await api.delete(`/projects/${projectId}/members/${userId}`);
+		} catch (error: unknown) {
+			throw new Error((error as AxiosError<{ error?: string }>).response?.data?.error || "Erreur suppression membre");
 		}
 	}
 }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Mail, UserPlus, X, Loader2, AlertCircle } from "lucide-react";
+import { Mail, UserPlus, X, Loader2, AlertCircle, Check, TriangleAlert } from "lucide-react";
 import { invitationService } from "../services/invitation";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -35,25 +35,20 @@ const InviteModal: React.FC<InviteModalProps> = ({ projectId, isOpen, onClose })
 			queryClient.invalidateQueries({ queryKey: ['project-invitations', projectId] });
 
 			if (response.type === 'invitation_created' || response.type === 'invitation_sent') {
-				toast.success('📧 Invitation envoyée avec succès !', {
+				toast.success(' Invitation envoyée avec succès !', {
 					duration: 5000,
-				});
-			} else if (response.type === 'resent_no_email') {
-				toast('Une invitation pour cet email existe déjà.', {
-					duration: 5000,
-					icon: '📩',
+					icon: <Check className="text-green-500" />,
 					style: {
-						background: '#f59e0b',
-						color: '#fff',
+						background: '#DCFCE7',
+					}
+				});
+			} else if (response.type === 'pending_invitation_exists') {
+				toast('Une invitation est déjà en attente pour cet email.', {
+					duration: 6000,
+					icon: <TriangleAlert className="text-yellow-500" />,
+					style: {
+						background: '#FFEDD5',
 					},
-				});
-			} else if (response.type === 'resent') {
-				toast.success('🔄 Invitation renvoyée avec succès !', {
-					duration: 5000,
-				});
-			} else {
-				toast.success('✅ Invitation traitée avec succès !', {
-					duration: 5000,
 				});
 			}
 
