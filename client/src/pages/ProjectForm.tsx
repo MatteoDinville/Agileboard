@@ -7,6 +7,8 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import type { ProjectStatus, ProjectPriority } from "../services/project";
 import ProjectFormSkeleton from "../components/skeleton/ProjectFormSkeleton";
+import toast from "react-hot-toast";
+import { Check } from "lucide-react";
 
 interface ProjectFormProps {
 	projectId?: number;
@@ -49,6 +51,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 				{ id: projectId, data: { title, description, status, priority } },
 				{
 					onSuccess: () => {
+						toast.success("Projet modifié avec succès !", {
+							icon: <Check className="text-green-500 w-4 h-4" />,
+							duration: 3000,
+							style: {
+								background: '#DCFCE7',
+							},
+						});
 						navigate({ to: `/projects/${projectId}` });
 					},
 				}
@@ -58,6 +67,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 				{ title, description, status, priority },
 				{
 					onSuccess: () => {
+						toast.success("Projet créé avec succès !", {
+							icon: <Check className="text-green-500 w-4 h-4" />,
+							duration: 3000,
+							style: {
+								background: '#DCFCE7',
+							},
+						});
 						navigate({ to: "/projects" });
 					},
 				}

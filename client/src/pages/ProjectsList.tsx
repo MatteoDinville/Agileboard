@@ -16,10 +16,12 @@ import {
 	Users,
 	Crown,
 	UserCheck,
-	ArrowLeft
+	ArrowLeft,
+	Check
 } from "lucide-react";
 import ProjectsListSkeleton from "../components/skeleton/ProjectsListSkeleton";
 import { Project } from "../services/project";
+import toast from "react-hot-toast";
 
 const ProjectsList: React.FC = () => {
 	const { data: projects, isLoading, isError, error } = useProjects();
@@ -32,8 +34,19 @@ const ProjectsList: React.FC = () => {
 	const [filterStatus, setFilterStatus] = useState("Tous");
 
 	const handleDelete = (id: number) => {
-		if (confirm("Voulez-vous vraiment supprimer ce projet ?")) {
-			deleteMutation.mutate(id);
+		try {
+			if (confirm("Voulez-vous vraiment supprimer ce projet ?")) {
+				deleteMutation.mutate(id);
+				toast.success("Projet supprimé avec succès !", {
+					icon: <Check className="text-green-500 w-4 h-4" />,
+					duration: 5000,
+					style: {
+						background: '#DCFCE7',
+					},
+				});
+			}
+		} catch {
+			toast.error("Erreur lors de la suppression du projet");
 		}
 	};
 
