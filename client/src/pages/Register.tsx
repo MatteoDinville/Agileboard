@@ -21,7 +21,7 @@ const Register: React.FC = () => {
 				onSuccess: () => {
 					// Si on a une redirection (ex: invitation), aller là, sinon dashboard
 					if (search.redirect) {
-						navigate({ to: search.redirect as any });
+						navigate({ to: search.redirect });
 					} else {
 						navigate({ to: "/dashboard" });
 					}

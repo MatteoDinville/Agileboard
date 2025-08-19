@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Check, X, History, Mail, Calendar, User } from "lucide-react";
 import { invitationService } from "../services/invitation";
+import InvitationHistorySkeleton from "./skeleton/InvitationHistorySkeleton";
 
 interface InvitationHistoryProps {
 	projectId: number;
@@ -27,19 +28,7 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 	}
 
 	if (isLoading) {
-		return (
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-				<div className="flex items-center space-x-3 mb-4">
-					<div className="p-2 bg-gray-100 rounded-lg">
-						<History className="w-5 h-5 text-gray-600" />
-					</div>
-					<div>
-						<h3 className="text-lg font-semibold text-gray-900">Historique des invitations</h3>
-						<p className="text-sm text-gray-600">Chargement...</p>
-					</div>
-				</div>
-			</div>
-		);
+		return <InvitationHistorySkeleton />;
 	}
 
 	if (isError || !history) {

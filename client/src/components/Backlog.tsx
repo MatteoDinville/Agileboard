@@ -13,6 +13,7 @@ import {
 	Loader2,
 	AlertCircle
 } from "lucide-react";
+import BacklogSkeleton from "./skeleton/BacklogSkeleton";
 
 interface BacklogProps {
 	projectId: number;
@@ -221,12 +222,7 @@ const Backlog: React.FC<BacklogProps> = ({
 	};
 
 	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center p-12">
-				<Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-				<span className="ml-3 text-gray-600">Chargement des tâches...</span>
-			</div>
-		);
+		return <BacklogSkeleton />;
 	}
 
 	if (error) {

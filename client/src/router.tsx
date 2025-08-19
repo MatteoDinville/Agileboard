@@ -19,18 +19,13 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import InvitationAcceptPage from "./pages/InvitationAcceptPage";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
+import AuthLoadingSkeleton from "./components/skeleton/AuthLoadingSkeleton";
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 	const { user, isLoading } = React.useContext(AuthContext);
 
 	if (isLoading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<div className="text-center">
-					<div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-				</div>
-			</div>
-		);
+		return <AuthLoadingSkeleton />;
 	}
 
 	if (!user) {

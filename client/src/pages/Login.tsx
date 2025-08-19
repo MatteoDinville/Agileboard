@@ -19,7 +19,7 @@ const Login: React.FC = () => {
 			{
 				onSuccess: () => {
 					if (search.redirect) {
-						navigate({ to: search.redirect as any });
+						navigate({ to: search.redirect });
 					} else {
 						navigate({ to: "/dashboard" });
 					}

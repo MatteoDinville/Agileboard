@@ -4,6 +4,7 @@ import { Mail, Loader2, Users, UserMinus } from "lucide-react";
 import InviteModal from "./InviteModal";
 import PendingInvitations from "./PendingInvitations";
 import InvitationHistory from "./InvitationHistory";
+import MembersListSkeleton from "./skeleton/MembersListSkeleton";
 import toast from "react-hot-toast";
 
 interface MembersListOnlyProps {
@@ -36,12 +37,7 @@ const MembersListOnly: React.FC<MembersListOnlyProps> = ({ projectId, isOwner = 
 	};
 
 	if (membersLoading) {
-		return (
-			<div className="flex items-center justify-center p-8">
-				<Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-				<span className="ml-2 text-gray-600">Chargement des membres...</span>
-			</div>
-		);
+		return <MembersListSkeleton />;
 	}
 
 	if (!members || members.length === 0) {

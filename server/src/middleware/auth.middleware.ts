@@ -24,11 +24,15 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 		if (
 			typeof payload === "object" &&
 			payload !== null &&
-			"sub" in payload &&
-			typeof payload.sub === "number"
+			"sub" in payload
 		) {
-			req.userId = payload.sub;
-			next();
+			const userId = typeof payload.sub === "string" ? parseInt(payload.sub, 10) : payload.sub;
+			if (typeof userId === "number" && !isNaN(userId)) {
+				req.userId = userId;
+				next();
+			} else {
+				return res.status(401).json({ error: "Payload invalide." });
+			}
 		} else {
 			return res.status(401).json({ error: "Payload invalide." });
 		}

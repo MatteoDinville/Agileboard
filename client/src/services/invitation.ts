@@ -1,3 +1,5 @@
+import { Project } from "./project";
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 export interface ProjectInvitation {
@@ -34,13 +36,13 @@ export interface InvitationInfo {
 		email: string;
 	};
 	expiresAt: string;
-	token?: string; // Ajouté pour les notifications
+	token?: string;
 }
 
 export interface InvitationResponse {
-	type: 'invitation_created' | 'resent_no_email' | 'resent' | 'invitation_sent';
+	type: 'invitation_created' | 'pending_invitation_exists' | 'invitation_sent';
 	message: string;
-	member?: any;
+	member?: unknown;
 }
 
 export class InvitationService {
@@ -137,7 +139,7 @@ export class InvitationService {
 	 * POST /api/invite/:token/accept
 	 * Accepte une invitation (nécessite d'être connecté)
 	 */
-	async acceptInvitation(token: string): Promise<{ message: string; project: any }> {
+	async acceptInvitation(token: string): Promise<{ message: string; project: Project }> {
 		const res = await fetch(`${API_URL}/invite/${token}/accept`, {
 			method: "POST",
 			headers: {
@@ -158,7 +160,7 @@ export class InvitationService {
 	 * POST /api/invite/:token/decline
 	 * Décline une invitation (nécessite d'être connecté)
 	 */
-	async declineInvitation(token: string): Promise<{ message: string; project: any }> {
+	async declineInvitation(token: string): Promise<{ message: string; project: Project }> {
 		const res = await fetch(`${API_URL}/invite/${token}/decline`, {
 			method: "POST",
 			headers: {

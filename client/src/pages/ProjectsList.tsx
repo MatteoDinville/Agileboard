@@ -18,6 +18,8 @@ import {
 	UserCheck,
 	ArrowLeft
 } from "lucide-react";
+import ProjectsListSkeleton from "../components/skeleton/ProjectsListSkeleton";
+import { Project } from "../services/project";
 
 const ProjectsList: React.FC = () => {
 	const { data: projects, isLoading, isError, error } = useProjects();
@@ -53,21 +55,22 @@ const ProjectsList: React.FC = () => {
 		}
 	};
 
-	const filteredProjects = projects?.filter(project => {
-		const matchesSearch = project.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			project.description?.toLowerCase().includes(searchTerm.toLowerCase());
-		const matchesFilter = filterStatus === "Tous" || project.status === filterStatus;
-		return matchesSearch && matchesFilter;
-	}) || [];
+	const filteredProjects = useMemo(() => {
+		return projects?.filter(project => {
+			const matchesSearch = project.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				project.description?.toLowerCase().includes(searchTerm.toLowerCase());
+			const matchesFilter = filterStatus === "Tous" || project.status === filterStatus;
+			return matchesSearch && matchesFilter;
+		}) || [];
+	}, [projects, searchTerm, filterStatus]);
 
-	// Séparer les projets en propriétaire vs membre
 	const { ownedProjects, memberProjects } = useMemo(() => {
 		const owned = filteredProjects.filter(project => project.ownerId === user?.id);
 		const member = filteredProjects.filter(project => project.ownerId !== user?.id);
 		return { ownedProjects: owned, memberProjects: member };
 	}, [filteredProjects, user?.id]);
 
-	const ProjectCard = ({ project, isOwner }: { project: any; isOwner: boolean }) => {
+	const ProjectCard = ({ project, isOwner }: { project: Project; isOwner: boolean }) => {
 		const cardStyles = isOwner
 			? "bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-200/60 shadow-amber-100/50"
 			: "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200/60 shadow-blue-100/50";
@@ -276,14 +279,7 @@ const ProjectsList: React.FC = () => {
 	};
 
 	if (isLoading) {
-		return (
-			<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
-				<div className="text-center">
-					<Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
-					<p className="text-gray-600">Chargement des projets…</p>
-				</div>
-			</div>
-		);
+		return <ProjectsListSkeleton />;
 	}
 
 	if (isError) {

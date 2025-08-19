@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Mail, Clock, User, Loader2, AlertCircle, Trash2, RefreshCw, Check } from "lucide-react";
 import { invitationService, ProjectInvitation } from "../services/invitation";
 import toast from "react-hot-toast";
+import InvitationsSkeleton from "./skeleton/InvitationsSkeleton";
 
 interface PendingInvitationsProps {
 	projectId: number;
@@ -10,6 +11,8 @@ interface PendingInvitationsProps {
 }
 
 const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOwner = false }) => {
+	const queryClient = useQueryClient();
+
 	const {
 		data: invitations,
 		isLoading,
@@ -52,14 +55,7 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOw
 	}
 
 	if (isLoading) {
-		return (
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-				<div className="flex items-center justify-center py-4">
-					<Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-					<span className="ml-2 text-gray-600 text-sm">Chargement des invitations...</span>
-				</div>
-			</div>
-		);
+		return <InvitationsSkeleton />;
 	}
 
 	if (error) {

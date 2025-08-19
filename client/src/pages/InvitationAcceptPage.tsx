@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Mail, Users, Check, X, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import { invitationService, InvitationInfo } from "../services/invitation";
 import { useAuth } from "../contexts/AuthContext";
+import InvitationAcceptSkeleton from "../components/skeleton/InvitationAcceptSkeleton";
 
 const InvitationAcceptPage: React.FC = () => {
 	const { token } = useParams({ from: "/invite/$token" });
@@ -19,22 +20,22 @@ const InvitationAcceptPage: React.FC = () => {
 	const [success, setSuccess] = useState(false);
 	const [declined, setDeclined] = useState(false);
 
-	useEffect(() => {
-		loadInvitation();
-	}, [token]);
-
-	const loadInvitation = async () => {
+	const loadInvitation = React.useCallback(async () => {
 		try {
 			setLoading(true);
 			setError(null);
 			const invitationData = await invitationService.getInvitationInfo(token);
 			setInvitation(invitationData);
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError((err as Error).message);
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [token]);
+
+	useEffect(() => {
+		loadInvitation();
+	}, [loadInvitation]);
 
 	const handleAcceptInvitation = async () => {
 		if (!isAuthenticated || !user) {
@@ -67,8 +68,8 @@ const InvitationAcceptPage: React.FC = () => {
 			setTimeout(() => {
 				navigate({ to: `/projects/${invitation?.project.id}` });
 			}, 2000);
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError((err as Error).message);
 		} finally {
 			setAccepting(false);
 		}
@@ -103,24 +104,15 @@ const InvitationAcceptPage: React.FC = () => {
 			setTimeout(() => {
 				navigate({ to: "/" });
 			}, 2000);
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError((err as Error).message);
 		} finally {
 			setDeclining(false);
 		}
 	};
 
 	if (loading) {
-		return (
-			<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-6">
-				<div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-					<Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-					<h2 className="text-xl font-semibold text-gray-900 mb-2">
-						Chargement de l'invitation...
-					</h2>
-				</div>
-			</div>
-		);
+		return <InvitationAcceptSkeleton />;
 	}
 
 	if (error && !invitation) {

@@ -6,16 +6,24 @@ import {
 	TrendingUp, AlertTriangle, Target, Calendar, CheckCircle2,
 	BarChart3, Activity, Zap
 } from "lucide-react";
-import { useTaskStatistics, useProjectStatistics } from "../utils/hooks/task";
+import { useTaskStatistics, useProjectStatistics, useAllUserTasks } from "../utils/hooks/task";
+import { useProjects } from "../utils/hooks/project";
 import UserInvitationsNotifications from "../components/UserInvitationsNotifications";
+import DashboardSkeleton from "../components/skeleton/DashboardSkeleton";
 import toast from "react-hot-toast";
 
 const Dashboard: React.FC = () => {
 	const navigate = useNavigate();
 	const { user, logout } = useContext(AuthContext);
 	const [message, setMessage] = useState<string>("");
+
+	const { data: projects, isLoading: projectsLoading } = useProjects();
+	const { data: tasks, isLoading: tasksLoading } = useAllUserTasks();
+
 	const taskStats = useTaskStatistics();
 	const projectStats = useProjectStatistics();
+
+	const isLoading = projectsLoading || tasksLoading;
 
 	useEffect(() => {
 		setMessage(`Bienvenue, ${user?.name ?? "utilisateur"} !`);
@@ -27,6 +35,10 @@ const Dashboard: React.FC = () => {
 		});
 		logout();
 	};
+
+	if (isLoading) {
+		return <DashboardSkeleton />;
+	}
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
