@@ -5,27 +5,20 @@ import { invitationService } from "../services/invitation";
 import { useAuth } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
 
-interface UserInvitationsNotificationsProps {
-	className?: string;
-}
 
-const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> = ({
-	className = ""
-}) => {
+const UserInvitationsNotifications: React.FC = () => {
 	const { user, isAuthenticated } = useAuth();
 	const queryClient = useQueryClient();
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	// Récupérer les invitations en attente
 	const { data: invitations = [], isLoading } = useQuery({
 		queryKey: ['user', 'invitations'],
 		queryFn: invitationService.getUserInvitations,
 		enabled: isAuthenticated && !!user,
-		refetchInterval: 30000, // Refetch toutes les 30 secondes
+		refetchInterval: 30000,
 	});
 
-	// Mutation pour accepter une invitation
 	const acceptMutation = useMutation({
 		mutationFn: (token: string) => invitationService.acceptInvitation(token),
 		onSuccess: (_, token) => {
@@ -35,7 +28,12 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 			const invitation = invitations.find(inv => inv.token === token);
 			const projectName = invitation?.project?.title || 'le projet';
 
-			toast.success(`Vous avez rejoint le projet ${projectName} avec succès 🎉 !`, {
+			const toastMessageAccept = <p className="text-green-500">
+				Vous avez rejoint le projet <span className="font-bold">{projectName}</span> avec succès 🎉 !
+			</p>
+			toast.success(<div>
+				{toastMessageAccept}
+			</div>, {
 				icon: <Check className="text-green-500 w-10 h-10" />,
 				duration: 5000,
 				style: {
@@ -61,8 +59,17 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 			const invitation = invitations.find(inv => inv.token === token);
 			const projectName = invitation?.project?.title || 'le projet';
 
-			toast.success(`✋ Invitation à ${projectName} déclinée`, {
+			const toastMessageDecline = <p className="text-green-500">
+				Invitation à <span className="font-bold">{projectName}</span> déclinée
+			</p>
+			toast.success(<div>
+				{toastMessageDecline}
+			</div>, {
+				icon: '✋',
 				duration: 4000,
+				style: {
+					background: '#DCFCE7',
+				},
 			});
 		},
 		onError: (error: unknown) => {
@@ -73,7 +80,6 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 		},
 	});
 
-	// Fermer le dropdown si on clique à l'extérieur
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -106,8 +112,7 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 	const hasInvitations = invitations && invitations.length > 0;
 
 	return (
-		<div className={`relative ${className}`} ref={dropdownRef}>
-			{/* Bouton de notification */}
+		<div className="relative" ref={dropdownRef}>
 			<button
 				onClick={toggleDropdown}
 				className="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-300"
@@ -120,7 +125,6 @@ const UserInvitationsNotifications: React.FC<UserInvitationsNotificationsProps> 
 				)}
 			</button>
 
-			{/* Dropdown des invitations */}
 			{isOpen && (
 				<div className="absolute top-12 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
 					<div className="p-4 border-b border-gray-200">
