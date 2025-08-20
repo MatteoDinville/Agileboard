@@ -17,7 +17,7 @@ describe('userController', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		Object.values(prismaMock.user).forEach((fn: any) => fn.mockReset())
-		bcryptMock.hash.mockReset?.(); bcryptMock.compare.mockReset?.();
+		bcryptMock.hash.mockReset(); bcryptMock.compare.mockReset();
 		bcryptMock.hash.mockResolvedValue('hashed')
 		bcryptMock.compare.mockResolvedValue(true)
 		req = { userId: 1, body: {}, params: {} }
