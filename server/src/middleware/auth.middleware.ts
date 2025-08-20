@@ -27,7 +27,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 			"sub" in payload
 		) {
 			const userId = typeof payload.sub === "string" ? parseInt(payload.sub, 10) : payload.sub;
-			if (typeof userId === "number" && !isNaN(userId)) {
+			if (typeof userId === "number" && Number.isInteger(userId) && userId > 0) {
 				req.userId = userId;
 				next();
 			} else {
