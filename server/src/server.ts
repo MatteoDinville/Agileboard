@@ -8,7 +8,6 @@ import userRoutes from "./routes/user";
 import taskRoutes from "./routes/task";
 import invitationRoutes from "./routes/invitation";
 import { PrismaClient } from "@prisma/client";
-import { emailService } from "./services/emailService";
 
 dotenv.config();
 
@@ -32,7 +31,6 @@ app.get("/", async (req: Request, res: Response) => {
 	res.json({ message: "API en fonctionnement." });
 });
 
-emailService.verifyConnection().catch(console.warn);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 	console.error(err);

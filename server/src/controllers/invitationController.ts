@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
-import { emailService } from "../services/emailService";
 import { AuthRequest } from "../middleware/auth.middleware";
+import crypto from 'crypto';
 
 let prisma: PrismaClient = new PrismaClient();
 export function setPrismaInstance(instance: PrismaClient) {
@@ -108,7 +108,7 @@ export const invitationController = {
 				});
 			}
 
-			const token = emailService.generateInvitationToken();
+			const token = crypto.randomBytes(32).toString('hex');
 			const expiresAt = new Date();
 			expiresAt.setDate(expiresAt.getDate() + 7);
 
