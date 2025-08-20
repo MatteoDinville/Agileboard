@@ -102,7 +102,9 @@ export function useTaskStatistics(): TaskStatistics {
 		tasksThisMonth,
 		completionRate
 	};
-} export function useProjectStatistics(): ProjectStatistics {
+}
+
+export function useProjectStatistics(): ProjectStatistics {
 	const { data: projects = [] } = useProjects();
 
 	const totalProjects = projects.length;
