@@ -34,7 +34,7 @@ jobs:
         run: |
           npm ci
           npm run lint
-          npm test -- --ci
+          npm test
           npm run build
 
       - name: Frontend - install, lint, test, build
@@ -42,5 +42,5 @@ jobs:
         run: |
           npm ci
           npm run lint
-          npm test -- --ci
+          npm test
           npm run build
