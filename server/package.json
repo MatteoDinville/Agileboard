@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "Server for Agileboard application",
 	"main": "src/server.ts",
+	"type": "module",
 	"scripts": {
 		"test": "vitest",
 		"test:run": "vitest run",
@@ -11,7 +12,7 @@
 		"dev": "nodemon src/server.ts",
 		"start": "ts-node src/server.ts",
 		"build": "tsc",
-		"lint": "eslint src --ext .ts",
+		"lint": "eslint .",
 		"format": "prettier --write src",
 		"typecheck": "tsc --noEmit",
 		"db:push": "prisma db push",
@@ -43,6 +44,7 @@
 		"nodemailer": "^7.0.5"
 	},
 	"devDependencies": {
+		"@eslint/js": "^9.21.0",
 		"@types/bcrypt": "^5.0.2",
 		"@types/bcryptjs": "^2.4.6",
 		"@types/cookie-parser": "^1.4.7",
@@ -52,11 +54,13 @@
 		"@types/node": "^20.17.43",
 		"@types/supertest": "^6.0.2",
 		"@vitest/coverage-v8": "^2.1.8",
+		"eslint": "^9.21.0",
 		"nodemon": "^3.0.3",
 		"prisma": "^5.10.0",
 		"supertest": "^7.0.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.24.1",
 		"vitest": "^2.1.8"
 	}
 }
