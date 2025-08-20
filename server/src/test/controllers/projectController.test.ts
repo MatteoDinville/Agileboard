@@ -508,7 +508,7 @@ describe('ProjectController', () => {
 
 		it('should handle db error with next', async () => {
 			mockRequest.params = { id: '1' }
-				; (mockPrisma as any).project.findUnique.mockRejectedValue(new Error('db'))
+			(mockPrisma as any).project.findUnique.mockRejectedValue(new Error('db'))
 			await projectController.getProjectMembers(
 				mockRequest as AuthRequest,
 				mockResponse as Response,
