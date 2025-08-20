@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"description": "Server for Agileboard application",
 	"main": "src/server.ts",
-	"type": "module",
+	"type": "commonjs",
 	"scripts": {
 		"test": "vitest",
 		"test:run": "vitest run",
