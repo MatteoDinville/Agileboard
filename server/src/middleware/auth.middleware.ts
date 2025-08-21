@@ -14,7 +14,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 	const authHeader = req.headers["authorization"];
 	let token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : undefined;
 
-	if (!token) token = (req).cookies?.["access_token"];
+	if (!token) token = req.cookies?.["access_token"];
 
 	if (!token) return res.status(401).json({ error: "Token manquant." });
 

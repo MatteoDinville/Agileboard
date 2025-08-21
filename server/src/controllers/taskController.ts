@@ -13,10 +13,7 @@ export const taskController = {
 			const project = await prisma.project.findFirst({
 				where: {
 					id: parseInt(projectId),
-					OR: [
-						{ ownerId: userId },
-						{ members: { some: { userId: userId } } }
-					]
+					OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 				}
 			});
 
@@ -35,10 +32,7 @@ export const taskController = {
 						}
 					}
 				},
-				orderBy: [
-					{ status: "asc" },
-					{ createdAt: "desc" }
-				]
+				orderBy: [{ status: "asc" }, { createdAt: "desc" }]
 			});
 
 			res.json(tasks);
@@ -57,10 +51,7 @@ export const taskController = {
 			const project = await prisma.project.findFirst({
 				where: {
 					id: parseInt(projectId),
-					OR: [
-						{ ownerId: userId },
-						{ members: { some: { userId: userId } } }
-					]
+					OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 				}
 			});
 
@@ -72,10 +63,7 @@ export const taskController = {
 				const isMember = await prisma.project.findFirst({
 					where: {
 						id: parseInt(projectId),
-						OR: [
-							{ ownerId: assignedToId },
-							{ members: { some: { userId: assignedToId } } }
-						]
+						OR: [{ ownerId: assignedToId }, { members: { some: { userId: assignedToId } } }]
 					}
 				});
 
@@ -122,10 +110,7 @@ export const taskController = {
 				where: {
 					id: parseInt(taskId),
 					project: {
-						OR: [
-							{ ownerId: userId },
-							{ members: { some: { userId: userId } } }
-						]
+						OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 					}
 				},
 				include: { project: true }
@@ -139,10 +124,7 @@ export const taskController = {
 				const isMember = await prisma.project.findFirst({
 					where: {
 						id: existingTask.projectId,
-						OR: [
-							{ ownerId: assignedToId },
-							{ members: { some: { userId: assignedToId } } }
-						]
+						OR: [{ ownerId: assignedToId }, { members: { some: { userId: assignedToId } } }]
 					}
 				});
 
@@ -167,7 +149,8 @@ export const taskController = {
 			if (status !== undefined) updateData.status = status;
 			if (priority !== undefined) updateData.priority = priority;
 			if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
-			if (assignedToId !== undefined) updateData.assignedToId = assignedToId; const task = await prisma.task.update({
+			if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
+			const task = await prisma.task.update({
 				where: { id: parseInt(taskId) },
 				data: updateData,
 				include: {
@@ -197,10 +180,7 @@ export const taskController = {
 				where: {
 					id: parseInt(taskId),
 					project: {
-						OR: [
-							{ ownerId: userId },
-							{ members: { some: { userId: userId } } }
-						]
+						OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 					}
 				}
 			});
@@ -230,10 +210,7 @@ export const taskController = {
 				where: {
 					id: parseInt(taskId),
 					project: {
-						OR: [
-							{ ownerId: userId },
-							{ members: { some: { userId: userId } } }
-						]
+						OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 					}
 				}
 			});

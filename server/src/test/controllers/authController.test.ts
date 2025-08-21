@@ -25,7 +25,7 @@ describe("authController", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		Object.values(prismaMock.user).forEach((fn) => (fn as any).mockReset());
+		Object.values(prismaMock.user).forEach(fn => (fn).mockReset());
 		bcryptMock.hash.mockReset?.();
 		bcryptMock.compare.mockReset?.();
 		jwtMock.sign.mockReset?.();

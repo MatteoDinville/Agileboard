@@ -2,6 +2,18 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
+	{
+		ignores: [
+			'node_modules/**',
+			'dist/**',
+			'build/**',
+			'*.js',
+			'*.mjs',
+			'coverage/**',
+			'prisma/migrations/**',
+			'prisma/seed.ts',
+		],
+	},
 	js.configs.recommended,
 	...tseslint.configs.recommended,
 	{
@@ -15,16 +27,6 @@ export default tseslint.config(
 			},
 		},
 		files: ['src/**/*.ts', 'prisma/**/*.ts'],
-		ignores: [
-			'node_modules/**',
-			'dist/**',
-			'build/**',
-			'*.js',
-			'*.mjs',
-			'coverage/**',
-			'prisma/migrations/**',
-			'prisma/seed.ts',
-		],
 		rules: {
 			'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
 			'@typescript-eslint/no-explicit-any': 'warn',

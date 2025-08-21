@@ -105,11 +105,11 @@ export const authController = {
 
 		try {
 			const payload = jwt.verify(token, JWT_REFRESH_SECRET);
-			if (typeof payload !== "object" || payload === null || typeof (payload).sub === "undefined") {
+			if (typeof payload !== "object" || payload === null || typeof payload.sub === "undefined") {
 				return res.status(401).json({ error: "Refresh token invalide." });
 			}
 
-			const userId = typeof (payload).sub === "string" ? parseInt((payload).sub, 10) : (payload).sub;
+			const userId = typeof payload.sub === "string" ? parseInt(payload.sub, 10) : payload.sub;
 			if (typeof userId !== "number" || isNaN(userId)) {
 				return res.status(401).json({ error: "Refresh token invalide." });
 			}

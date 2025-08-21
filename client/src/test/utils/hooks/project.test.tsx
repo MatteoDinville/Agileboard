@@ -1,12 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi } from 'vitest'
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
 	const actual = await importOriginal()
 	return {
-		...actual,
+		...(actual as object),
 	}
 })
 import { useProjects, useProject, useCreateProject, useUpdateProject, useDeleteProject, useProjectMembers, useAddProjectMember, useRemoveProjectMember } from '../../../utils/hooks/project'
@@ -55,19 +54,12 @@ describe('Project Hooks', () => {
 			const mockProjects: Project[] = [
 				{
 					id: 1,
-					name: 'Project 1',
+					title: 'Project 1',
 					description: 'Description 1',
-					keyCode: 'PROJ1',
-					status: 'ACTIVE',
-					priority: 'HIGH',
+					status: 'En cours',
+					priority: 'Haute',
 					createdAt: '2024-01-01T00:00:00Z',
 					updatedAt: '2024-01-01T00:00:00Z',
-					ownerId: 1,
-					owner: {
-						id: 1,
-						name: 'John Doe',
-						email: 'john@example.com'
-					}
 				}
 			]
 
@@ -105,19 +97,12 @@ describe('Project Hooks', () => {
 		it('should fetch single project successfully', async () => {
 			const mockProject: Project = {
 				id: 1,
-				name: 'Project 1',
+				title: 'Project 1',
 				description: 'Description 1',
-				keyCode: 'PROJ1',
-				status: 'ACTIVE',
-				priority: 'HIGH',
+				status: 'En cours',
+				priority: 'Haute',
 				createdAt: '2024-01-01T00:00:00Z',
 				updatedAt: '2024-01-01T00:00:00Z',
-				ownerId: 1,
-				owner: {
-					id: 1,
-					name: 'John Doe',
-					email: 'john@example.com'
-				}
 			}
 
 			vi.mocked(projectService.fetchProjectById).mockResolvedValue(mockProject)
@@ -148,27 +133,19 @@ describe('Project Hooks', () => {
 		it('should create project successfully', async () => {
 			const mockProject: Project = {
 				id: 1,
-				name: 'New Project',
+				title: 'New Project',
 				description: 'New Description',
-				keyCode: 'NEW',
-				status: 'ACTIVE',
-				priority: 'HIGH',
+				status: 'En cours',
+				priority: 'Haute',
 				createdAt: '2024-01-01T00:00:00Z',
 				updatedAt: '2024-01-01T00:00:00Z',
-				ownerId: 1,
-				owner: {
-					id: 1,
-					name: 'John Doe',
-					email: 'john@example.com'
-				}
 			}
 
 			const projectInput: ProjectInput = {
-				name: 'New Project',
+				title: 'New Project',
 				description: 'New Description',
-				keyCode: 'NEW',
-				status: 'ACTIVE',
-				priority: 'HIGH'
+				status: 'En cours',
+				priority: 'Haute'
 			}
 
 			vi.mocked(projectService.createProject).mockResolvedValue(mockProject)
@@ -192,23 +169,16 @@ describe('Project Hooks', () => {
 		it('should update project successfully', async () => {
 			const mockProject: Project = {
 				id: 1,
-				name: 'Updated Project',
+				title: 'Updated Project',
 				description: 'Updated Description',
-				keyCode: 'UPD',
-				status: 'ACTIVE',
-				priority: 'HIGH',
+				status: 'En cours',
+				priority: 'Haute',
 				createdAt: '2024-01-01T00:00:00Z',
 				updatedAt: '2024-01-01T00:00:00Z',
-				ownerId: 1,
-				owner: {
-					id: 1,
-					name: 'John Doe',
-					email: 'john@example.com'
-				}
 			}
 
 			const projectInput: ProjectInput = {
-				name: 'Updated Project',
+				title: 'Updated Project',
 				description: 'Updated Description'
 			}
 
@@ -254,8 +224,7 @@ describe('Project Hooks', () => {
 					id: 1,
 					projectId: 1,
 					userId: 1,
-					role: 'MEMBER',
-					joinedAt: '2024-01-01T00:00:00Z',
+					addedAt: '2024-01-01T00:00:00Z',
 					user: {
 						id: 1,
 						name: 'John Doe',
@@ -294,8 +263,7 @@ describe('Project Hooks', () => {
 				id: 1,
 				projectId: 1,
 				userId: 2,
-				role: 'MEMBER',
-				joinedAt: '2024-01-01T00:00:00Z',
+				addedAt: '2024-01-01T00:00:00Z',
 				user: {
 					id: 2,
 					name: 'Jane Smith',

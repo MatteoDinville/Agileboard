@@ -159,6 +159,7 @@ describe('ProjectsList', () => {
 
 	it('should render error state', () => {
 		vi.mocked(useProjects).mockReturnValue(createMockProjects(undefined, {
+			isLoading: false,
 			isError: true,
 			error: { message: 'Failed to load projects' } as Error
 		}))

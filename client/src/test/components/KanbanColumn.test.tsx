@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import KanbanColumn from '../../components/KanbanColumn'
-import { TaskStatus } from '../../types/enums'
+import { TaskStatus, TaskPriority } from '../../types/enums'
 
 vi.mock('@dnd-kit/core', () => ({
 	useDroppable: vi.fn(() => ({
@@ -16,7 +16,7 @@ const mockTasks = [
 		title: 'Task 1',
 		description: 'Description 1',
 		status: TaskStatus.A_FAIRE,
-		priority: 'MOYENNE',
+		priority: TaskPriority.MOYENNE,
 		projectId: 1,
 		assigneeId: null,
 		createdAt: '2024-01-01T00:00:00Z',
@@ -27,7 +27,7 @@ const mockTasks = [
 		title: 'Task 2',
 		description: 'Description 2',
 		status: TaskStatus.A_FAIRE,
-		priority: 'HAUTE',
+		priority: TaskPriority.HAUTE,
 		projectId: 1,
 		assigneeId: null,
 		createdAt: '2024-01-01T00:00:00Z',
