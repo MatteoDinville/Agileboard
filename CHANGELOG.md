@@ -1,0 +1,46 @@
+# Changelog
+
+## v1.0.0 (2025-08-21)
+
+### 🚀 Features (Pull Requests)
+
+- **🔐 Authentication System** - Système d'authentification complet ([#1](https://github.com/MatteoDinville/Agileboard/pull/1)) `2483185`
+- **📋 Project Management** - Fonctionnalités de gestion de projets ([#2](https://github.com/MatteoDinville/Agileboard/pull/2)) `5a96bb1`
+- **🎨 UI Refactoring** - Refonte et corrections de l'interface ([#3](https://github.com/MatteoDinville/Agileboard/pull/3)) `50664f0`
+- **👤 Account Creation & Sign-In** - Création de compte et connexion ([#5](https://github.com/MatteoDinville/Agileboard/pull/5)) `36cdbe2`
+- **🏗️ Project Implementation** - Implémentation des projets dans l'application ([#6](https://github.com/MatteoDinville/Agileboard/pull/6)) `c43e293`
+- **↩️ Revert Project Implementation** - Annulation temporaire de l'implémentation ([#7](https://github.com/MatteoDinville/Agileboard/pull/7)) `bb71fa6`
+- **🏗️ Project Implementation (Final)** - Implémentation finale des projets ([#8](https://github.com/MatteoDinville/Agileboard/pull/8)) `f68d9d3`
+- **🔧 Branch Fix** - Correction après erreur de revert ([#9](https://github.com/MatteoDinville/Agileboard/pull/9)) `8acbeec`
+- **📊 Kanban View** - Ajout de la vue kanban dans les projets ([#10](https://github.com/MatteoDinville/Agileboard/pull/10)) `9a21a9a`
+- **⚙️ Account Settings** - Possibilité de modifier le compte dans les paramètres ([#11](https://github.com/MatteoDinville/Agileboard/pull/11)) `ac0d8d9`
+- **🐛 Kanban Task Fixes** - Corrections des tâches dans la vue kanban ([#12](https://github.com/MatteoDinville/Agileboard/pull/12)) `034eb6c`
+- **👁️ View Management** - Gestion des vues kanban et backlog ([#13](https://github.com/MatteoDinville/Agileboard/pull/13)) `94fb1d3`
+- **🧪 Unit Testing** - Tests unitaires pour l'application ([#14](https://github.com/MatteoDinville/Agileboard/pull/14)) `6708ff3`
+
+### ➕ Added
+
+- Complete authentication system with user registration and login
+- Project management functionality with CRUD operations
+- Kanban board view for project task visualization
+- Backlog view for task management
+- Account settings page with user profile modification
+- Unit testing framework and test coverage
+- User interface components for project and task management
+- Account creation workflow with validation
+- Task creation and management within projects
+- Project member management system
+
+### 🔄 Changed
+
+- Complete UI refactoring with improved design and user experience
+- Enhanced project implementation with better structure
+- Improved kanban view with better task handling and drag-and-drop functionality
+- Refactored authentication flow for better security
+- Updated task management system in kanban view
+- Enhanced view management between kanban and backlog modes
+- Improved error handling and user feedback
+- Better responsive design across different screen sizes
+- Optimized application performance and loading times
+
+---
