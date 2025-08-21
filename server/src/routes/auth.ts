@@ -10,5 +10,4 @@ router.post("/logout", authController.logout);
 router.post("/refresh", authController.refresh);
 router.get("/me", authenticateToken, authController.me);
 
-
 export default router;

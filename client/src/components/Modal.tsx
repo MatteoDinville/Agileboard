@@ -22,18 +22,19 @@ export const Modal = ({
 
 	return (
 		<div className="fixed inset-0 z-50 overflow-y-auto">
-			{/* Backdrop transparent */}
 			<div
 				className="fixed inset-0 bg-[#00000061]"
 				onClick={onClose}
+				data-testid="modal-backdrop"
 			/>
-			{/* Modal content */}
 			<div className="flex min-h-screen items-center justify-center p-4">
-				<div className={cn(
-					"relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg",
-					className
-				)}>
-					{/* Header */}
+				<div
+					className={cn(
+						"relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg",
+						className
+					)}
+					data-testid="modal-content"
+				>
 					{(title || showCloseButton) && (
 						<div className="flex items-start justify-between px-6 pt-6 pb-4">
 							{title && (
@@ -54,7 +55,6 @@ export const Modal = ({
 							)}
 						</div>
 					)}
-					{/* Content */}
 					<div className="px-6 pb-6">
 						{children}
 					</div>

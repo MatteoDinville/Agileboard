@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { Response } from "express";
+import { PrismaClient, TaskStatus, TaskPriority } from "@prisma/client";
 import { AuthRequest } from "../middleware/auth.middleware";
 
 const prisma = new PrismaClient();
@@ -13,10 +13,7 @@ export const taskController = {
 			const project = await prisma.project.findFirst({
 				where: {
 					id: parseInt(projectId),
-					OR: [
-						{ ownerId: userId },
-						{ members: { some: { userId: userId } } }
-					]
+					OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 				}
 			});
 
@@ -35,10 +32,7 @@ export const taskController = {
 						}
 					}
 				},
-				orderBy: [
-					{ status: 'asc' },
-					{ createdAt: 'desc' }
-				]
+				orderBy: [{ status: "asc" }, { createdAt: "desc" }]
 			});
 
 			res.json(tasks);
@@ -57,10 +51,7 @@ export const taskController = {
 			const project = await prisma.project.findFirst({
 				where: {
 					id: parseInt(projectId),
-					OR: [
-						{ ownerId: userId },
-						{ members: { some: { userId: userId } } }
-					]
+					OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 				}
 			});
 
@@ -72,10 +63,7 @@ export const taskController = {
 				const isMember = await prisma.project.findFirst({
 					where: {
 						id: parseInt(projectId),
-						OR: [
-							{ ownerId: assignedToId },
-							{ members: { some: { userId: assignedToId } } }
-						]
+						OR: [{ ownerId: assignedToId }, { members: { some: { userId: assignedToId } } }]
 					}
 				});
 
@@ -122,10 +110,7 @@ export const taskController = {
 				where: {
 					id: parseInt(taskId),
 					project: {
-						OR: [
-							{ ownerId: userId },
-							{ members: { some: { userId: userId } } }
-						]
+						OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 					}
 				},
 				include: { project: true }
@@ -139,10 +124,7 @@ export const taskController = {
 				const isMember = await prisma.project.findFirst({
 					where: {
 						id: existingTask.projectId,
-						OR: [
-							{ ownerId: assignedToId },
-							{ members: { some: { userId: assignedToId } } }
-						]
+						OR: [{ ownerId: assignedToId }, { members: { some: { userId: assignedToId } } }]
 					}
 				});
 
@@ -151,14 +133,23 @@ export const taskController = {
 				}
 			}
 
-			const updateData: any = {};
+			// Type pour les données de mise à jour partielles
+			interface TaskUpdateData {
+				title?: string;
+				description?: string | null;
+				status?: TaskStatus;
+				priority?: TaskPriority;
+				dueDate?: Date | null;
+				assignedToId?: number | null;
+			}
+
+			const updateData: TaskUpdateData = {};
 			if (title !== undefined) updateData.title = title;
 			if (description !== undefined) updateData.description = description;
 			if (status !== undefined) updateData.status = status;
 			if (priority !== undefined) updateData.priority = priority;
 			if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
 			if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
-
 			const task = await prisma.task.update({
 				where: { id: parseInt(taskId) },
 				data: updateData,
@@ -189,10 +180,7 @@ export const taskController = {
 				where: {
 					id: parseInt(taskId),
 					project: {
-						OR: [
-							{ ownerId: userId },
-							{ members: { some: { userId: userId } } }
-						]
+						OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 					}
 				}
 			});
@@ -222,10 +210,7 @@ export const taskController = {
 				where: {
 					id: parseInt(taskId),
 					project: {
-						OR: [
-							{ ownerId: userId },
-							{ members: { some: { userId: userId } } }
-						]
+						OR: [{ ownerId: userId }, { members: { some: { userId: userId } } }]
 					}
 				}
 			});
