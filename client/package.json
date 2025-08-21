@@ -7,25 +7,55 @@
 		"dev": "vite",
 		"build": "tsc -b && vite build",
 		"lint": "eslint .",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "vitest",
+		"test:run": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"test:coverage": "vitest run --coverage",
+		"test:watch": "vitest --watch"
 	},
 	"dependencies": {
+		"@dnd-kit/core": "^6.3.1",
+		"@dnd-kit/sortable": "^10.0.0",
+		"@dnd-kit/utilities": "^3.2.2",
+		"@radix-ui/react-label": "^2.1.2",
+		"@radix-ui/react-slot": "^1.1.2",
 		"@tailwindcss/vite": "^4.0.14",
+		"@tanstack/react-query": "^5.74.3",
+		"@tanstack/react-query-devtools": "^5.74.3",
+		"@tanstack/react-router": "^1.120.2",
+		"axios": "^1.11.0",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.483.0",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
-		"tailwindcss": "^4.0.14"
+		"react-hot-toast": "^2.5.2",
+		"react-router-dom": "^7.3.0",
+		"tailwind-merge": "^3.0.2",
+		"tailwindcss": "^4.0.14",
+		"tailwindcss-animate": "^1.0.7"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.21.0",
+		"@tanstack/react-router-devtools": "^1.116.0",
+		"@tanstack/router-devtools": "^1.120.2",
+		"@testing-library/jest-dom": "^6.8.0",
+		"@testing-library/react": "^16.1.0",
+		"@testing-library/user-event": "^14.6.1",
+		"@types/node": "^24.2.1",
 		"@types/react": "^19.0.10",
 		"@types/react-dom": "^19.0.4",
 		"@vitejs/plugin-react": "^4.3.4",
+		"@vitest/coverage-v8": "^2.1.8",
 		"eslint": "^9.21.0",
 		"eslint-plugin-react-hooks": "^5.1.0",
 		"eslint-plugin-react-refresh": "^0.4.19",
 		"globals": "^15.15.0",
+		"jsdom": "^25.0.1",
 		"typescript": "~5.7.2",
 		"typescript-eslint": "^8.24.1",
-		"vite": "^6.2.0"
+		"vite": "^6.2.0",
+		"vitest": "^2.1.8"
 	}
 }

@@ -1,0 +1,40 @@
+[changelog]
+header = "# Changelog\n\n"
+
+body = """
+{% if version %}## {{ version }} ({{ timestamp | date(format="%Y-%m-%d") }}){% else %}## Unreleased{% endif %}
+
+### 🚀 Features (PR)
+{% for c in commits | filter(attribute="group", value="pr") -%}
+- {{ c.message | split(pat="\n") | first }} ({{ c.id | truncate(length=7, end="") }})
+{%- else -%}
+- (aucune PR détectée dans cet intervalle)
+{%- endfor %}
+
+### ➕ Added
+- (à compléter manuellement)
+
+### 🔄 Changed
+- (à compléter manuellement)
+"""
+
+footer = "\n---\n"
+
+[git]
+# On ne s'appuie pas sur Conventional Commits
+conventional_commits = false
+filter_commits = true
+
+# Détection des PR :
+#  - Merges classiques: "Merge pull request #123 ..."
+#  - Squash & merge GitHub: le titre se termine souvent par "(#123)"
+commit_parsers = [
+  { message = "^Merge pull request #", group = "pr" },
+  { message = "\\(#\\d+\\)$", group = "pr" }
+]
+
+# (optionnel) limiter aux commits de merge seulement :
+# merge_commits = true
+
+[repository]
+url = "https://github.com/MatteoDinville/Agileboard"
