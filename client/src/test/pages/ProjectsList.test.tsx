@@ -1,11 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import {
+	render, screen, fireEvent
+} from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { UseQueryResult, UseMutationResult } from '@tanstack/react-query'
 import ProjectsList from '../../pages/ProjectsList'
 import { useProjects, useDeleteProject } from '../../utils/hooks/project'
+import type { Project, ProjectStatus, ProjectPriority } from '../../services/project'
 
 vi.mock('@tanstack/react-router', () => ({
-	Link: ({ children, to, ...props }: any) => (
+	Link: ({ children, to, ...props }: { children: React.ReactNode; to: string;[key: string]: unknown }) => (
 		<a href={to} {...props}>{children}</a>
 	),
 }))
@@ -14,7 +18,7 @@ vi.mock('../../utils/hooks/project')
 
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
-	const actual = await importOriginal()
+	const actual = await importOriginal() as Record<string, unknown>
 	return {
 		...actual,
 		QueryClient: actual.QueryClient,
@@ -39,23 +43,26 @@ vi.mock('lucide-react', () => ({
 	Home: () => <div data-testid="home">Home</div>,
 }))
 
-const mockProjects = [
+const mockProjects: Project[] = [
 	{
 		id: 1,
 		title: 'Project Alpha',
 		description: 'First project description',
-		status: 'En cours',
-		priority: 'Haute',
+		status: 'En cours' as ProjectStatus,
+		priority: 'Haute' as ProjectPriority,
 		createdAt: '2024-01-01T00:00:00Z',
 		updatedAt: '2024-01-02T00:00:00Z',
-		members: [{ id: 1 }, { id: 2 }],
+		members: [
+			{ id: 1, userId: 1, projectId: 1, addedAt: '2024-01-01T00:00:00Z', user: { id: 1, name: 'User 1', email: 'user1@example.com' } },
+			{ id: 2, userId: 2, projectId: 1, addedAt: '2024-01-01T00:00:00Z', user: { id: 2, name: 'User 2', email: 'user2@example.com' } }
+		],
 	},
 	{
 		id: 2,
 		title: 'Project Beta',
 		description: 'Second project description',
-		status: 'Terminé',
-		priority: 'Basse',
+		status: 'Terminé' as ProjectStatus,
+		priority: 'Basse' as ProjectPriority,
 		createdAt: '2024-01-03T00:00:00Z',
 		updatedAt: '2024-01-04T00:00:00Z',
 		members: [],
@@ -64,13 +71,60 @@ const mockProjects = [
 		id: 3,
 		title: 'Project Gamma',
 		description: 'Third project description',
-		status: 'En attente',
-		priority: 'Moyenne',
+		status: 'En attente' as ProjectStatus,
+		priority: 'Moyenne' as ProjectPriority,
 		createdAt: '2024-01-05T00:00:00Z',
 		updatedAt: '2024-01-06T00:00:00Z',
-		members: [{ id: 3 }],
+		members: [{ id: 3, userId: 3, projectId: 3, addedAt: '2024-01-03T00:00:00Z', user: { id: 3, name: 'User 3', email: 'user3@example.com' } }],
 	},
 ]
+
+// Mock helpers
+const createMockProjects = (data: Project[] | undefined = undefined, options: {
+	isLoading?: boolean
+	isError?: boolean
+	error?: Error | null
+} = {}): UseQueryResult<Project[], Error> => ({
+	data,
+	isLoading: options.isLoading ?? (data === undefined),
+	isError: options.isError ?? false,
+	error: options.error ?? null,
+	refetch: vi.fn(),
+	isSuccess: data !== undefined && !options.isError,
+	isFetching: false,
+	isStale: false,
+	dataUpdatedAt: Date.now(),
+	errorUpdatedAt: 0,
+	failureCount: 0,
+	failureReason: null,
+	errorUpdateCount: 0,
+	isFetched: true,
+	isFetchedAfterMount: true,
+	isInitialLoading: options.isLoading ?? (data === undefined),
+	isLoadingError: false,
+	isPlaceholderData: false,
+	isPreviousData: false,
+	isRefetchError: false,
+	isRefetching: false,
+	status: options.isError ? 'error' : (data !== undefined ? 'success' : 'loading'),
+	fetchStatus: 'idle',
+} as unknown as UseQueryResult<Project[], Error>)
+
+const createMockDeleteProject = (overrides = {}): UseMutationResult<void, Error, number, unknown> => ({
+	mutate: vi.fn(),
+	mutateAsync: vi.fn(),
+	isPending: false,
+	isError: false,
+	isSuccess: false,
+	isIdle: true,
+	data: undefined,
+	error: null,
+	variables: undefined,
+	context: undefined,
+	status: 'idle',
+	reset: vi.fn(),
+	...overrides,
+} as unknown as UseMutationResult<void, Error, number, unknown>)
 
 const createWrapper = () => {
 	const queryClient = new QueryClient({
@@ -86,6 +140,7 @@ const createWrapper = () => {
 	)
 }
 
+
 describe('ProjectsList', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -93,15 +148,8 @@ describe('ProjectsList', () => {
 	})
 
 	it('should render loading state', () => {
-		vi.mocked(useProjects).mockReturnValue({
-			data: undefined,
-			isLoading: true,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useDeleteProject).mockReturnValue({
-			mutate: vi.fn(),
-		} as any)
+		vi.mocked(useProjects).mockReturnValue(createMockProjects(undefined))
+		vi.mocked(useDeleteProject).mockReturnValue(createMockDeleteProject())
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -110,15 +158,11 @@ describe('ProjectsList', () => {
 	})
 
 	it('should render error state', () => {
-		vi.mocked(useProjects).mockReturnValue({
-			data: undefined,
-			isLoading: false,
+		vi.mocked(useProjects).mockReturnValue(createMockProjects(undefined, {
 			isError: true,
-			error: { message: 'Failed to load projects' },
-		} as any)
-		vi.mocked(useDeleteProject).mockReturnValue({
-			mutate: vi.fn(),
-		} as any)
+			error: { message: 'Failed to load projects' } as Error
+		}))
+		vi.mocked(useDeleteProject).mockReturnValue(createMockDeleteProject())
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -128,15 +172,8 @@ describe('ProjectsList', () => {
 	})
 
 	it('should render projects list', () => {
-		vi.mocked(useProjects).mockReturnValue({
-			data: mockProjects,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useDeleteProject).mockReturnValue({
-			mutate: vi.fn(),
-		} as any)
+		vi.mocked(useProjects).mockReturnValue(createMockProjects(mockProjects))
+		vi.mocked(useDeleteProject).mockReturnValue(createMockDeleteProject())
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -148,15 +185,8 @@ describe('ProjectsList', () => {
 	})
 
 	it('should render status and priority badges for projects', () => {
-		vi.mocked(useProjects).mockReturnValue({
-			data: mockProjects,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useDeleteProject).mockReturnValue({
-			mutate: vi.fn(),
-		} as any)
+		vi.mocked(useProjects).mockReturnValue(createMockProjects(mockProjects, { isLoading: false, isError: false }))
+		vi.mocked(useDeleteProject).mockReturnValue(createMockDeleteProject())
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -174,24 +204,30 @@ describe('ProjectsList', () => {
 
 		const enCoursBadge = enCoursElements.find(el => el.closest('span')?.classList.contains('px-3'))
 		const enCoursBadgeSpan = enCoursBadge?.closest('span')
-		expect(enCoursBadgeSpan).toHaveClass('bg-blue-100', 'text-blue-800')
+		expect(enCoursBadgeSpan).toHaveClass('bg-blue-100')
+		expect(enCoursBadgeSpan).toHaveClass('text-blue-800')
 
 		const termineBadge = termineElements.find(el => el.closest('span')?.classList.contains('px-3'))
 		const termineBadgeSpan = termineBadge?.closest('span')
-		expect(termineBadgeSpan).toHaveClass('bg-green-100', 'text-green-800')
+		expect(termineBadgeSpan).toHaveClass('bg-green-100')
+		expect(termineBadgeSpan).toHaveClass('text-green-800')
 
 		const enAttenteBadge = enAttenteElements.find(el => el.closest('span')?.classList.contains('px-3'))
 		const enAttenteBadgeSpan = enAttenteBadge?.closest('span')
-		expect(enAttenteBadgeSpan).toHaveClass('bg-yellow-100', 'text-yellow-800')
+		expect(enAttenteBadgeSpan).toHaveClass('bg-yellow-100')
+		expect(enAttenteBadgeSpan).toHaveClass('text-yellow-800')
 
 		const hauteElement = screen.getByText('Haute').closest('span')
-		expect(hauteElement).toHaveClass('bg-red-100', 'text-red-800')
+		expect(hauteElement).toHaveClass('bg-red-100')
+		expect(hauteElement).toHaveClass('text-red-800')
 
 		const basseElement = screen.getByText('Basse').closest('span')
-		expect(basseElement).toHaveClass('bg-green-100', 'text-green-800')
+		expect(basseElement).toHaveClass('bg-green-100')
+		expect(basseElement).toHaveClass('text-green-800')
 
 		const moyenneElement = screen.getByText('Moyenne').closest('span')
-		expect(moyenneElement).toHaveClass('bg-orange-100', 'text-orange-800')
+		expect(moyenneElement).toHaveClass('bg-orange-100')
+		expect(moyenneElement).toHaveClass('text-orange-800')
 	})
 
 	it('should render projects with undefined status and priority', () => {
@@ -206,15 +242,8 @@ describe('ProjectsList', () => {
 			members: [],
 		}
 
-		vi.mocked(useProjects).mockReturnValue({
-			data: [projectWithoutStatus],
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useDeleteProject).mockReturnValue({
-			mutate: vi.fn(),
-		} as any)
+		vi.mocked(useProjects).mockReturnValue(createMockProjects([projectWithoutStatus], { isLoading: false, isError: false }))
+		vi.mocked(useDeleteProject).mockReturnValue(createMockDeleteProject())
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -222,22 +251,17 @@ describe('ProjectsList', () => {
 		expect(screen.getByText('Non définie')).toBeInTheDocument()
 
 		const nonDefiniStatusElement = screen.getByText('Non défini').closest('span')
-		expect(nonDefiniStatusElement).toHaveClass('bg-gray-100', 'text-gray-800')
+		expect(nonDefiniStatusElement).toHaveClass('bg-gray-100')
+		expect(nonDefiniStatusElement).toHaveClass('text-gray-800')
 
 		const nonDefiniePriorityElement = screen.getByText('Non définie').closest('span')
-		expect(nonDefiniePriorityElement).toHaveClass('bg-gray-100', 'text-gray-800')
+		expect(nonDefiniePriorityElement).toHaveClass('bg-gray-100')
+		expect(nonDefiniePriorityElement).toHaveClass('text-gray-800')
 	})
 
 	it('should render status and priority badges in grid mode', () => {
-		vi.mocked(useProjects).mockReturnValue({
-			data: mockProjects,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useDeleteProject).mockReturnValue({
-			mutate: vi.fn(),
-		} as any)
+		vi.mocked(useProjects).mockReturnValue(createMockProjects(mockProjects, { isLoading: false, isError: false }))
+		vi.mocked(useDeleteProject).mockReturnValue(createMockDeleteProject())
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -259,22 +283,17 @@ describe('ProjectsList', () => {
 
 		const enCoursBadge = enCoursElements.find(el => el.closest('span')?.classList.contains('px-3'))
 		const enCoursBadgeSpan = enCoursBadge?.closest('span')
-		expect(enCoursBadgeSpan).toHaveClass('bg-blue-100', 'text-blue-800')
+		expect(enCoursBadgeSpan).toHaveClass('bg-blue-100')
+		expect(enCoursBadgeSpan).toHaveClass('text-blue-800')
 
 		const hauteElement = screen.getByText('Haute').closest('span')
-		expect(hauteElement).toHaveClass('bg-red-100', 'text-red-800')
+		expect(hauteElement).toHaveClass('bg-red-100')
+		expect(hauteElement).toHaveClass('text-red-800')
 	})
 
 	it('should filter projects by search term', () => {
-		vi.mocked(useProjects).mockReturnValue({
-			data: mockProjects,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useDeleteProject).mockReturnValue({
-			mutate: vi.fn(),
-		} as any)
+		vi.mocked(useProjects).mockReturnValue(createMockProjects(mockProjects, { isLoading: false, isError: false }))
+		vi.mocked(useDeleteProject).mockReturnValue(createMockDeleteProject())
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -293,10 +312,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -315,10 +334,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -341,10 +360,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: mockMutate,
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -361,10 +380,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -379,10 +398,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -399,10 +418,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -417,10 +436,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -435,10 +454,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -452,10 +471,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -475,10 +494,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -506,10 +525,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -537,10 +556,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -557,10 +576,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: mockMutate,
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -577,10 +596,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -612,10 +631,10 @@ describe('ProjectsList', () => {
 			isLoading: false,
 			isError: false,
 			error: null,
-		} as any)
+		} as unknown as UseQueryResult<Project[], Error>)
 		vi.mocked(useDeleteProject).mockReturnValue({
 			mutate: vi.fn(),
-		} as any)
+		} as unknown as UseMutationResult<void, Error, number>)
 
 		render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -673,10 +692,10 @@ describe('ProjectsList', () => {
 				isLoading: false,
 				isError: false,
 				error: null,
-			} as any)
+			} as unknown as UseQueryResult<Project[], Error>)
 			vi.mocked(useDeleteProject).mockReturnValue({
 				mutate: vi.fn(),
-			} as any)
+			} as unknown as UseMutationResult<void, Error, number>)
 
 			render(<ProjectsList />, { wrapper: createWrapper() })
 
@@ -735,10 +754,10 @@ describe('ProjectsList', () => {
 				isLoading: false,
 				isError: false,
 				error: null,
-			} as any)
+			} as unknown as UseQueryResult<Project[], Error>)
 			vi.mocked(useDeleteProject).mockReturnValue({
 				mutate: vi.fn(),
-			} as any)
+			} as unknown as UseMutationResult<void, Error, number>)
 
 			render(<ProjectsList />, { wrapper: createWrapper() })
 

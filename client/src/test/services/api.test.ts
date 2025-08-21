@@ -1,5 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import axios from 'axios'
+import axios, { type AxiosInstance, type AxiosError } from 'axios'
+
+const createMockAxiosError = (status: number, config?: Record<string, unknown>): AxiosError => ({
+	isAxiosError: true,
+	toJSON: () => ({}),
+	name: 'AxiosError',
+	message: 'Request failed',
+	response: { status } as AxiosError['response'],
+	config: config as AxiosError['config'],
+	code: undefined,
+	request: undefined,
+	stack: undefined,
+})
 
 vi.mock('axios', () => {
 	const create = vi.fn()
@@ -17,20 +29,21 @@ describe('API Service', () => {
 	it('should pass through non-401 errors without retry', async () => {
 		vi.resetModules()
 
-		let capturedOnRejected: (err: any) => any
-		const instanceFn = vi.fn()
-			; (instanceFn as any).interceptors = {
-				response: {
-					use: vi.fn((onFulfilled, onRejected) => {
-						capturedOnRejected = onRejected
-					}),
-				},
-			}
+		let capturedOnRejected: (err: AxiosError) => Promise<never>
+		const mockInterceptors = {
+			response: {
+				use: vi.fn((_onFulfilled, onRejected) => {
+					capturedOnRejected = onRejected as (err: AxiosError) => Promise<never>
+					return 1
+				}),
+			},
+		}
+		const instanceFn = Object.assign(vi.fn(), { interceptors: mockInterceptors }) as unknown as AxiosInstance
 
-		vi.mocked(axios.create).mockReturnValue(instanceFn as any)
+		vi.mocked(axios.create).mockReturnValue(instanceFn)
 		await import('../../services/api')
 
-		const error = { response: { status: 500 }, config: {} }
+		const error = createMockAxiosError(500, {})
 		await expect(capturedOnRejected!(error)).rejects.toBe(error)
 		expect(axios.post).not.toHaveBeenCalled()
 	})
@@ -38,20 +51,21 @@ describe('API Service', () => {
 	it('should not retry if _retry already set', async () => {
 		vi.resetModules()
 
-		let capturedOnRejected: (err: any) => any
-		const instanceFn = vi.fn()
-			; (instanceFn as any).interceptors = {
-				response: {
-					use: vi.fn((onFulfilled, onRejected) => {
-						capturedOnRejected = onRejected
-					}),
-				},
-			}
+		let capturedOnRejected: (err: unknown) => unknown
+		const mockInterceptors = {
+			response: {
+				use: vi.fn((_onFulfilled, onRejected) => {
+					capturedOnRejected = onRejected
+					return 1
+				}),
+			},
+		}
+		const instanceFn = Object.assign(vi.fn(), { interceptors: mockInterceptors }) as unknown as AxiosInstance
 
-		vi.mocked(axios.create).mockReturnValue(instanceFn as any)
+		vi.mocked(axios.create).mockReturnValue(instanceFn)
 		await import('../../services/api')
 
-		const error = { response: { status: 401 }, config: { _retry: true } }
+		const error = createMockAxiosError(401, { _retry: true })
 		await expect(capturedOnRejected!(error)).rejects.toBe(error)
 		expect(axios.post).not.toHaveBeenCalled()
 	})
@@ -67,7 +81,7 @@ describe('API Service', () => {
 			},
 		}
 
-		vi.mocked((axios as any).create).mockReturnValue(mockAxiosInstance as any)
+		vi.mocked(axios.create).mockReturnValue(mockAxiosInstance as unknown as AxiosInstance)
 
 		await import('../../services/api')
 
@@ -80,26 +94,24 @@ describe('API Service', () => {
 	it('should retry request on 401 by refreshing token', async () => {
 		vi.resetModules()
 
-		let capturedOnRejected: (err: any) => any
+		let capturedOnRejected: (err: unknown) => unknown
 
-		const instanceFn = vi.fn().mockResolvedValue('retried')
-			; (instanceFn as any).interceptors = {
-				response: {
-					use: vi.fn((onFulfilled, onRejected) => {
-						capturedOnRejected = onRejected
-					}),
-				},
-			}
+		const mockInterceptors = {
+			response: {
+				use: vi.fn((_onFulfilled, onRejected) => {
+					capturedOnRejected = onRejected
+					return 1
+				}),
+			},
+		}
+		const instanceFn = Object.assign(vi.fn().mockResolvedValue('retried'), { interceptors: mockInterceptors }) as unknown as AxiosInstance
 
-		vi.mocked(axios.create).mockReturnValue(instanceFn as any)
-		vi.mocked(axios.post).mockResolvedValue({ status: 200 } as any)
+		vi.mocked(axios.create).mockReturnValue(instanceFn)
+		vi.mocked(axios.post).mockResolvedValue({ status: 200 } as unknown)
 
 		await import('../../services/api')
 
-		const error = {
-			response: { status: 401 },
-			config: { url: '/x' },
-		}
+		const error = createMockAxiosError(401, { url: '/x' })
 
 		const result = await capturedOnRejected!(error)
 
@@ -111,26 +123,24 @@ describe('API Service', () => {
 	it('should propagate error when refresh fails', async () => {
 		vi.resetModules()
 
-		let capturedOnRejected: (err: any) => any
-		const instanceFn = vi.fn()
-			; (instanceFn as any).interceptors = {
-				response: {
-					use: vi.fn((onFulfilled, onRejected) => {
-						capturedOnRejected = onRejected
-					}),
-				},
-			}
+		let capturedOnRejected: (err: unknown) => unknown
+		const mockInterceptors = {
+			response: {
+				use: vi.fn((_onFulfilled, onRejected) => {
+					capturedOnRejected = onRejected
+					return 1
+				}),
+			},
+		}
+		const instanceFn = Object.assign(vi.fn(), { interceptors: mockInterceptors }) as unknown as AxiosInstance
 
-		vi.mocked(axios.create).mockReturnValue(instanceFn as any)
+		vi.mocked(axios.create).mockReturnValue(instanceFn)
 		vi.mocked(axios.post).mockRejectedValue(new Error('refresh failed'))
 
 		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 		await import('../../services/api')
 
-		const error = {
-			response: { status: 401 },
-			config: { url: '/x' },
-		}
+		const error = createMockAxiosError(401, { url: '/x' })
 
 		await expect(capturedOnRejected!(error)).rejects.toBe(error)
 		expect(consoleSpy).toHaveBeenCalled()

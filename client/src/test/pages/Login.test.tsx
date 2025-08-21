@@ -1,161 +1,268 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import Login from '../../pages/Login'
-import { AuthContext } from '../../contexts/AuthContext'
-import type { UseMutationResult } from '@tanstack/react-query'
-import type { RegisterData, LoginData } from '../../services/auth'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '../../contexts/AuthContext';
+import Login from '../../pages/Login';
+import { authService } from '../../services/auth';
 
 vi.mock('../../services/auth', () => ({
 	authService: {
-		login: vi.fn()
-	}
-}))
+		login: vi.fn(),
+		getCurrentUser: vi.fn(),
+		logout: vi.fn(),
+		register: vi.fn(),
+	},
+}));
 
-vi.mock('react-hot-toast', () => ({
-	toast: {
-		success: vi.fn(),
-		error: vi.fn()
-	}
-}))
-
-vi.mock('@tanstack/react-router', () => ({
-	useNavigate: () => vi.fn(),
-	useRouter: () => ({
-		navigate: vi.fn(),
-		state: { location: { pathname: '/login' } }
-	}),
-	Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
-		<a href={to}>{children}</a>
-	)
-}))
-
-type User = { id: number; email: string; name?: string }
-type AuthResponse = { user: User; message?: string }
-
-const createMockMutation = () => ({
-	mutate: vi.fn(),
-	mutateAsync: vi.fn(),
-	isPending: false,
-	isError: false,
-	isSuccess: false,
-	isIdle: true,
-	error: null,
-	data: undefined,
-	variables: undefined,
-	reset: vi.fn(),
-	status: 'idle' as const,
-})
-
-const renderWithAuth = () => {
-	const mockLoginMutation = createMockMutation()
-	const mockRegisterMutation = createMockMutation()
-
+vi.mock('@tanstack/react-router', async () => {
+	const actual = await vi.importActual('@tanstack/react-router');
 	return {
-		mockLoginMutation,
-		...render(
-			<AuthContext.Provider
-				value={{
-					user: null,
-					isLoading: false,
-					setUser: vi.fn(),
-					loginMutation: mockLoginMutation as unknown as UseMutationResult<AuthResponse, Error, LoginData>,
-					registerMutation: mockRegisterMutation as unknown as UseMutationResult<AuthResponse, Error, RegisterData>,
-					logout: vi.fn(),
-				}}
-			>
-				<Login />
-			</AuthContext.Provider>
-		)
-	}
-}
+		...actual,
+		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string;[key: string]: unknown }) => (
+			<a href={to} {...props}>{children}</a>
+		),
+		useNavigate: () => vi.fn(),
+	};
+});
 
-describe('Login Page', () => {
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: {
+				retry: false,
+				staleTime: 0,
+				gcTime: 0,
+			},
+			mutations: {
+				retry: false,
+			},
+		},
+	});
+
+	return (
+		<QueryClientProvider client={queryClient}>
+			<AuthProvider>
+				{children}
+			</AuthProvider>
+		</QueryClientProvider>
+	);
+};
+
+describe('Login (success)', () => {
+	const mockUser = {
+		id: 1,
+		email: 'test@exemple.com',
+		name: 'John Doe',
+	};
+
+	const validCredentials = {
+		email: mockUser.email,
+		password: 'password123',
+	};
+
 	beforeEach(() => {
-		vi.clearAllMocks()
-	})
+		vi.mocked(authService.login).mockResolvedValue({
+			user: mockUser,
+		});
 
-	it('renders login form correctly', () => {
-		renderWithAuth()
+		vi.mocked(authService.getCurrentUser).mockResolvedValue({
+			user: undefined,
+		});
+	});
 
-		expect(screen.getByText(/connectez-vous à votre compte/i)).toBeInTheDocument()
-		expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-		expect(screen.getByLabelText(/mot de passe/i)).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: /se connecter/i })).toBeInTheDocument()
-	})
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
 
-	it('handles form submission successfully', async () => {
-		const { mockLoginMutation } = renderWithAuth()
+	it('should allow a user to login with valid credentials', async () => {
+		const user = userEvent.setup();
 
-		const emailInput = screen.getByLabelText(/email/i)
-		const passwordInput = screen.getByLabelText(/mot de passe/i)
-		const submitButton = screen.getByRole('button', { name: /se connecter/i })
+		render(
+			<TestWrapper>
+				<Login />
+			</TestWrapper>
+		);
 
-		fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
-		fireEvent.change(passwordInput, { target: { value: 'password123' } })
-		fireEvent.click(submitButton)
+		expect(screen.getByText('Bon retour !')).toBeInTheDocument();
+		expect(screen.getByText('Connectez-vous à votre compte')).toBeInTheDocument();
 
-		expect(mockLoginMutation.mutate).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' })
-		expect(emailInput).toHaveValue('test@example.com')
-		expect(passwordInput).toHaveValue('password123')
-	})
+		const emailInput = screen.getByLabelText(/adresse email/i);
+		const passwordInput = screen.getByLabelText(/mot de passe/i);
 
-	it('handles login failure', async () => {
-		renderWithAuth()
+		await user.type(emailInput, validCredentials.email);
+		expect(emailInput).toHaveValue(validCredentials.email);
 
-		const emailInput = screen.getByLabelText(/email/i)
-		const passwordInput = screen.getByLabelText(/mot de passe/i)
-		const submitButton = screen.getByRole('button', { name: /se connecter/i })
+		await user.type(passwordInput, validCredentials.password);
+		expect(passwordInput).toHaveValue(validCredentials.password);
 
-		fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
-		fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } })
-		fireEvent.click(submitButton)
+		const submitButton = screen.getByRole('button', { name: /se connecter/i });
+		expect(submitButton).toBeInTheDocument();
+		expect(submitButton).not.toBeDisabled();
 
-		expect(emailInput).toHaveValue('test@example.com')
-		expect(passwordInput).toHaveValue('wrongpassword')
-	})
+		await user.click(submitButton);
 
-	it('validates required fields', async () => {
-		renderWithAuth()
+		await waitFor(() => {
+			expect(authService.login).toHaveBeenCalledWith(validCredentials);
+			expect(authService.login).toHaveBeenCalledTimes(1);
+		});
+	});
 
-		const submitButton = screen.getByRole('button', { name: /se connecter/i })
-		fireEvent.click(submitButton)
+	it('should display loading state during login', async () => {
+		const user = userEvent.setup();
 
-		expect(submitButton).toBeInTheDocument()
-	})
+		vi.mocked(authService.login).mockImplementation(
+			() => new Promise(resolve =>
+				setTimeout(() => resolve({ user: mockUser }), 100)
+			)
+		);
 
-	it('validates email format', async () => {
-		renderWithAuth()
-		const emailInput = screen.getByLabelText(/email/i)
-		fireEvent.change(emailInput, { target: { value: 'invalid-email' } })
-		fireEvent.blur(emailInput)
-		expect(emailInput).toHaveValue('invalid-email')
-	})
+		render(
+			<TestWrapper>
+				<Login />
+			</TestWrapper>
+		);
 
-	it('shows loading state during submission', async () => {
-		renderWithAuth()
-		const emailInput = screen.getByLabelText(/email/i)
-		const passwordInput = screen.getByLabelText(/mot de passe/i)
-		const submitButton = screen.getByRole('button', { name: /se connecter/i })
+		const emailInput = screen.getByLabelText(/adresse email/i);
+		const passwordInput = screen.getByLabelText(/mot de passe/i);
+		const submitButton = screen.getByRole('button', { name: /se connecter/i });
 
-		fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
-		fireEvent.change(passwordInput, { target: { value: 'password123' } })
-		fireEvent.click(submitButton)
+		await user.type(emailInput, validCredentials.email);
+		await user.type(passwordInput, validCredentials.password);
+		await user.click(submitButton);
 
-		expect(submitButton).toBeInTheDocument()
-	})
+		expect(submitButton).toBeDisabled();
 
-	it('toggles password visibility', () => {
-		renderWithAuth()
+		const loadingSpinner = submitButton.querySelector('.animate-spin');
+		expect(loadingSpinner).toBeInTheDocument();
+	});
 
-		const passwordInput = screen.getByLabelText(/mot de passe/i)
-		const toggleButton = screen.getAllByRole('button')[0]
+	it('should validate required fields before submission', async () => {
+		const user = userEvent.setup();
 
-		expect(passwordInput).toHaveAttribute('type', 'password')
-		fireEvent.click(toggleButton)
+		render(
+			<TestWrapper>
+				<Login />
+			</TestWrapper>
+		);
 
-		expect(passwordInput).toHaveAttribute('type', 'text')
-		fireEvent.click(toggleButton)
+		const submitButton = screen.getByRole('button', { name: /se connecter/i });
 
-		expect(passwordInput).toHaveAttribute('type', 'password')
-	})
-})
+		await user.click(submitButton);
+
+		expect(authService.login).not.toHaveBeenCalled();
+
+		const emailInput = screen.getByLabelText(/adresse email/i);
+		const passwordInput = screen.getByLabelText(/mot de passe/i);
+
+		expect(emailInput).toBeRequired();
+		expect(passwordInput).toBeRequired();
+	});
+
+	it('should allow showing/hiding password', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<TestWrapper>
+				<Login />
+			</TestWrapper>
+		);
+
+		const passwordInput = screen.getByLabelText(/mot de passe/i);
+		const toggleButtons = screen.getAllByRole('button');
+		const toggleButton = toggleButtons.find(btn =>
+			btn.querySelector('svg') && btn !== screen.getByRole('button', { name: /se connecter/i })
+		);
+
+		expect(toggleButton).toBeInTheDocument();
+
+		expect(passwordInput).toHaveAttribute('type', 'password');
+
+		if (toggleButton) {
+			await user.click(toggleButton);
+			expect(passwordInput).toHaveAttribute('type', 'text');
+
+			await user.click(toggleButton);
+			expect(passwordInput).toHaveAttribute('type', 'password');
+		}
+	});
+});
+
+describe('Login (failure)', () => {
+	const invalidCredentials = {
+		email: 'test@exemple.com',
+		password: 'motdepasseincorrect',
+	};
+
+	beforeEach(() => {
+		vi.mocked(authService.getCurrentUser).mockResolvedValue({
+			user: undefined,
+		});
+	});
+
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('devrait afficher un message d\'erreur lors d\'un échec de connexion (mot de passe incorrect)', async () => {
+		const user = userEvent.setup();
+
+		const errorMessage = 'Mot de passe incorrect';
+		vi.mocked(authService.login).mockRejectedValue(new Error(errorMessage));
+
+		render(
+			<TestWrapper>
+				<Login />
+			</TestWrapper>
+		);
+
+		const emailInput = screen.getByLabelText(/adresse email/i);
+		const passwordInput = screen.getByLabelText(/mot de passe/i);
+
+		await user.type(emailInput, invalidCredentials.email);
+		await user.type(passwordInput, invalidCredentials.password);
+
+		const submitButton = screen.getByRole('button', { name: /se connecter/i });
+		await user.click(submitButton);
+
+		await waitFor(() => {
+			expect(authService.login).toHaveBeenCalledWith(invalidCredentials);
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText(errorMessage)).toBeInTheDocument();
+		});
+
+		const errorContainer = screen.getByText(errorMessage).closest('div');
+		expect(errorContainer).toHaveClass('bg-red-50');
+		expect(errorContainer).toHaveClass('border-red-200');
+
+		expect(screen.getByText('Bon retour !')).toBeInTheDocument();
+		expect(submitButton).toBeInTheDocument();
+		expect(submitButton).not.toBeDisabled();
+	});
+
+	it('devrait afficher un message d\'erreur générique si aucun message spécifique n\'est fourni', async () => {
+		const user = userEvent.setup();
+
+		vi.mocked(authService.login).mockRejectedValue(new Error());
+
+		render(
+			<TestWrapper>
+				<Login />
+			</TestWrapper>
+		);
+
+		const emailInput = screen.getByLabelText(/adresse email/i);
+		const passwordInput = screen.getByLabelText(/mot de passe/i);
+		const submitButton = screen.getByRole('button', { name: /se connecter/i });
+
+		await user.type(emailInput, invalidCredentials.email);
+		await user.type(passwordInput, invalidCredentials.password);
+		await user.click(submitButton);
+
+		await waitFor(() => {
+			expect(screen.getByText('Erreur de connexion')).toBeInTheDocument();
+		});
+	});
+});

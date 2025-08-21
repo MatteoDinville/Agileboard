@@ -1,580 +1,480 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import TaskModal from '../../components/TaskModal'
-import { projectService } from '../../services/project'
-import { TaskStatus, TaskPriority } from '../../types/enums'
-import type { Task } from '../../services/task'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import TaskModal from '../../components/TaskModal';
+import { TaskStatus, TaskPriority } from '../../types/enums';
 
 vi.mock('../../services/project', () => ({
 	projectService: {
 		fetchProjectMembers: vi.fn(),
-	}
-}))
+	},
+}));
 
-const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
+import { projectService } from '../../services/project';
 
-describe('TaskModal', () => {
-	beforeEach(() => {
-		vi.clearAllMocks()
-		consoleSpy.mockClear()
-	})
+const mockProjectService = projectService as typeof projectService & {
+	fetchProjectMembers: ReturnType<typeof vi.fn>;
+}
 
-	describe('Modal visibility', () => {
-		it('should not render when isOpen is false', () => {
-			render(
-				<TaskModal
-					isOpen={false}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
+const createTestQueryClient = () => new QueryClient({
+	defaultOptions: {
+		queries: { retry: false },
+		mutations: { retry: false },
+	},
+});
 
-			expect(screen.queryByText('Nouvelle tâche')).not.toBeInTheDocument()
-		})
-
-		it('should render when isOpen is true', () => {
-			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue([])
-
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			expect(screen.getByText('Nouvelle tâche')).toBeInTheDocument()
-		})
-	})
-
-	describe('Create mode', () => {
-		beforeEach(() => {
-			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue([])
-		})
-
-		it('should show create task title and description', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			expect(screen.getByText('Nouvelle tâche')).toBeInTheDocument()
-			expect(screen.getByText('Créez une nouvelle tâche pour votre projet')).toBeInTheDocument()
-		})
-
-		it('should initialize form with default values', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const titleInput = screen.getByLabelText(/Titre de la tâche/)
-			expect(titleInput).toHaveValue('')
-			const descriptionTextarea = screen.getByLabelText('Description')
-			expect(descriptionTextarea).toHaveValue('')
-			const statusSelect = screen.getByLabelText('Statut')
-			expect(statusSelect).toHaveValue(TaskStatus.A_FAIRE)
-			const prioritySelect = screen.getByLabelText('Priorité')
-			expect(prioritySelect).toHaveValue(TaskPriority.MOYENNE)
-		})
-
-		it('should show create button', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			expect(screen.getByText('Créer')).toBeInTheDocument()
-		})
-	})
-
-	describe('Edit mode', () => {
-		const mockTask: Task = {
+const mockMembers = [
+	{
+		user: {
 			id: 1,
-			title: 'Test Task',
-			description: 'Test Description',
-			status: TaskStatus.EN_COURS,
-			priority: TaskPriority.HAUTE,
-			dueDate: '2024-01-01',
-			createdAt: '2024-01-01T00:00:00Z',
-			updatedAt: '2024-01-01T00:00:00Z',
-			projectId: 1,
-			assignedToId: 1,
-			assignedTo: {
-				id: 1,
-				name: 'John Doe',
-				email: 'john@example.com'
-			}
+			email: 'john@example.com',
+			name: 'John Doe'
 		}
+	},
+	{
+		user: {
+			id: 2,
+			email: 'jane@example.com',
+			name: 'Jane Smith'
+		}
+	}
+];
 
-		beforeEach(() => {
-			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue([])
-		})
+describe('TaskModal - Task Creation', () => {
+	let queryClient: QueryClient;
+	let mockOnSave: ReturnType<typeof vi.fn>;
+	let mockOnClose: ReturnType<typeof vi.fn>;
 
-		it('should show edit task title and description', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					task={mockTask}
-					projectId={1}
-				/>
-			)
+	beforeEach(() => {
+		queryClient = createTestQueryClient();
+		mockOnSave = vi.fn().mockResolvedValue(undefined);
+		mockOnClose = vi.fn();
 
-			expect(screen.getByText('Modifier la tâche')).toBeInTheDocument()
-			expect(screen.getByText('Apportez des modifications à votre tâche')).toBeInTheDocument()
-		})
+		mockProjectService.fetchProjectMembers.mockResolvedValue(mockMembers);
+	});
 
-		it('should populate form with task data', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					task={mockTask}
-					projectId={1}
-				/>
-			)
-
-			expect(screen.getByDisplayValue('Test Task')).toBeInTheDocument()
-			expect(screen.getByDisplayValue('Test Description')).toBeInTheDocument()
-			const statusSelect = screen.getByLabelText('Statut')
-			expect(statusSelect).toHaveValue(TaskStatus.EN_COURS)
-			const prioritySelect = screen.getByLabelText('Priorité')
-			expect(prioritySelect).toHaveValue(TaskPriority.HAUTE)
-			expect(screen.getByDisplayValue('2024-01-01')).toBeInTheDocument()
-		})
-
-		it('should show edit button', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					task={mockTask}
-					projectId={1}
-				/>
-			)
-
-			expect(screen.getByText('Modifier')).toBeInTheDocument()
-		})
-	})
-
-	describe('Form interactions', () => {
-		beforeEach(() => {
-			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue([])
-		})
-
-		it('should handle title input change', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const titleInput = screen.getByPlaceholderText('Ex: Implémenter la fonctionnalité de connexion')
-			fireEvent.change(titleInput, { target: { value: 'New Task Title' } })
-
-			expect(titleInput).toHaveValue('New Task Title')
-		})
-
-		it('should handle description input change', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const descriptionInput = screen.getByPlaceholderText('Décrivez les détails de cette tâche...')
-			fireEvent.change(descriptionInput, { target: { value: 'New Description' } })
-
-			expect(descriptionInput).toHaveValue('New Description')
-		})
-
-		it('should handle status change', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const statusSelect = screen.getByLabelText('Statut')
-			fireEvent.change(statusSelect, { target: { value: TaskStatus.EN_COURS } })
-
-			expect(statusSelect).toHaveValue(TaskStatus.EN_COURS)
-		})
-
-		it('should handle priority change', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const prioritySelect = screen.getByLabelText('Priorité')
-			fireEvent.change(prioritySelect, { target: { value: TaskPriority.HAUTE } })
-
-			expect(prioritySelect).toHaveValue(TaskPriority.HAUTE)
-		})
-
-		it('should handle due date change', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const dueDateInput = screen.getByLabelText('Date d\'échéance')
-			fireEvent.change(dueDateInput, { target: { value: '2024-01-15' } })
-
-			expect(dueDateInput).toHaveValue('2024-01-15')
-		})
-	})
-
-	describe('Project members', () => {
-		const mockMembers = [
-			{
-				id: 1,
-				projectId: 1,
-				userId: 1,
-				role: 'MEMBER',
-				joinedAt: '2024-01-01T00:00:00Z',
-				user: {
-					id: 1,
-					name: 'John Doe',
-					email: 'john@example.com'
-				}
-			},
-			{
-				id: 2,
-				projectId: 1,
-				userId: 2,
-				role: 'MEMBER',
-				joinedAt: '2024-01-01T00:00:00Z',
-				user: {
-					id: 2,
-					name: 'Jane Smith',
-					email: 'jane@example.com'
-				}
-			}
-		]
-
-		beforeEach(() => {
-			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue(mockMembers)
-		})
-
-		it('should load and display project members', async () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			await waitFor(() => {
-				expect(screen.getByText('John Doe')).toBeInTheDocument()
-				expect(screen.getByText('Jane Smith')).toBeInTheDocument()
-			})
-
-			expect(projectService.fetchProjectMembers).toHaveBeenCalledWith(1)
-		})
-
-		it('should handle assignee selection', async () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			await waitFor(() => {
-				const assigneeSelect = screen.getByDisplayValue('Aucun utilisateur')
-				fireEvent.change(assigneeSelect, { target: { value: '1' } })
-				expect(assigneeSelect).toHaveValue('1')
-			})
-		})
-
-		it('should handle error when loading members fails', async () => {
-			vi.mocked(projectService.fetchProjectMembers).mockRejectedValue(new Error('Failed to load'))
-
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			await waitFor(() => {
-				expect(consoleSpy).toHaveBeenCalledWith('Erreur lors du chargement des membres du projet:', expect.any(Error))
-			})
-		})
-	})
-
-	describe('Form submission', () => {
-		beforeEach(() => {
-			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue([])
-		})
-
-		it('should call onSave with form data when submitted', async () => {
-			const mockOnSave = vi.fn().mockResolvedValue(undefined)
-
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={mockOnSave}
-					projectId={1}
-				/>
-			)
-
-			const titleInput = screen.getByPlaceholderText('Ex: Implémenter la fonctionnalité de connexion')
-			fireEvent.change(titleInput, { target: { value: 'Test Task' } })
-
-			const submitButton = screen.getByText('Créer')
-			fireEvent.click(submitButton)
-
-			await waitFor(() => {
-				expect(mockOnSave).toHaveBeenCalledWith({
-					title: 'Test Task',
-					description: undefined,
-					status: TaskStatus.A_FAIRE,
-					priority: TaskPriority.MOYENNE,
-					dueDate: undefined,
-					assignedToId: undefined,
-					projectId: 1,
-				})
-			})
-		})
-
-		it('should disable submit button when title is empty', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const submitButton = screen.getByText('Créer')
-			expect(submitButton).toBeDisabled()
-		})
-
-		it('should enable submit button when title is filled', () => {
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const titleInput = screen.getByPlaceholderText('Ex: Implémenter la fonctionnalité de connexion')
-			fireEvent.change(titleInput, { target: { value: 'Test Task' } })
-
-			const submitButton = screen.getByText('Créer')
-			expect(submitButton).not.toBeDisabled()
-		})
-
-		it('should handle error during submission', async () => {
-			const mockOnSave = vi.fn().mockRejectedValue(new Error('Save failed'))
-
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={mockOnSave}
-					projectId={1}
-				/>
-			)
-
-			const titleInput = screen.getByPlaceholderText('Ex: Implémenter la fonctionnalité de connexion')
-			fireEvent.change(titleInput, { target: { value: 'Test Task' } })
-
-			const submitButton = screen.getByText('Créer')
-			fireEvent.click(submitButton)
-
-			await waitFor(() => {
-				expect(consoleSpy).toHaveBeenCalledWith('Erreur lors de la sauvegarde:', expect.any(Error))
-			})
-		})
-	})
-
-	describe('Modal actions', () => {
-		beforeEach(() => {
-			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue([])
-		})
-
-		it('should call onClose when cancel button is clicked', () => {
-			const mockOnClose = vi.fn()
-
-			render(
+	it('should display task creation form when opened', async () => {
+		render(
+			<QueryClientProvider client={queryClient}>
 				<TaskModal
 					isOpen={true}
 					onClose={mockOnClose}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const cancelButton = screen.getByText('Annuler')
-			fireEvent.click(cancelButton)
-
-			expect(mockOnClose).toHaveBeenCalled()
-		})
-
-		it('should call onClose when close button is clicked', () => {
-			const mockOnClose = vi.fn()
-
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={mockOnClose}
-					onSave={vi.fn()}
-					projectId={1}
-				/>
-			)
-
-			const closeButton = screen.getByRole('button', { name: '' })
-			fireEvent.click(closeButton)
-
-			expect(mockOnClose).toHaveBeenCalled()
-		})
-	})
-
-	describe('Task with status only', () => {
-		beforeEach(() => {
-			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue([])
-		})
-
-		it('should initialize form with provided status', () => {
-			const taskWithStatus = {
-				status: TaskStatus.EN_COURS
-			}
-
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
-					onSave={vi.fn()}
-					task={taskWithStatus as any}
-					projectId={1}
-				/>
-			)
-
-			const statusSelect = screen.getByLabelText('Statut')
-			expect(statusSelect).toHaveValue(TaskStatus.EN_COURS)
-
-			const prioritySelect = screen.getByLabelText('Priorité')
-			expect(prioritySelect).toHaveValue(TaskPriority.MOYENNE)
-		})
-	})
-
-	describe('Loading states', () => {
-		beforeEach(() => {
-			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue([])
-		})
-
-		it('should show loading state during submission', async () => {
-			let resolvePromise: (value: any) => void
-			const mockOnSave = vi.fn().mockImplementation(() => new Promise(resolve => {
-				resolvePromise = resolve
-			}))
-
-			render(
-				<TaskModal
-					isOpen={true}
-					onClose={vi.fn()}
+					task={null}
 					onSave={mockOnSave}
 					projectId={1}
 				/>
-			)
+			</QueryClientProvider>
+		);
 
-			const titleInput = screen.getByPlaceholderText('Ex: Implémenter la fonctionnalité de connexion')
-			fireEvent.change(titleInput, { target: { value: 'Test Task' } })
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
 
-			const submitButton = screen.getByText('Créer')
-			fireEvent.click(submitButton)
+		expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
+		expect(screen.getByLabelText(/date d'échéance/i)).toBeInTheDocument();
+		expect(screen.getByLabelText(/assigné à/i)).toBeInTheDocument();
+		expect(screen.getByLabelText(/statut/i)).toBeInTheDocument();
+		expect(screen.getByLabelText(/priorité/i)).toBeInTheDocument();
+	});
 
-			await waitFor(() => {
-				expect(screen.getByText('Création...')).toBeInTheDocument()
-			})
+	it('should create task with required fields', async () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
 
-			resolvePromise!({})
-		})
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
 
-		it('should show loading state during edit submission', async () => {
-			const mockTask: Task = {
-				id: 1,
-				title: 'Test Task',
-				description: 'Test Description',
+		const titleInput = screen.getByLabelText(/titre de la tâche/i);
+		const descriptionInput = screen.getByLabelText(/description/i);
+
+		fireEvent.change(titleInput, { target: { value: 'New Task Title' } });
+		fireEvent.change(descriptionInput, { target: { value: 'Task description' } });
+
+		const saveButton = screen.getByRole('button', { name: /créer/i });
+		fireEvent.click(saveButton);
+
+		await waitFor(() => {
+			expect(mockOnSave).toHaveBeenCalledWith({
+				title: 'New Task Title',
+				description: 'Task description',
 				status: TaskStatus.A_FAIRE,
 				priority: TaskPriority.MOYENNE,
-				createdAt: '2024-01-01T00:00:00Z',
-				updatedAt: '2024-01-01T00:00:00Z',
-				projectId: 1
-			}
+				dueDate: undefined,
+				assignedToId: undefined,
+				projectId: 1,
+			});
+		});
+	});
 
-			let resolvePromise: (value: any) => void
-			const mockOnSave = vi.fn().mockImplementation(() => new Promise(resolve => {
-				resolvePromise = resolve
-			}))
-
-			render(
+	it('should create task with all fields filled', async () => {
+		render(
+			<QueryClientProvider client={queryClient}>
 				<TaskModal
 					isOpen={true}
-					onClose={vi.fn()}
+					onClose={mockOnClose}
+					task={null}
 					onSave={mockOnSave}
-					task={mockTask}
 					projectId={1}
 				/>
-			)
+			</QueryClientProvider>
+		);
 
-			const submitButton = screen.getByText('Modifier')
-			fireEvent.click(submitButton)
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
 
-			await waitFor(() => {
-				expect(screen.getByText('Modification...')).toBeInTheDocument()
-			})
+		const titleInput = screen.getByLabelText(/titre de la tâche/i);
+		const descriptionInput = screen.getByLabelText(/description/i);
+		const dueDateInput = screen.getByLabelText(/date d'échéance/i);
+		const assignedToSelect = screen.getByLabelText(/assigné à/i);
+		const statusSelect = screen.getByLabelText(/statut/i);
+		const prioritySelect = screen.getByLabelText(/priorité/i);
 
-			resolvePromise!({})
-		})
-	})
-})
+		fireEvent.change(titleInput, { target: { value: 'Complete Task' } });
+		fireEvent.change(descriptionInput, { target: { value: 'Detailed description' } });
+		fireEvent.change(dueDateInput, { target: { value: '2024-12-31' } });
+		fireEvent.change(assignedToSelect, { target: { value: '1' } });
+		fireEvent.change(statusSelect, { target: { value: TaskStatus.EN_COURS } });
+		fireEvent.change(prioritySelect, { target: { value: TaskPriority.HAUTE } });
+
+		const saveButton = screen.getByRole('button', { name: /créer/i });
+		fireEvent.click(saveButton);
+
+		await waitFor(() => {
+			expect(mockOnSave).toHaveBeenCalledWith({
+				title: 'Complete Task',
+				description: 'Detailed description',
+				status: TaskStatus.EN_COURS,
+				priority: TaskPriority.HAUTE,
+				dueDate: '2024-12-31',
+				assignedToId: 1,
+				projectId: 1,
+			});
+		});
+	});
+
+	it('should create task with specific status when provided', async () => {
+		const task = {
+			status: TaskStatus.EN_COURS,
+			id: 0,
+			title: '',
+			priority: TaskPriority.MOYENNE,
+			createdAt: '',
+			updatedAt: '',
+			projectId: 1
+		};
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={task}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
+
+		const statusSelect = screen.getByLabelText(/statut/i) as HTMLSelectElement;
+		expect(statusSelect.value).toBe(TaskStatus.EN_COURS);
+	});
+
+	it('should load and display project members in assignment dropdown', async () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			expect(mockProjectService.fetchProjectMembers).toHaveBeenCalledWith(1);
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText('John Doe')).toBeInTheDocument();
+			expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+		});
+	});
+
+	it('should disable save button when title is empty', async () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
+
+		const saveButton = screen.getByRole('button', { name: /créer/i });
+		expect(saveButton).toBeDisabled();
+	});
+
+	it('should enable save button when title is provided', async () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
+
+		const titleInput = screen.getByLabelText(/titre de la tâche/i);
+		fireEvent.change(titleInput, { target: { value: 'New Task' } });
+
+		const saveButton = screen.getByRole('button', { name: /créer/i });
+		expect(saveButton).not.toBeDisabled();
+	});
+
+	it('should close modal when clicking cancel', async () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
+
+		const cancelButton = screen.getByRole('button', { name: /annuler/i });
+		fireEvent.click(cancelButton);
+
+		expect(mockOnClose).toHaveBeenCalled();
+	});
+
+	it('should show loading state during task creation', async () => {
+		let resolvePromise: (value?: unknown) => void = () => { };
+		const savePromise = new Promise((resolve) => {
+			resolvePromise = resolve;
+		});
+		mockOnSave.mockReturnValue(savePromise);
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
+
+		const titleInput = screen.getByLabelText(/titre de la tâche/i);
+		fireEvent.change(titleInput, { target: { value: 'New Task' } });
+
+		const saveButton = screen.getByRole('button', { name: /créer/i });
+		fireEvent.click(saveButton);
+
+		await waitFor(() => {
+			expect(saveButton).toBeDisabled();
+			expect(screen.getByText(/création/i)).toBeInTheDocument();
+		});
+
+		resolvePromise();
+	});
+
+	it('should update existing task when task prop is provided', async () => {
+		const existingTask = {
+			id: 1,
+			title: 'Existing Task',
+			description: 'Existing description',
+			status: TaskStatus.EN_COURS,
+			priority: TaskPriority.HAUTE,
+			dueDate: '2024-01-15T00:00:00.000Z',
+			assignedToId: 1,
+			createdAt: '2024-01-01T00:00:00.000Z',
+			updatedAt: '2024-01-01T00:00:00.000Z',
+			projectId: 1,
+		};
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={existingTask}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByDisplayValue('Existing Task')).toBeInTheDocument();
+		});
+
+		expect(screen.getByDisplayValue('Existing description')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('2024-01-15')).toBeInTheDocument();
+
+		const titleInput = screen.getByLabelText(/titre de la tâche/i);
+		fireEvent.change(titleInput, { target: { value: 'Updated Task' } });
+
+		const saveButton = screen.getByRole('button', { name: /modifier/i });
+		fireEvent.click(saveButton);
+
+		await waitFor(() => {
+			expect(mockOnSave).toHaveBeenCalledWith({
+				title: 'Updated Task',
+				description: 'Existing description',
+				status: TaskStatus.EN_COURS,
+				priority: TaskPriority.HAUTE,
+				dueDate: '2024-01-15',
+				assignedToId: 1,
+				projectId: 1,
+			});
+		});
+	});
+
+	it('should not render when modal is closed', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={false}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		expect(screen.queryByLabelText(/titre de la tâche/i)).not.toBeInTheDocument();
+	});
+
+	it('should handle empty due date', async () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
+
+		const titleInput = screen.getByLabelText(/titre de la tâche/i);
+		fireEvent.change(titleInput, { target: { value: 'Task without due date' } });
+
+		const saveButton = screen.getByRole('button', { name: /créer/i });
+		fireEvent.click(saveButton);
+
+		await waitFor(() => {
+			expect(mockOnSave).toHaveBeenCalledWith({
+				title: 'Task without due date',
+				description: undefined,
+				status: TaskStatus.A_FAIRE,
+				priority: TaskPriority.MOYENNE,
+				dueDate: undefined,
+				assignedToId: undefined,
+				projectId: 1,
+			});
+		});
+	});
+
+	it('should reset form when modal is reopened', async () => {
+		const { rerender } = render(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByLabelText(/titre de la tâche/i)).toBeInTheDocument();
+		});
+
+		const titleInput = screen.getByLabelText(/titre de la tâche/i);
+		fireEvent.change(titleInput, { target: { value: 'Some title' } });
+
+		// Close modal
+		rerender(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={false}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		// Reopen modal
+		rerender(
+			<QueryClientProvider client={queryClient}>
+				<TaskModal
+					isOpen={true}
+					onClose={mockOnClose}
+					task={null}
+					onSave={mockOnSave}
+					projectId={1}
+				/>
+			</QueryClientProvider>
+		);
+
+		await waitFor(() => {
+			const resetTitleInput = screen.getByLabelText(/titre de la tâche/i) as HTMLInputElement;
+			expect(resetTitleInput.value).toBe('');
+		});
+	});
+});

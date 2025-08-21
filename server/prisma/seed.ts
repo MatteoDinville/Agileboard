@@ -1,98 +1,187 @@
-import { PrismaClient, TaskStatus, TaskPriority } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import { PrismaClient, TaskStatus, TaskPriority, User, Project } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
-// --- Données de mock ---
 const firstNames = [
-	'Antoine', 'Marie', 'Pierre', 'Sophie', 'Lucas', 'Emma', 'Thomas', 'Camille',
-	'Nicolas', 'Julie', 'Alexandre', 'Sarah', 'Maxime', 'Laura', 'Benjamin',
-	'Léa', 'Julien', 'Manon', 'Romain', 'Clara'
+	"Antoine",
+	"Marie",
+	"Pierre",
+	"Sophie",
+	"Lucas",
+	"Emma",
+	"Thomas",
+	"Camille",
+	"Nicolas",
+	"Julie",
+	"Alexandre",
+	"Sarah",
+	"Maxime",
+	"Laura",
+	"Benjamin",
+	"Léa",
+	"Julien",
+	"Manon",
+	"Romain",
+	"Clara"
 ];
 
 const lastNames = [
-	'Martin', 'Bernard', 'Thomas', 'Petit', 'Robert', 'Richard', 'Durand',
-	'Dubois', 'Moreau', 'Laurent', 'Simon', 'Michel', 'Lefebvre', 'Leroy',
-	'Roux', 'David', 'Bertrand', 'Morel', 'Fournier', 'Girard'
+	"Martin",
+	"Bernard",
+	"Thomas",
+	"Petit",
+	"Robert",
+	"Richard",
+	"Durand",
+	"Dubois",
+	"Moreau",
+	"Laurent",
+	"Simon",
+	"Michel",
+	"Lefebvre",
+	"Leroy",
+	"Roux",
+	"David",
+	"Bertrand",
+	"Morel",
+	"Fournier",
+	"Girard"
 ];
 
 const projectTitles = [
-	'Application E-commerce', 'Système de Gestion RH', 'Plateforme de Formation',
-	'Application Mobile Fitness', 'Dashboard Analytics', 'Système de Réservation',
-	'Plateforme de Streaming', 'Application de Livraison', 'Système de Facturation',
-	'Application de Chat', 'Plateforme de Crowdfunding', 'Système de Gestion Stock',
-	'Application de Voyage', 'Plateforme de Freelance', 'Système de CRM',
-	'Application de Santé', 'Plateforme de Gaming', 'Système de Monitoring',
-	'Application de Finance', 'Plateforme de Collaboration', 'Système de Sécurité',
-	'Application de Transport', 'Plateforme de Marketplace', 'Système de Support',
-	'Application de Médias', 'Plateforme de Formation', 'Système de Gestion Projet',
-	'Application de Social', 'Plateforme de Trading', 'Système de Gestion Client',
-	'Application de Design', 'Plateforme de Musique', 'Système de Gestion Événement',
-	'Application de Sport', 'Plateforme de Recrutement', 'Système de Gestion Document',
-	'Application de Cuisine', 'Plateforme de Location', 'Système de Gestion Inventaire',
-	'Application de Mode', 'Plateforme de Donation', 'Système de Gestion Budget'
+	"Application E-commerce",
+	"Système de Gestion RH",
+	"Plateforme de Formation",
+	"Application Mobile Fitness",
+	"Dashboard Analytics",
+	"Système de Réservation",
+	"Plateforme de Streaming",
+	"Application de Livraison",
+	"Système de Facturation",
+	"Application de Chat",
+	"Plateforme de Crowdfunding",
+	"Système de Gestion Stock",
+	"Application de Voyage",
+	"Plateforme de Freelance",
+	"Système de CRM",
+	"Application de Santé",
+	"Plateforme de Gaming",
+	"Système de Monitoring",
+	"Application de Finance",
+	"Plateforme de Collaboration",
+	"Système de Sécurité",
+	"Application de Transport",
+	"Plateforme de Marketplace",
+	"Système de Support",
+	"Application de Médias",
+	"Plateforme de Formation",
+	"Système de Gestion Projet",
+	"Application de Social",
+	"Plateforme de Trading",
+	"Système de Gestion Client",
+	"Application de Design",
+	"Plateforme de Musique",
+	"Système de Gestion Événement",
+	"Application de Sport",
+	"Plateforme de Recrutement",
+	"Système de Gestion Document",
+	"Application de Cuisine",
+	"Plateforme de Location",
+	"Système de Gestion Inventaire",
+	"Application de Mode",
+	"Plateforme de Donation",
+	"Système de Gestion Budget"
 ];
 
 const projectDescriptions = [
 	"Développement d'une plateforme e-commerce complète avec gestion des produits, panier et paiements",
-	'Système de gestion des ressources humaines avec suivi des employés et congés',
-	'Plateforme de formation en ligne avec cours interactifs et suivi des progrès',
+	"Système de gestion des ressources humaines avec suivi des employés et congés",
+	"Plateforme de formation en ligne avec cours interactifs et suivi des progrès",
 	"Application mobile de fitness avec programmes d'entraînement personnalisés",
-	'Dashboard analytique pour visualiser les données métier en temps réel',
-	'Système de réservation pour hôtels, restaurants et services',
-	'Plateforme de streaming vidéo avec gestion des contenus',
-	'Application de livraison avec suivi en temps réel',
-	'Système de facturation automatisé pour entreprises',
-	'Application de chat en temps réel avec messagerie privée et groupes',
-	'Plateforme de crowdfunding pour projets créatifs',
-	'Système de gestion de stock avec alertes automatiques',
-	'Application de voyage avec réservation et planification',
-	'Plateforme de freelance pour connecter talents et clients',
-	'Système de CRM pour gestion de la relation client',
-	'Application de santé avec suivi médical et rendez-vous',
-	'Plateforme de gaming avec tournois et classements',
-	'Système de monitoring pour infrastructure IT',
-	'Application de finance personnelle avec budgets et investissements',
-	'Plateforme de collaboration pour équipes distribuées',
-	'Système de sécurité avec authentification multi-facteurs',
-	'Application de transport avec covoiturage et VTC',
+	"Dashboard analytique pour visualiser les données métier en temps réel",
+	"Système de réservation pour hôtels, restaurants et services",
+	"Plateforme de streaming vidéo avec gestion des contenus",
+	"Application de livraison avec suivi en temps réel",
+	"Système de facturation automatisé pour entreprises",
+	"Application de chat en temps réel avec messagerie privée et groupes",
+	"Plateforme de crowdfunding pour projets créatifs",
+	"Système de gestion de stock avec alertes automatiques",
+	"Application de voyage avec réservation et planification",
+	"Plateforme de freelance pour connecter talents et clients",
+	"Système de CRM pour gestion de la relation client",
+	"Application de santé avec suivi médical et rendez-vous",
+	"Plateforme de gaming avec tournois et classements",
+	"Système de monitoring pour infrastructure IT",
+	"Application de finance personnelle avec budgets et investissements",
+	"Plateforme de collaboration pour équipes distribuées",
+	"Système de sécurité avec authentification multi-facteurs",
+	"Application de transport avec covoiturage et VTC",
 	"Marketplace pour vente et achat de produits d'occasion",
-	'Système de support client avec tickets et chat',
-	'Application de médias avec création et partage de contenu',
-	'Plateforme de formation professionnelle avec certifications',
-	'Système de gestion de projet avec Kanban et Gantt',
-	'Application de réseau social avec partage de moments',
-	'Plateforme de trading avec graphiques et analyses',
-	'Système de gestion client avec historique et notes',
-	'Application de design avec outils créatifs',
-	'Plateforme de musique avec streaming et playlists',
+	"Système de support client avec tickets et chat",
+	"Application de médias avec création et partage de contenu",
+	"Plateforme de formation professionnelle avec certifications",
+	"Système de gestion de projet avec Kanban et Gantt",
+	"Application de réseau social avec partage de moments",
+	"Plateforme de trading avec graphiques et analyses",
+	"Système de gestion client avec historique et notes",
+	"Application de design avec outils créatifs",
+	"Plateforme de musique avec streaming et playlists",
 	"Système de gestion d'événements avec billetterie",
-	'Application de sport avec statistiques et défis',
-	'Plateforme de recrutement avec matching candidat-entreprise',
-	'Système de gestion documentaire avec versioning',
-	'Application de cuisine avec recettes et planification',
-	'Plateforme de location de biens entre particuliers',
+	"Application de sport avec statistiques et défis",
+	"Plateforme de recrutement avec matching candidat-entreprise",
+	"Système de gestion documentaire avec versioning",
+	"Application de cuisine avec recettes et planification",
+	"Plateforme de location de biens entre particuliers",
 	"Système de gestion d'inventaire avec codes-barres",
-	'Application de mode avec tendances et shopping',
-	'Plateforme de donation pour associations caritatives',
-	'Système de gestion de budget personnel et familial'
+	"Application de mode avec tendances et shopping",
+	"Plateforme de donation pour associations caritatives",
+	"Système de gestion de budget personnel et familial"
 ];
 
 const taskTitles = [
-	'Analyse des besoins utilisateur', 'Création des maquettes UI/UX', 'Développement frontend',
-	'Développement backend', 'Configuration de la base de données', 'Tests unitaires',
-	'Tests d\'intégration', 'Tests de performance', 'Déploiement en production',
-	'Documentation technique', 'Formation des utilisateurs', 'Optimisation des performances',
-	'Sécurisation de l\'application', 'Mise en place du monitoring', 'Gestion des erreurs',
-	'Interface d\'administration', 'API REST/GraphQL', 'Authentification et autorisation',
-	'Gestion des fichiers', 'Notifications en temps réel', 'Système de recherche',
-	'Export de données', 'Import de données', 'Génération de rapports',
-	'Dashboard analytique', 'Système de backup', 'Intégration de paiement',
-	'Gestion des emails', 'Système de commentaires', 'Gestion des rôles',
-	'Historique des actions', 'Système de tags', 'Filtres avancés',
-	'Tri et pagination', 'Export PDF', 'Génération de QR codes',
-	'Système de géolocalisation', 'Push notifications', 'Mode hors ligne',
-	'Synchronisation des données', 'Gestion des versions', 'Système de templates'
+	"Analyse des besoins utilisateur",
+	"Création des maquettes UI/UX",
+	"Développement frontend",
+	"Développement backend",
+	"Configuration de la base de données",
+	"Tests unitaires",
+	"Tests d'intégration",
+	"Tests de performance",
+	"Déploiement en production",
+	"Documentation technique",
+	"Formation des utilisateurs",
+	"Optimisation des performances",
+	"Sécurisation de l'application",
+	"Mise en place du monitoring",
+	"Gestion des erreurs",
+	"Interface d'administration",
+	"API REST/GraphQL",
+	"Authentification et autorisation",
+	"Gestion des fichiers",
+	"Notifications en temps réel",
+	"Système de recherche",
+	"Export de données",
+	"Import de données",
+	"Génération de rapports",
+	"Dashboard analytique",
+	"Système de backup",
+	"Intégration de paiement",
+	"Gestion des emails",
+	"Système de commentaires",
+	"Gestion des rôles",
+	"Historique des actions",
+	"Système de tags",
+	"Filtres avancés",
+	"Tri et pagination",
+	"Export PDF",
+	"Génération de QR codes",
+	"Système de géolocalisation",
+	"Push notifications",
+	"Mode hors ligne",
+	"Synchronisation des données",
+	"Gestion des versions",
+	"Système de templates"
 ];
 
 const taskDescriptions = [
@@ -142,13 +231,13 @@ const taskDescriptions = [
 
 const statuses = [TaskStatus.A_FAIRE, TaskStatus.EN_COURS, TaskStatus.TERMINE];
 const priorities = [TaskPriority.BASSE, TaskPriority.MOYENNE, TaskPriority.HAUTE, TaskPriority.URGENTE];
-const projectStatuses = ['En attente', 'En cours', 'Terminé', 'En pause'];
-const projectPriorities = ['Basse', 'Moyenne', 'Haute', 'Urgente'];
+const projectStatuses = ["En attente", "En cours", "Terminé", "En pause"];
+const projectPriorities = ["Basse", "Moyenne", "Haute", "Urgente"];
 
 const seedingConfig = {
 	users: {
 		count: 30,
-		defaultPassword: 'password123'
+		defaultPassword: "password123"
 	},
 	projects: {
 		count: 35,
@@ -162,35 +251,33 @@ const seedingConfig = {
 			min: 5,
 			max: 15
 		},
-		assignmentRate: 0.7, // 70% des tâches sont assignées
-		dueDateRate: 0.5 // 50% des tâches ont une date d'échéance
+		assignmentRate: 0.7,
+		dueDateRate: 0.5
 	},
 	dates: {
-		startDate: new Date('2024-01-01'),
+		startDate: new Date("2024-01-01"),
 		endDate: new Date(),
-		dueDateRange: 30 // jours dans le futur
+		dueDateRange: 30
 	}
 };
 
-// --- Fonctions utilitaires ---
 function getRandomElement<T>(array: T[]): T {
 	return array[Math.floor(Math.random() * array.length)];
 }
 
 function generateEmail(firstName: string, lastName: string, index: number): string {
-	const emailUser = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${index}@gmail.com`
-	return emailUser
+	const emailUser = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${index}@gmail.com`;
+	return emailUser;
 }
 
 function getRandomDate(start: Date, end: Date): Date {
 	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 }
 
-// --- Seeder principal ---
 async function main() {
-	console.log('🌱 Début du seeding...');
+	console.log("🌱 Début du seeding...");
 
-	console.log('🧹 Nettoyage de la base de données...');
+	console.log("🧹 Nettoyage de la base de données...");
 	await prisma.task.deleteMany({});
 	await prisma.projectMember.deleteMany({});
 	await prisma.project.deleteMany({});
@@ -199,7 +286,7 @@ async function main() {
 	console.log(`👥 Création de ${seedingConfig.users.count} utilisateurs...`);
 
 	const hashedPassword = await bcrypt.hash(seedingConfig.users.defaultPassword, 10);
-	const users: any[] = [];
+	const users: User[] = [];
 
 	for (let i = 1; i <= seedingConfig.users.count; i++) {
 		const firstName = getRandomElement(firstNames);
@@ -213,7 +300,7 @@ async function main() {
 				name: `${firstName} ${lastName}`,
 				createdAt: new Date(Date.now()),
 				updatedAt: new Date()
-			},
+			}
 		});
 
 		users.push(user);
@@ -222,7 +309,7 @@ async function main() {
 
 	console.log(`\n🏗️ Création de ${seedingConfig.projects.count} projets...`);
 
-	const projects: any[] = [];
+	const projects: Project[] = [];
 	for (let i = 0; i < seedingConfig.projects.count; i++) {
 		const title = getRandomElement(projectTitles);
 		const description = getRandomElement(projectDescriptions);
@@ -239,17 +326,20 @@ async function main() {
 				ownerId: owner.id,
 				createdAt: getRandomDate(seedingConfig.dates.startDate, seedingConfig.dates.endDate),
 				updatedAt: new Date()
-			},
+			}
 		});
 
 		projects.push(project);
 		console.log(`✅ Projet créé: ${project.title} (Propriétaire: ${owner.name})`);
 	}
 
-	console.log('\n👥 Ajout de membres aux projets...');
+	console.log("\n👥 Ajout de membres aux projets...");
 
 	for (const project of projects) {
-		const numMembers = Math.floor(Math.random() * (seedingConfig.projects.membersPerProject.max - seedingConfig.projects.membersPerProject.min + 1)) + seedingConfig.projects.membersPerProject.min;
+		const numMembers =
+			Math.floor(
+				Math.random() * (seedingConfig.projects.membersPerProject.max - seedingConfig.projects.membersPerProject.min + 1)
+			) + seedingConfig.projects.membersPerProject.min;
 		const availableUsers = users.filter(user => user.id !== project.ownerId);
 		const selectedUsers = availableUsers.sort(() => 0.5 - Math.random()).slice(0, numMembers);
 
@@ -259,17 +349,19 @@ async function main() {
 					userId: user.id,
 					projectId: project.id,
 					addedAt: getRandomDate(project.createdAt, new Date())
-				},
+				}
 			});
 		}
 
 		console.log(`✅ ${selectedUsers.length} membres ajoutés au projet: ${project.title}`);
 	}
 
-	console.log('\n📋 Création de tâches pour chaque projet...');
+	console.log("\n📋 Création de tâches pour chaque projet...");
 
 	for (const project of projects) {
-		const numTasks = Math.floor(Math.random() * (seedingConfig.tasks.perProject.max - seedingConfig.tasks.perProject.min + 1)) + seedingConfig.tasks.perProject.min;
+		const numTasks =
+			Math.floor(Math.random() * (seedingConfig.tasks.perProject.max - seedingConfig.tasks.perProject.min + 1)) +
+			seedingConfig.tasks.perProject.min;
 		const projectUsers = await prisma.projectMember.findMany({
 			where: { projectId: project.id },
 			include: { user: true }
@@ -282,7 +374,10 @@ async function main() {
 			const status = getRandomElement(statuses);
 			const priority = getRandomElement(priorities);
 			const assignedToId = Math.random() < seedingConfig.tasks.assignmentRate ? getRandomElement(allProjectUsers) : null;
-			const dueDate = Math.random() < seedingConfig.tasks.dueDateRate ? getRandomDate(new Date(), new Date(Date.now() + seedingConfig.dates.dueDateRange * 24 * 60 * 60 * 1000)) : null;
+			const dueDate =
+				Math.random() < seedingConfig.tasks.dueDateRate
+					? getRandomDate(new Date(), new Date(Date.now() + seedingConfig.dates.dueDateRange * 24 * 60 * 60 * 1000))
+					: null;
 
 			await prisma.task.create({
 				data: {
@@ -295,14 +390,14 @@ async function main() {
 					assignedToId: assignedToId,
 					createdAt: getRandomDate(project.createdAt, new Date()),
 					updatedAt: new Date()
-				},
+				}
 			});
 		}
 
 		console.log(`✅ ${numTasks} tâches créées pour le projet: ${project.title}`);
 	}
 
-	console.log('\n🎉 Seeding terminé avec succès !');
+	console.log("\n🎉 Seeding terminé avec succès !");
 	console.log(`📊 Résumé:`);
 	console.log(`   - ${users.length} utilisateurs créés`);
 	console.log(`   - ${projects.length} projets créés`);
@@ -315,8 +410,8 @@ async function main() {
 }
 
 main()
-	.catch((e) => {
-		console.error('❌ Erreur lors du seeding:', e);
+	.catch(e => {
+		console.error("❌ Erreur lors du seeding:", e);
 		process.exit(1);
 	})
 	.finally(async () => {

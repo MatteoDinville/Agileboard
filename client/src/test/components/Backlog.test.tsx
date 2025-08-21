@@ -5,6 +5,13 @@ import Backlog from '../../components/Backlog'
 import { taskService } from '../../services/task'
 import { TaskStatus, TaskPriority } from '../../types/enums'
 
+vi.mock('@tanstack/react-query', () => ({
+	useQuery: vi.fn(),
+	useQueryClient: vi.fn(() => ({
+		invalidateQueries: vi.fn(),
+	})),
+}))
+
 vi.mock('../../services/task', () => ({
 	taskService: {
 		getProjectTasks: vi.fn(),
@@ -436,5 +443,3 @@ describe('Backlog', () => {
 		})
 	})
 })
-
-

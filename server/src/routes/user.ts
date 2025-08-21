@@ -4,7 +4,7 @@ import { authenticateToken } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.use(authenticateToken as any);
+router.use(authenticateToken);
 
 // GET /api/user/profile - Récupérer le profil
 router.get("/profile", getProfile as RequestHandler);

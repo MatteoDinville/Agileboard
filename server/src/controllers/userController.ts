@@ -20,8 +20,8 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
 				email: true,
 				name: true,
 				createdAt: true,
-				updatedAt: true,
-			},
+				updatedAt: true
+			}
 		});
 
 		if (!user) {
@@ -50,7 +50,7 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
 
 		if (email) {
 			const existingUser = await prisma.user.findUnique({
-				where: { email },
+				where: { email }
 			});
 
 			if (existingUser && existingUser.id !== userId) {
@@ -67,20 +67,20 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
 			where: { id: userId },
 			data: {
 				...(name !== undefined && { name: name.trim() || null }),
-				...(email !== undefined && { email: email.toLowerCase().trim() }),
+				...(email !== undefined && { email: email.toLowerCase().trim() })
 			},
 			select: {
 				id: true,
 				email: true,
 				name: true,
 				createdAt: true,
-				updatedAt: true,
-			},
+				updatedAt: true
+			}
 		});
 
 		res.json({
 			message: "Profil mis à jour avec succès.",
-			user: updatedUser,
+			user: updatedUser
 		});
 	} catch (err) {
 		next(err);
@@ -106,7 +106,7 @@ export const changePassword = async (req: AuthRequest, res: Response, next: Next
 		}
 
 		const user = await prisma.user.findUnique({
-			where: { id: userId },
+			where: { id: userId }
 		});
 
 		if (!user) {
@@ -122,7 +122,7 @@ export const changePassword = async (req: AuthRequest, res: Response, next: Next
 
 		await prisma.user.update({
 			where: { id: userId },
-			data: { password: hashedNewPassword },
+			data: { password: hashedNewPassword }
 		});
 
 		res.json({ message: "Mot de passe modifié avec succès." });
@@ -141,7 +141,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response, next: NextFun
 			select: {
 				id: true,
 				email: true,
-				name: true,
+				name: true
 			},
 			orderBy: { name: "asc" }
 		});

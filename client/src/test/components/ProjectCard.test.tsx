@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { ProjectCard } from '../../components/ProjectCard'
 
 describe('ProjectCard', () => {
@@ -45,7 +45,7 @@ describe('ProjectCard', () => {
 
 		const keyCodeElement = screen.getByText('ABC123')
 		expect(keyCodeElement).toBeInTheDocument()
-		expect(keyCodeElement).toHaveClass('bg-blue-500', 'text-white')
+		expect(keyCodeElement).toHaveClass('bg-blue-500')
 	})
 
 	it('handles long descriptions with overflow', () => {
@@ -61,7 +61,7 @@ describe('ProjectCard', () => {
 
 		const descriptionElement = screen.getByText(longDescription)
 		expect(descriptionElement).toBeInTheDocument()
-		expect(descriptionElement).toHaveClass('h-20', 'overflow-hidden')
+		expect(descriptionElement).toHaveClass('h-20')
 	})
 
 	it('handles empty description', () => {

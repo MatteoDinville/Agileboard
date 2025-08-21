@@ -14,19 +14,14 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 	const authHeader = req.headers["authorization"];
 	let token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : undefined;
 
-	if (!token) token = (req as any).cookies?.["access_token"];
+	if (!token) token = (req).cookies?.["access_token"];
 
 	if (!token) return res.status(401).json({ error: "Token manquant." });
 
 	jwt.verify(token, JWT_ACCESS_SECRET, (err, payload) => {
 		if (err) return res.status(401).json({ error: "Token invalide ou expiré." });
 
-		if (
-			typeof payload === "object" &&
-			payload !== null &&
-			"sub" in payload &&
-			typeof payload.sub === "number"
-		) {
+		if (typeof payload === "object" && payload !== null && "sub" in payload && typeof payload.sub === "number") {
 			req.userId = payload.sub;
 			next();
 		} else {

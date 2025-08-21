@@ -26,7 +26,7 @@ export const projectController = {
 								select: {
 									id: true,
 									name: true,
-									email: true,
+									email: true
 								}
 							}
 						}
@@ -57,7 +57,7 @@ export const projectController = {
 								select: {
 									id: true,
 									name: true,
-									email: true,
+									email: true
 								}
 							}
 						}
@@ -110,8 +110,8 @@ export const projectController = {
 					description: description ?? null,
 					status: status ?? "En attente",
 					priority: priority ?? "Basse",
-					owner: { connect: { id: userId } },
-				},
+					owner: { connect: { id: userId } }
+				}
 			});
 
 			res.status(201).json(newProject);
@@ -157,8 +157,8 @@ export const projectController = {
 					title: title ?? existing.title,
 					description: description ?? existing.description,
 					status: status ?? existing.status,
-					priority: priority ?? existing.priority,
-				},
+					priority: priority ?? existing.priority
+				}
 			});
 
 			res.json(updated);
@@ -212,7 +212,7 @@ export const projectController = {
 						select: {
 							id: true,
 							name: true,
-							email: true,
+							email: true
 						}
 					}
 				},
@@ -280,7 +280,7 @@ export const projectController = {
 						select: {
 							id: true,
 							name: true,
-							email: true,
+							email: true
 						}
 					}
 				}
@@ -337,4 +337,4 @@ export const projectController = {
 			next(err);
 		}
 	}
-}
+};

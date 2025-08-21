@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, vi } from 'vitest'
+import { beforeEach, afterEach, vi } from "vitest";
 
 const mockPrisma = {
 	user: {
@@ -6,50 +6,50 @@ const mockPrisma = {
 		findUnique: vi.fn(),
 		create: vi.fn(),
 		update: vi.fn(),
-		delete: vi.fn(),
+		delete: vi.fn()
 	},
 	board: {
 		findMany: vi.fn(),
 		findUnique: vi.fn(),
 		create: vi.fn(),
 		update: vi.fn(),
-		delete: vi.fn(),
+		delete: vi.fn()
 	},
 	column: {
 		findMany: vi.fn(),
 		findUnique: vi.fn(),
 		create: vi.fn(),
 		update: vi.fn(),
-		delete: vi.fn(),
+		delete: vi.fn()
 	},
 	task: {
 		findMany: vi.fn(),
 		findUnique: vi.fn(),
 		create: vi.fn(),
 		update: vi.fn(),
-		delete: vi.fn(),
+		delete: vi.fn()
 	},
 	$connect: vi.fn(),
 	$disconnect: vi.fn(),
-	$transaction: vi.fn(),
-}
+	$transaction: vi.fn()
+};
 
-vi.mock('@prisma/client', () => ({
+vi.mock("@prisma/client", () => ({
 	PrismaClient: vi.fn(() => mockPrisma)
-}))
+}));
 
 declare global {
-	var __TEST_PRISMA__: typeof mockPrisma
+	var __TEST_PRISMA__: typeof mockPrisma;
 }
 
-globalThis.__TEST_PRISMA__ = mockPrisma
+globalThis.__TEST_PRISMA__ = mockPrisma;
 
 beforeEach(() => {
-	vi.clearAllMocks()
-})
+	vi.clearAllMocks();
+});
 
 afterEach(() => {
-	vi.clearAllMocks()
-})
+	vi.clearAllMocks();
+});
 
-export { mockPrisma }
+export { mockPrisma };

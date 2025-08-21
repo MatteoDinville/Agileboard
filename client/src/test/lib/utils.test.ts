@@ -18,7 +18,8 @@ describe('cn utility function', () => {
 	})
 
 	it('should handle empty strings and falsy values', () => {
-		const result = cn('base-class', '', null, undefined, false && 'hidden')
+		const isHidden = false
+		const result = cn('base-class', '', null, undefined, isHidden && 'hidden')
 		expect(result).toBe('base-class')
 	})
 

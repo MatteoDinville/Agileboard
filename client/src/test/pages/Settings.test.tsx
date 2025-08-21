@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, type UseMutationResult } from '@tanstack/react-query'
 import SettingsPage from '../../pages/Settings'
 import { useProfile } from '../../utils/hooks/user'
-import { AuthContext } from '../../contexts/AuthContext'
+import { AuthContext, type AuthContextType } from '../../contexts/AuthContext'
+import type { IUser, UpdateProfileData, ChangePasswordData } from '../../services/user'
 
 vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => vi.fn(),
@@ -12,12 +13,12 @@ vi.mock('@tanstack/react-router', () => ({
 vi.mock('../../utils/hooks/user')
 
 
-vi.mock('@tanstack/react-query', async (importOriginal) => {
-	const actual = await importOriginal()
+vi.mock('@tanstack/react-query', async () => {
+	const actual = await vi.importActual('@tanstack/react-query')
 	return {
-		...actual,
-		QueryClient: actual.QueryClient,
-		QueryClientProvider: actual.QueryClientProvider,
+		...actual as Record<string, unknown>,
+		QueryClient: (actual as { QueryClient: unknown }).QueryClient,
+		QueryClientProvider: (actual as { QueryClientProvider: unknown }).QueryClientProvider,
 	}
 })
 
@@ -37,10 +38,45 @@ const mockUser = {
 	email: 'john@example.com',
 }
 
-const mockProfileUser = {
+// Mock helpers for mutations
+const createMockUpdateProfileMutation = (overrides = {}): UseMutationResult<{ user: IUser }, Error, UpdateProfileData, unknown> => ({
+	mutateAsync: vi.fn(),
+	mutate: vi.fn(),
+	isPending: false,
+	isError: false,
+	isSuccess: false,
+	isIdle: true,
+	data: undefined,
+	error: null,
+	variables: undefined,
+	context: undefined,
+	status: 'idle',
+	reset: vi.fn(),
+	...overrides,
+} as unknown as UseMutationResult<{ user: IUser }, Error, UpdateProfileData, unknown>)
+
+const createMockChangePasswordMutation = (overrides = {}): UseMutationResult<unknown, Error, ChangePasswordData, unknown> => ({
+	mutateAsync: vi.fn(),
+	mutate: vi.fn(),
+	isPending: false,
+	isError: false,
+	isSuccess: false,
+	isIdle: true,
+	data: undefined,
+	error: null,
+	variables: undefined,
+	context: undefined,
+	status: 'idle',
+	reset: vi.fn(),
+	...overrides,
+} as unknown as UseMutationResult<unknown, Error, ChangePasswordData, unknown>)
+
+const mockProfileUser: IUser = {
 	id: 1,
 	name: 'John Doe',
 	email: 'john@example.com',
+	createdAt: '2024-01-01T00:00:00Z',
+	updatedAt: '2024-01-01T00:00:00Z'
 }
 
 const createWrapper = () => {
@@ -50,9 +86,19 @@ const createWrapper = () => {
 			mutations: { retry: false },
 		},
 	})
+
+	const mockAuthContext: AuthContextType = {
+		user: mockUser,
+		isLoading: false,
+		setUser: vi.fn(),
+		loginMutation: {} as AuthContextType['loginMutation'],
+		registerMutation: {} as AuthContextType['registerMutation'],
+		logout: vi.fn()
+	}
+
 	return ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>
-			<AuthContext.Provider value={{ user: mockUser, login: vi.fn(), logout: vi.fn() }}>
+			<AuthContext.Provider value={mockAuthContext}>
 				{children}
 			</AuthContext.Provider>
 		</QueryClientProvider>
@@ -68,15 +114,12 @@ describe('SettingsPage', () => {
 	it('should render settings page', () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -89,15 +132,12 @@ describe('SettingsPage', () => {
 	it('should display user information in form fields', () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -110,15 +150,14 @@ describe('SettingsPage', () => {
 		const mockUpdateProfile = vi.fn().mockResolvedValue(undefined)
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation({
 				mutateAsync: mockUpdateProfile,
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			}),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -145,15 +184,14 @@ describe('SettingsPage', () => {
 		const mockChangePassword = vi.fn().mockResolvedValue(undefined)
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation({
 				mutateAsync: mockChangePassword,
-				isPending: false,
-			},
-		} as any)
+			}),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -179,15 +217,12 @@ describe('SettingsPage', () => {
 	it('should show error when passwords do not match', async () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -205,15 +240,12 @@ describe('SettingsPage', () => {
 	it('should show error when new password is too short', async () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -226,15 +258,12 @@ describe('SettingsPage', () => {
 	it('should disable password change button when form is invalid', () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -245,15 +274,14 @@ describe('SettingsPage', () => {
 	it('should show loading state during profile update', () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation({
 				isPending: true,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			}),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -264,15 +292,14 @@ describe('SettingsPage', () => {
 	it('should show loading state during password change', () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation({
 				isPending: true,
-			},
-		} as any)
+			}),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -283,15 +310,12 @@ describe('SettingsPage', () => {
 	it('should display password strength indicators', () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -308,15 +332,12 @@ describe('SettingsPage', () => {
 	it('should display user avatar with initials', () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -326,15 +347,12 @@ describe('SettingsPage', () => {
 	it('should show profile photo section as disabled', () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -346,15 +364,14 @@ describe('SettingsPage', () => {
 		const mockUpdateProfile = vi.fn().mockRejectedValue(new Error('Update failed'))
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation({
 				mutateAsync: mockUpdateProfile,
-				isPending: false,
-			},
-			changePassword: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-		} as any)
+			}),
+			changePassword: createMockChangePasswordMutation(),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
@@ -370,15 +387,14 @@ describe('SettingsPage', () => {
 		const mockChangePassword = vi.fn().mockRejectedValue(new Error('Password change failed'))
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			updateProfile: {
-				mutateAsync: vi.fn(),
-				isPending: false,
-			},
-			changePassword: {
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+			updateProfile: createMockUpdateProfileMutation(),
+			changePassword: createMockChangePasswordMutation({
 				mutateAsync: mockChangePassword,
-				isPending: false,
-			},
-		} as any)
+			}),
+		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 

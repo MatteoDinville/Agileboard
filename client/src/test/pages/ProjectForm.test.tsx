@@ -1,454 +1,649 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import ProjectForm from '../../pages/ProjectForm'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '../../contexts/AuthContext';
+import ProjectForm from '../../pages/ProjectForm';
+import { projectService } from '../../services/project';
+import { authService } from '../../services/auth';
 
-vi.mock('@tanstack/react-query', async (importOriginal) => {
-	const actual = await importOriginal()
+vi.mock('../../services/project', () => ({
+	projectService: {
+		createProject: vi.fn(),
+		fetchProjects: vi.fn(),
+		fetchProjectById: vi.fn(),
+		updateProject: vi.fn(),
+		deleteProject: vi.fn(),
+	},
+}));
+
+vi.mock('../../services/auth', () => ({
+	authService: {
+		login: vi.fn(),
+		getCurrentUser: vi.fn(),
+		logout: vi.fn(),
+		register: vi.fn(),
+	},
+}));
+
+const mockNavigate = vi.fn();
+vi.mock('@tanstack/react-router', async () => {
+	const actual = await vi.importActual('@tanstack/react-router');
 	return {
 		...actual,
-		useQuery: vi.fn(),
-		useMutation: vi.fn(),
-	}
-})
+		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string;[key: string]: unknown }) => (
+			<a href={to} {...props}>{children}</a>
+		),
+		useNavigate: () => mockNavigate,
+	};
+});
 
-vi.mock('@tanstack/react-router', () => ({
-	useParams: vi.fn(),
-	useNavigate: vi.fn(),
-	useSearch: vi.fn(),
-}))
-
-vi.mock('../../utils/hooks/project', () => ({
-	useProject: vi.fn(),
-	useCreateProject: vi.fn(),
-	useUpdateProject: vi.fn(),
-}))
-
-import { useNavigate } from '@tanstack/react-router'
-import { useProject, useCreateProject, useUpdateProject } from '../../utils/hooks/project'
-
-const mockProject = {
-	id: 1,
-	title: 'Test Project',
-	description: 'Test project description',
-	status: 'En cours' as const,
-	priority: 'Haute' as const,
-	createdAt: '2024-01-01T00:00:00Z',
-	updatedAt: '2024-01-02T00:00:00Z',
-}
-
-const createWrapper = () => {
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { retry: false },
-			mutations: { retry: false },
+			queries: {
+				retry: false,
+				staleTime: 0,
+				gcTime: 0,
+			},
+			mutations: {
+				retry: false,
+			},
 		},
-	})
-	return ({ children }: { children: React.ReactNode }) => (
+	});
+
+	return (
 		<QueryClientProvider client={queryClient}>
-			{children}
+			<AuthProvider>
+				{children}
+			</AuthProvider>
 		</QueryClientProvider>
-	)
-}
+	);
+};
 
-describe('ProjectForm', () => {
+describe('Project creation (project manager)', () => {
+	const mockUser = {
+		id: 1,
+		email: 'chef@projet.com',
+		name: 'Chef Projet',
+	};
+
+	const mockProject = {
+		id: 1,
+		title: 'Nouveau Projet',
+		description: 'Description du nouveau projet',
+		status: 'En attente' as const,
+		priority: 'Basse' as const,
+		createdAt: '2025-01-01T00:00:00.000Z',
+		updatedAt: '2025-01-01T00:00:00.000Z',
+		ownerId: 1,
+		members: [],
+	};
+
+	const validProjectData = {
+		title: 'Nouveau Projet',
+		description: 'Description du nouveau projet',
+		status: 'En attente' as const,
+		priority: 'Basse' as const,
+	}; beforeEach(() => {
+		vi.mocked(authService.getCurrentUser).mockResolvedValue({
+			user: mockUser,
+		});
+
+		vi.mocked(projectService.createProject).mockResolvedValue(mockProject);
+	});
+
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('should allow a project manager to create a new project', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<TestWrapper>
+				<ProjectForm />
+			</TestWrapper>
+		);
+
+		expect(screen.getByText('Créer un nouveau projet')).toBeInTheDocument();
+		expect(screen.getByText('Donnez vie à votre nouvelle idée')).toBeInTheDocument();
+
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		expect(titleInput).toBeInTheDocument();
+
+		await user.type(titleInput, validProjectData.title);
+		expect(titleInput).toHaveValue(validProjectData.title);
+
+		const descriptionInput = screen.getByLabelText(/description/i);
+		expect(descriptionInput).toBeInTheDocument();
+
+		await user.type(descriptionInput, validProjectData.description);
+		expect(descriptionInput).toHaveValue(validProjectData.description);
+
+		const submitButton = screen.getByRole('button', { name: /créer le projet/i });
+		expect(submitButton).toBeInTheDocument();
+		expect(submitButton).not.toBeDisabled();
+
+		await user.click(submitButton);
+
+		await waitFor(() => {
+			expect(projectService.createProject).toHaveBeenCalledWith(validProjectData);
+			expect(projectService.createProject).toHaveBeenCalledTimes(1);
+		});
+
+		await waitFor(() => {
+			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' });
+		});
+	});
+
+	it('should display loading state during project creation', async () => {
+		const user = userEvent.setup();
+
+		vi.mocked(projectService.createProject).mockImplementation(
+			() => new Promise(resolve =>
+				setTimeout(() => resolve(mockProject), 100)
+			)
+		);
+
+		render(
+			<TestWrapper>
+				<ProjectForm />
+			</TestWrapper>
+		);
+
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		const descriptionInput = screen.getByLabelText(/description/i);
+
+		await user.type(titleInput, validProjectData.title);
+		await user.type(descriptionInput, validProjectData.description);
+
+		const submitButton = screen.getByRole('button', { name: /créer le projet/i });
+		await user.click(submitButton);
+
+		await waitFor(() => {
+			expect(screen.queryByText(/création en cours/i)).toBeInTheDocument();
+		}, { timeout: 50 });
+
+		await waitFor(() => {
+			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' });
+		});
+	});
+
+	it('should validate required fields before submission', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<TestWrapper>
+				<ProjectForm />
+			</TestWrapper>
+		);
+
+		const submitButton = screen.getByRole('button', { name: /créer le projet/i });
+
+		await user.click(submitButton);
+
+		expect(projectService.createProject).not.toHaveBeenCalled();
+
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		expect(titleInput).toBeRequired();
+	});
+
+	it('should allow selecting status and priority', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<TestWrapper>
+				<ProjectForm />
+			</TestWrapper>
+		);
+
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		const descriptionInput = screen.getByLabelText(/description/i);
+
+		await user.type(titleInput, validProjectData.title);
+		await user.type(descriptionInput, validProjectData.description);
+
+		const statusSelect = screen.getByLabelText(/statut/i);
+		await user.selectOptions(statusSelect, 'En cours');
+		expect(statusSelect).toHaveValue('En cours');
+
+		const prioritySelect = screen.getByLabelText(/priorité/i);
+		await user.selectOptions(prioritySelect, 'Haute');
+		expect(prioritySelect).toHaveValue('Haute');
+
+		const submitButton = screen.getByRole('button', { name: /créer le projet/i });
+		await user.click(submitButton);
+
+		await waitFor(() => {
+			expect(projectService.createProject).toHaveBeenCalledWith({
+				title: validProjectData.title,
+				description: validProjectData.description,
+				status: 'En cours',
+				priority: 'Haute',
+			});
+		});
+	});
+
+	it('should display error message on creation failure', async () => {
+		const user = userEvent.setup();
+
+		const errorMessage = 'Erreur lors de la création du projet';
+		vi.mocked(projectService.createProject).mockRejectedValue(new Error(errorMessage));
+
+		render(
+			<TestWrapper>
+				<ProjectForm />
+			</TestWrapper>
+		);
+
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		const descriptionInput = screen.getByLabelText(/description/i);
+		const submitButton = screen.getByRole('button', { name: /créer le projet/i });
+
+		await user.type(titleInput, validProjectData.title);
+		await user.type(descriptionInput, validProjectData.description);
+		await user.click(submitButton);
+
+		await waitFor(() => {
+			expect(screen.getByText(errorMessage) || screen.getByText(/erreur/i)).toBeInTheDocument();
+		});
+
+		expect(screen.getByText('Créer un nouveau projet')).toBeInTheDocument();
+		expect(mockNavigate).not.toHaveBeenCalled();
+	});
+});
+
+describe('Project editing (project manager)', () => {
+	const mockUser = {
+		id: 1,
+		email: 'chef@projet.com',
+		name: 'Chef Projet',
+	};
+
+	const existingProject = {
+		id: 1,
+		title: 'Projet Existant',
+		description: 'Description du projet existant',
+		status: 'En cours' as const,
+		priority: 'Haute' as const,
+		createdAt: '2025-01-01T00:00:00.000Z',
+		updatedAt: '2025-01-01T00:00:00.000Z',
+		ownerId: 1,
+		members: [],
+	};
+
 	beforeEach(() => {
-		vi.clearAllMocks()
-	})
+		vi.mocked(authService.getCurrentUser).mockResolvedValue({
+			user: mockUser,
+		});
 
-	describe('Create Mode', () => {
-		beforeEach(() => {
-			vi.mocked(useProject).mockReturnValue({
-				data: undefined,
-				isLoading: false,
-				isError: false,
-				error: null,
-			} as any)
-			vi.mocked(useCreateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isError: false,
-				error: null,
-			} as any)
-			vi.mocked(useUpdateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isError: false,
-				error: null,
-			} as any)
-		})
+		vi.mocked(projectService.fetchProjectById).mockClear();
+		vi.mocked(projectService.updateProject).mockClear();
+		mockNavigate.mockClear();
+	});
 
-		it('should render create form', () => {
-			render(<ProjectForm />, { wrapper: createWrapper() })
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
 
-			expect(screen.getByText('Créer un nouveau projet')).toBeInTheDocument()
-			expect(screen.getByText('Donnez vie à votre nouvelle idée')).toBeInTheDocument()
-			expect(screen.getByLabelText('Titre du projet')).toBeInTheDocument()
-			expect(screen.getByLabelText(/Description/)).toBeInTheDocument()
-			expect(screen.getByLabelText('Statut')).toBeInTheDocument()
-			expect(screen.getByLabelText('Priorité')).toBeInTheDocument()
-			expect(screen.getByText('Créer le projet')).toBeInTheDocument()
-			expect(screen.getByText('Annuler')).toBeInTheDocument()
-		})
+	it('should load and display existing project data', async () => {
+		vi.mocked(projectService.fetchProjectById).mockResolvedValue(existingProject);
 
-		it('should handle form submission for create', async () => {
-			const mockMutate = vi.fn()
-			vi.mocked(useCreateProject).mockReturnValue({
-				mutate: mockMutate,
-				isPending: false,
-				isError: false,
-				error: null,
-			} as any)
+		render(
+			<TestWrapper>
+				<ProjectForm projectId={1} />
+			</TestWrapper>
+		);
 
-			render(<ProjectForm />, { wrapper: createWrapper() })
+		expect(screen.getByText('Chargement du projet…')).toBeInTheDocument();
 
-			const titleInput = screen.getByLabelText('Titre du projet')
-			const descriptionInput = screen.getByLabelText(/Description/)
-			const statusSelect = screen.getByLabelText('Statut')
-			const prioritySelect = screen.getByLabelText('Priorité')
-			const submitButton = screen.getByText('Créer le projet')
+		await waitFor(() => {
+			expect(screen.getByText('Modifier le projet')).toBeInTheDocument();
+		});
 
-			fireEvent.change(titleInput, { target: { value: 'New Project' } })
-			fireEvent.change(descriptionInput, { target: { value: 'New project description' } })
-			fireEvent.change(statusSelect, { target: { value: 'En cours' } })
-			fireEvent.change(prioritySelect, { target: { value: 'Haute' } })
+		expect(screen.getByDisplayValue('Projet Existant')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('Description du projet existant')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('En cours')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('Haute')).toBeInTheDocument();
 
-			fireEvent.click(submitButton)
+		expect(screen.getByText('Mettre à jour')).toBeInTheDocument();
+	});
 
-			expect(mockMutate).toHaveBeenCalledWith(
-				{
-					title: 'New Project',
-					description: 'New project description',
-					status: 'En cours',
-					priority: 'Haute',
-				},
-				expect.any(Object)
+	it('should allow editing an existing project', async () => {
+		const user = userEvent.setup();
+
+		vi.mocked(projectService.fetchProjectById).mockResolvedValue(existingProject);
+
+		const updatedProject = { ...existingProject, title: 'Projet Modifié' };
+		vi.mocked(projectService.updateProject).mockResolvedValue(updatedProject);
+
+		render(
+			<TestWrapper>
+				<ProjectForm projectId={1} />
+			</TestWrapper>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText('Modifier le projet')).toBeInTheDocument();
+		});
+
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		await user.clear(titleInput);
+		await user.type(titleInput, 'Projet Modifié');
+
+		const submitButton = screen.getByRole('button', { name: /mettre à jour/i });
+		await user.click(submitButton);
+
+		await waitFor(() => {
+			expect(projectService.updateProject).toHaveBeenCalledWith(1, {
+				title: 'Projet Modifié',
+				description: 'Description du projet existant',
+				status: 'En cours',
+				priority: 'Haute',
+			});
+		});
+
+		await waitFor(() => {
+			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' });
+		});
+	});
+
+	it('should display loading state during project update', async () => {
+		const user = userEvent.setup();
+
+		vi.mocked(projectService.fetchProjectById).mockResolvedValue(existingProject);
+
+		vi.mocked(projectService.updateProject).mockImplementation(
+			() => new Promise(resolve =>
+				setTimeout(() => resolve(existingProject), 100)
 			)
-		})
+		);
 
-		it('should show loading state during creation', () => {
-			vi.mocked(useCreateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: true,
-				isError: false,
-				error: null,
-			} as any)
+		render(
+			<TestWrapper>
+				<ProjectForm projectId={1} />
+			</TestWrapper>
+		);
 
-			render(<ProjectForm />, { wrapper: createWrapper() })
+		await waitFor(() => {
+			expect(screen.getByText('Modifier le projet')).toBeInTheDocument();
+		});
 
-			expect(screen.getByText('Création en cours...')).toBeInTheDocument()
-			expect(screen.getByRole('button', { name: /Création en cours.../ })).toBeInTheDocument()
-		})
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		await user.clear(titleInput);
+		await user.type(titleInput, 'Projet Modifié');
 
-		it('should show error state for create', () => {
-			vi.mocked(useCreateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isError: true,
-				error: { message: 'Creation failed' },
-			} as any)
+		const submitButton = screen.getByRole('button', { name: /mettre à jour/i });
+		await user.click(submitButton);
 
-			render(<ProjectForm />, { wrapper: createWrapper() })
+		await waitFor(() => {
+			expect(screen.queryByText(/mise à jour en cours/i)).toBeInTheDocument();
+		}, { timeout: 50 });
 
-			expect(screen.getByText('Creation failed')).toBeInTheDocument()
-		})
-	})
+		await waitFor(() => {
+			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' });
+		});
+	});
 
-	describe('Edit Mode', () => {
-		beforeEach(() => {
-			vi.mocked(useCreateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isError: false,
-				error: null,
-			} as any)
-			vi.mocked(useUpdateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isError: false,
-				error: null,
-			} as any)
-		})
+	it('should display error if project loading fails', async () => {
+		const errorMessage = 'Projet non trouvé';
 
-		it('should render edit form with project data', () => {
-			vi.mocked(useProject).mockReturnValue({
-				data: mockProject,
-				isLoading: false,
-				isError: false,
-				error: null,
-			} as any)
+		vi.mocked(projectService.fetchProjectById).mockRejectedValue(
+			new Error(errorMessage)
+		);
 
-			render(<ProjectForm projectId={1} />, { wrapper: createWrapper() })
+		render(
+			<TestWrapper>
+				<ProjectForm projectId={1} />
+			</TestWrapper>
+		);
 
-			expect(screen.getByText('Modifier le projet')).toBeInTheDocument()
-			expect(screen.getByText('Apportez les modifications nécessaires à votre projet')).toBeInTheDocument()
-			expect(screen.getByDisplayValue('Test Project')).toBeInTheDocument()
-			expect(screen.getByDisplayValue('Test project description')).toBeInTheDocument()
-			expect(screen.getByDisplayValue('En cours')).toBeInTheDocument()
-			expect(screen.getByDisplayValue('Haute')).toBeInTheDocument()
-			expect(screen.getByText('Mettre à jour')).toBeInTheDocument()
-		})
+		await waitFor(() => {
+			expect(screen.getByText('Erreur de chargement')).toBeInTheDocument();
+			expect(screen.getByText(errorMessage) || screen.getByText(/une erreur est survenue/i)).toBeInTheDocument();
+		});
 
-		it('should show loading state while fetching project', () => {
-			vi.mocked(useProject).mockReturnValue({
-				data: undefined,
-				isLoading: true,
-				isError: false,
-				error: null,
-			} as any)
+		const backButton = screen.getByRole('button', { name: /retour aux projets/i });
+		expect(backButton).toBeInTheDocument();
+	});
 
-			render(<ProjectForm projectId={1} />, { wrapper: createWrapper() })
+	it('should navigate to projects list from loading error', async () => {
+		const user = userEvent.setup();
 
-			expect(screen.getByText('Chargement du projet…')).toBeInTheDocument()
-		})
+		vi.mocked(projectService.fetchProjectById).mockRejectedValue(
+			new Error('Projet non trouvé')
+		);
 
-		it('should show error state when project fetch fails', () => {
-			vi.mocked(useProject).mockReturnValue({
-				data: undefined,
-				isLoading: false,
-				isError: true,
-				error: { message: 'Project not found' },
-			} as any)
+		render(
+			<TestWrapper>
+				<ProjectForm projectId={1} />
+			</TestWrapper>
+		);
 
-			render(<ProjectForm projectId={1} />, { wrapper: createWrapper() })
+		await waitFor(() => {
+			expect(screen.getByText('Erreur de chargement')).toBeInTheDocument();
+		});
 
-			expect(screen.getByText('Erreur de chargement')).toBeInTheDocument()
-			expect(screen.getByText('Project not found')).toBeInTheDocument()
-			expect(screen.getByText('Retour aux projets')).toBeInTheDocument()
-		})
+		const backButton = screen.getByRole('button', { name: /retour aux projets/i });
+		await user.click(backButton);
 
-		it('should handle form submission for update', async () => {
-			const mockMutate = vi.fn()
-			vi.mocked(useProject).mockReturnValue({
-				data: mockProject,
-				isLoading: false,
-				isError: false,
-				error: null,
-			} as any)
-			vi.mocked(useUpdateProject).mockReturnValue({
-				mutate: mockMutate,
-				isPending: false,
-				isError: false,
-				error: null,
-			} as any)
+		expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' });
+	});
 
-			render(<ProjectForm projectId={1} />, { wrapper: createWrapper() })
+	it('should display error message on update failure', async () => {
+		const user = userEvent.setup();
+		const errorMessage = 'Erreur lors de la mise à jour du projet';
 
-			const titleInput = screen.getByLabelText('Titre du projet')
-			const submitButton = screen.getByText('Mettre à jour')
+		vi.mocked(projectService.fetchProjectById).mockResolvedValue(existingProject);
 
-			fireEvent.change(titleInput, { target: { value: 'Updated Project' } })
-			fireEvent.click(submitButton)
+		vi.mocked(projectService.updateProject).mockRejectedValue(
+			new Error(errorMessage)
+		);
 
-			expect(mockMutate).toHaveBeenCalledWith(
-				{
-					id: 1,
-					data: {
-						title: 'Updated Project',
-						description: 'Test project description',
-						status: 'En cours',
-						priority: 'Haute',
-					},
-				},
-				expect.any(Object)
-			)
-		})
+		render(
+			<TestWrapper>
+				<ProjectForm projectId={1} />
+			</TestWrapper>
+		);
 
-		it('should show loading state during update', () => {
-			vi.mocked(useProject).mockReturnValue({
-				data: mockProject,
-				isLoading: false,
-				isError: false,
-				error: null,
-			} as any)
-			vi.mocked(useUpdateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: true,
-				isError: false,
-				error: null,
-			} as any)
+		await waitFor(() => {
+			expect(screen.getByText('Modifier le projet')).toBeInTheDocument();
+		});
 
-			render(<ProjectForm projectId={1} />, { wrapper: createWrapper() })
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		await user.clear(titleInput);
+		await user.type(titleInput, 'Projet Modifié');
 
-			expect(screen.getByText('Mise à jour en cours...')).toBeInTheDocument()
-			expect(screen.getByRole('button', { name: /Mise à jour en cours.../ })).toBeDisabled()
-		})
+		const submitButton = screen.getByRole('button', { name: /mettre à jour/i });
+		await user.click(submitButton);
 
-		it('should show error state for update', () => {
-			vi.mocked(useProject).mockReturnValue({
-				data: mockProject,
-				isLoading: false,
-				isError: false,
-				error: null,
-			} as any)
-			vi.mocked(useUpdateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isError: true,
-				error: { message: 'Update failed' },
-			} as any)
+		await waitFor(() => {
+			expect(screen.getByText(errorMessage) || screen.getByText(/erreur lors de la mise à jour/i)).toBeInTheDocument();
+		});
 
-			render(<ProjectForm projectId={1} />, { wrapper: createWrapper() })
+		expect(screen.getByText('Modifier le projet')).toBeInTheDocument();
+		expect(mockNavigate).not.toHaveBeenCalled();
+	});
+});
 
-			expect(screen.getByText('Update failed')).toBeInTheDocument()
-		})
-	})
+describe('Navigation and interaction tests', () => {
+	const mockUser = {
+		id: 1,
+		email: 'chef@projet.com',
+		name: 'Chef Projet',
+	};
 
-	describe('Form Validation', () => {
-		beforeEach(() => {
-			vi.mocked(useProject).mockReturnValue({
-				data: undefined,
-				isLoading: false,
-				isError: false,
-				error: null,
-			} as any)
-			vi.mocked(useCreateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isError: false,
-				error: null,
-			} as any)
-			vi.mocked(useUpdateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isError: false,
-				error: null,
-			} as any)
-		})
+	beforeEach(() => {
+		vi.mocked(authService.getCurrentUser).mockResolvedValue({
+			user: mockUser,
+		});
 
-		it('should require title field', () => {
-			render(<ProjectForm />, { wrapper: createWrapper() })
+		mockNavigate.mockClear();
+	});
 
-			const titleInput = screen.getByLabelText('Titre du projet')
-			expect(titleInput).toBeRequired()
-		})
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
 
-		it('should have correct default values', () => {
-			render(<ProjectForm />, { wrapper: createWrapper() })
+	it('should navigate to projects list when clicking Cancel', async () => {
+		const user = userEvent.setup();
 
-			const statusSelect = screen.getByLabelText('Statut')
-			const prioritySelect = screen.getByLabelText('Priorité')
+		render(
+			<TestWrapper>
+				<ProjectForm />
+			</TestWrapper>
+		);
 
-			expect(statusSelect).toHaveValue('En attente')
-			expect(prioritySelect).toHaveValue('Basse')
-		})
+		const cancelButton = screen.getByRole('button', { name: /annuler/i });
+		await user.click(cancelButton);
 
-		it('should have all status options', () => {
-			render(<ProjectForm />, { wrapper: createWrapper() })
+		expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' });
+	});
+});
 
-			const statusSelect = screen.getByLabelText('Statut')
-			const options = Array.from(statusSelect.querySelectorAll('option'))
+describe('Fallback and default values tests', () => {
+	const mockUser = {
+		id: 1,
+		email: 'chef@projet.com',
+		name: 'Chef Projet',
+	};
 
-			expect(options).toHaveLength(3)
-			expect(options[0]).toHaveValue('En attente')
-			expect(options[1]).toHaveValue('En cours')
-			expect(options[2]).toHaveValue('Terminé')
-		})
+	beforeEach(() => {
+		vi.mocked(authService.getCurrentUser).mockResolvedValue({
+			user: mockUser,
+		});
 
-		it('should have all priority options', () => {
-			render(<ProjectForm />, { wrapper: createWrapper() })
+		vi.mocked(projectService.fetchProjectById).mockClear();
+		vi.mocked(projectService.createProject).mockClear();
+		vi.mocked(projectService.updateProject).mockClear();
+		mockNavigate.mockClear();
+	});
 
-			const prioritySelect = screen.getByLabelText('Priorité')
-			const options = Array.from(prioritySelect.querySelectorAll('option'))
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
 
-			expect(options).toHaveLength(3)
-			expect(options[0]).toHaveValue('Basse')
-			expect(options[1]).toHaveValue('Moyenne')
-			expect(options[2]).toHaveValue('Haute')
-		})
+	it('should use default values for missing fields in edit mode', async () => {
+		const mockFetchProject = vi.fn().mockResolvedValue({
+			id: 1,
+			title: 'Projet Incomplet',
+			description: undefined,
+			status: undefined,
+			priority: undefined,
+			createdAt: '2025-01-01T00:00:00.000Z',
+			updatedAt: '2025-01-01T00:00:00.000Z',
+			ownerId: 1,
+			members: [],
+		});
 
-		it('should navigate to projects after successful creation', () => {
-			const mockNavigate = vi.fn()
+		vi.mocked(projectService.fetchProjectById).mockImplementation(mockFetchProject);
 
-			let onSuccessCallback: (() => void) | undefined
+		render(
+			<TestWrapper>
+				<ProjectForm projectId={1} />
+			</TestWrapper>
+		);
 
-			const mockMutateWithCallback = vi.fn((_data, options) => {
-				onSuccessCallback = options?.onSuccess
-			})
+		await waitFor(() => {
+			expect(screen.getByText('Modifier le projet')).toBeInTheDocument();
+		});
 
-			vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-			vi.mocked(useCreateProject).mockReturnValue({
-				mutate: mockMutateWithCallback,
-				isPending: false,
-				isError: false,
-				error: null,
-			})
+		expect(screen.getByDisplayValue('Projet Incomplet')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('En attente')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('Basse')).toBeInTheDocument();
+	});
 
-			render(<ProjectForm />, { wrapper: createWrapper() })
+	it('should display default error message if errorProject.message is missing', async () => {
+		const errorWithoutMessage = {
+			message: undefined,
+			name: 'Error'
+		};
 
-			const titleInput = screen.getByLabelText('Titre du projet')
-			const submitButton = screen.getByText('Créer le projet')
+		vi.mocked(projectService.fetchProjectById).mockRejectedValue(errorWithoutMessage);
 
-			fireEvent.change(titleInput, { target: { value: 'New Project' } })
-			fireEvent.click(submitButton)
+		render(
+			<TestWrapper>
+				<ProjectForm projectId={1} />
+			</TestWrapper>
+		);
 
-			expect(mockMutateWithCallback).toHaveBeenCalled()
+		await waitFor(() => {
+			expect(screen.getByText('Une erreur est survenue')).toBeInTheDocument();
+		});
+	});
 
-			if (onSuccessCallback) {
-				onSuccessCallback()
-			}
+	it('should display default error message for creation', async () => {
+		const user = userEvent.setup();
 
-			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' })
-		})
+		const errorWithoutMessage = {
+			message: undefined,
+			name: 'Error'
+		};
 
-		it('should disable submit button when updating is pending', () => {
-			vi.mocked(useProject).mockReturnValue({
-				data: mockProject,
-				isLoading: false,
-				isError: false,
-				error: null,
-			})
-			vi.mocked(useUpdateProject).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: true,
-				isError: false,
-				error: null,
-			})
+		vi.mocked(projectService.createProject).mockRejectedValue(errorWithoutMessage);
 
-			render(<ProjectForm projectId={1} />, { wrapper: createWrapper() })
+		render(
+			<TestWrapper>
+				<ProjectForm />
+			</TestWrapper>
+		);
 
-			const submitButton = screen.getByRole('button', { name: /Mise à jour en cours.../ })
-			expect(submitButton).toBeDisabled()
-		})
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		await user.type(titleInput, 'Test Project');
 
-		it('should navigate to projects after successful update', () => {
-			const mockNavigate = vi.fn()
+		const submitButton = screen.getByRole('button', { name: /créer le projet/i });
+		await user.click(submitButton);
 
-			let onSuccessCallback: (() => void) | undefined
+		await waitFor(() => {
+			expect(screen.getByText('Erreur lors de la création')).toBeInTheDocument();
+		});
+	});
 
-			const mockMutateWithCallback = vi.fn((_data, options) => {
-				onSuccessCallback = options?.onSuccess
-			})
+	it('should display default error message for update', async () => {
+		const user = userEvent.setup();
 
-			vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-			vi.mocked(useProject).mockReturnValue({
-				data: mockProject,
-				isLoading: false,
-				isError: false,
-				error: null,
-			})
-			vi.mocked(useUpdateProject).mockReturnValue({
-				mutate: mockMutateWithCallback,
-				isPending: false,
-				isError: false,
-				error: null,
-			})
+		const existingProject = {
+			id: 1,
+			title: 'Projet Existant',
+			description: 'Description',
+			status: 'En cours' as const,
+			priority: 'Haute' as const,
+			createdAt: '2025-01-01T00:00:00.000Z',
+			updatedAt: '2025-01-01T00:00:00.000Z',
+			ownerId: 1,
+			members: [],
+		};
 
-			render(<ProjectForm projectId={1} />, { wrapper: createWrapper() })
+		vi.mocked(projectService.fetchProjectById).mockResolvedValue(existingProject);
 
-			const titleInput = screen.getByLabelText('Titre du projet')
-			const submitButton = screen.getByText('Mettre à jour')
+		const errorWithoutMessage = {
+			message: undefined,
+			name: 'Error'
+		};
 
-			fireEvent.change(titleInput, { target: { value: 'Updated Project' } })
-			fireEvent.click(submitButton)
+		vi.mocked(projectService.updateProject).mockRejectedValue(errorWithoutMessage);
 
-			expect(mockMutateWithCallback).toHaveBeenCalled()
+		render(
+			<TestWrapper>
+				<ProjectForm projectId={1} />
+			</TestWrapper>
+		);
 
-			if (onSuccessCallback) {
-				onSuccessCallback()
-			}
+		await waitFor(() => {
+			expect(screen.getByText('Modifier le projet')).toBeInTheDocument();
+		});
 
-			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' })
-		})
-	})
-})
+		const titleInput = screen.getByLabelText(/titre du projet/i);
+		await user.clear(titleInput);
+		await user.type(titleInput, 'Projet Modifié');
+
+		const submitButton = screen.getByRole('button', { name: /mettre à jour/i });
+		await user.click(submitButton);
+
+		await waitFor(() => {
+			expect(screen.getByText('Erreur lors de la mise à jour')).toBeInTheDocument();
+		});
+	});
+});

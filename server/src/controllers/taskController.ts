@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { Response } from "express";
+import { PrismaClient, TaskStatus, TaskPriority } from "@prisma/client";
 import { AuthRequest } from "../middleware/auth.middleware";
 
 const prisma = new PrismaClient();
@@ -36,8 +36,8 @@ export const taskController = {
 					}
 				},
 				orderBy: [
-					{ status: 'asc' },
-					{ createdAt: 'desc' }
+					{ status: "asc" },
+					{ createdAt: "desc" }
 				]
 			});
 
@@ -151,15 +151,23 @@ export const taskController = {
 				}
 			}
 
-			const updateData: any = {};
+			// Type pour les données de mise à jour partielles
+			interface TaskUpdateData {
+				title?: string;
+				description?: string | null;
+				status?: TaskStatus;
+				priority?: TaskPriority;
+				dueDate?: Date | null;
+				assignedToId?: number | null;
+			}
+
+			const updateData: TaskUpdateData = {};
 			if (title !== undefined) updateData.title = title;
 			if (description !== undefined) updateData.description = description;
 			if (status !== undefined) updateData.status = status;
 			if (priority !== undefined) updateData.priority = priority;
 			if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
-			if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
-
-			const task = await prisma.task.update({
+			if (assignedToId !== undefined) updateData.assignedToId = assignedToId; const task = await prisma.task.update({
 				where: { id: parseInt(taskId) },
 				data: updateData,
 				include: {

@@ -1,761 +1,886 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import ProjectDetail from '../../pages/ProjectDetail'
-import { useProject, useProjectMembers } from '../../utils/hooks/project'
-import { taskService } from '../../services/task'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '../../contexts/AuthContext';
+import ProjectDetail from '../../pages/ProjectDetail';
+import { projectService } from '../../services/project';
+import { taskService } from '../../services/task';
+import { authService } from '../../services/auth';
+import { TaskStatus, TaskPriority } from '../../types/enums';
 
-vi.mock('@tanstack/react-router', () => ({
-	useParams: () => ({ projectId: '1' }),
-	Link: ({ children, to, ...props }: any) => (
-		<a href={to} {...props}>{children}</a>
-	),
-}))
+vi.mock('../../services/project', () => ({
+	projectService: {
+		fetchProjectById: vi.fn(),
+		fetchProjectMembers: vi.fn(),
+		createProject: vi.fn(),
+		updateProject: vi.fn(),
+		deleteProject: vi.fn(),
+		fetchProjects: vi.fn(),
+	},
+}));
 
-vi.mock('../../utils/hooks/project')
-vi.mock('../../services/task')
+vi.mock('../../services/task', () => ({
+	taskService: {
+		createTask: vi.fn(),
+		updateTask: vi.fn(),
+		deleteTask: vi.fn(),
+		fetchTasks: vi.fn(),
+	},
+}));
 
+vi.mock('../../services/auth', () => ({
+	authService: {
+		getCurrentUser: vi.fn(),
+		login: vi.fn(),
+		logout: vi.fn(),
+		register: vi.fn(),
+	},
+}));
 
-vi.mock('@tanstack/react-query', async (importOriginal) => {
-	const actual = await importOriginal()
-	return {
-		...(actual as any),
-		QueryClient: (actual as any).QueryClient,
-		QueryClientProvider: (actual as any).QueryClientProvider,
-	}
-})
-vi.mock('../../components/MembersListOnly', () => ({
-	default: ({ projectId, isOwner }: any) => (
-		<div data-testid="members-list" data-project-id={projectId} data-is-owner={isOwner}>
-			Members List Component
-		</div>
-	),
-}))
 vi.mock('../../components/KanbanBoard', () => ({
-	default: ({ projectId }: any) => (
-		<div data-testid="kanban-board" data-project-id={projectId}>
-			Kanban Board Component
-		</div>
+	default: ({ projectId }: { projectId: number }) => (
+		<div data-testid="kanban-board">KanbanBoard for project {projectId}</div>
 	),
-}))
+}));
+
 vi.mock('../../components/Backlog', () => ({
-	default: ({ projectId, onEditTask, onDeleteTask, onCreateTask }: any) => (
-		<div data-testid="backlog" data-project-id={projectId}>
-			Backlog Component
-			<button onClick={() => onEditTask({ id: 1, title: 'Test Task' })}>Edit Task</button>
-			<button onClick={() => onDeleteTask(1)}>Delete Task</button>
-			<button onClick={onCreateTask}>Create Task</button>
+	default: ({ projectId, onEditTask, onDeleteTask, onCreateTask }: {
+		projectId: number;
+		onEditTask: (task: { id: number; title: string }) => void;
+		onDeleteTask: (taskId: number) => void;
+		onCreateTask: () => void;
+	}) => (
+		<div data-testid="backlog">
+			<div>Backlog for project {projectId}</div>
+			<button onClick={onCreateTask} data-testid="create-task-btn">Create Task</button>
+			<button onClick={() => onEditTask({ id: 1, title: 'Test Task' })} data-testid="edit-task-btn">Edit Task</button>
+			<button onClick={() => onDeleteTask(1)} data-testid="delete-task-btn">Delete Task</button>
 		</div>
 	),
-}))
+}));
+
+vi.mock('../../components/MembersListOnly', () => ({
+	default: ({ projectId, isOwner }: { projectId: number; isOwner: boolean }) => (
+		<div data-testid="members-list">
+			<div>Members for project {projectId}</div>
+			<div>Owner: {isOwner ? 'true' : 'false'}</div>
+		</div>
+	),
+}));
+
 vi.mock('../../components/TaskModal', () => ({
-	default: ({ isOpen, onClose, task, onSave, projectId }: any) => (
+	default: ({ isOpen, onClose, task, onSave, projectId }: {
+		isOpen: boolean;
+		onClose: () => void;
+		task?: { title: string } | null;
+		onSave: (data: { title: string }) => void;
+		projectId: number;
+	}) => (
 		isOpen ? (
-			<div data-testid="task-modal" data-project-id={projectId}>
-				Task Modal
-				<button onClick={onClose}>Close</button>
-				<button onClick={() => onSave({ title: 'New Task', description: 'Description' })}>Save</button>
+			<div data-testid="task-modal">
+				<div>Task Modal for project {projectId}</div>
+				<div>Task: {task ? task.title : 'New Task'}</div>
+				<button onClick={onClose} data-testid="close-modal">Close</button>
+				<button onClick={() => onSave({ title: 'Saved Task' })} data-testid="save-task">Save</button>
 			</div>
 		) : null
 	),
-}))
+}));
 
+const mockNavigate = vi.fn();
+vi.mock('@tanstack/react-router', async () => {
+	const actual = await vi.importActual('@tanstack/react-router');
+	return {
+		...actual,
+		useParams: vi.fn(() => ({ projectId: '1' })),
+		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string;[key: string]: unknown }) => (
+			<a href={to} {...props}>{children}</a>
+		),
+		useNavigate: () => mockNavigate,
+	};
+});
 
-vi.mock('lucide-react', () => ({
-	ArrowLeft: () => <div data-testid="arrow-left">ArrowLeft</div>,
-	Edit3: () => <div data-testid="edit3">Edit3</div>,
-	Calendar: () => <div data-testid="calendar">Calendar</div>,
-	AlertCircle: () => <div data-testid="alert-circle">AlertCircle</div>,
-	Loader2: () => <div data-testid="loader2">Loader2</div>,
-	FolderOpen: () => <div data-testid="folder-open">FolderOpen</div>,
-	LayoutGrid: () => <div data-testid="layout-grid">LayoutGrid</div>,
-	Users: () => <div data-testid="users">Users</div>,
-	List: () => <div data-testid="list">List</div>,
-}))
-
-const mockProject = {
-	id: 1,
-	title: 'Test Project',
-	description: 'Test project description',
-	status: 'En cours',
-	priority: 'Haute',
-	createdAt: '2024-01-01T00:00:00Z',
-	updatedAt: '2024-01-02T00:00:00Z',
-}
-
-const mockMembers = [
-	{
-		user: {
-			id: 1,
-			name: 'John Doe',
-			email: 'john@example.com',
-		},
-	},
-	{
-		user: {
-			id: 2,
-			name: 'Jane Smith',
-			email: 'jane@example.com',
-		},
-	},
-]
-
-const createWrapper = () => {
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { retry: false },
-			mutations: { retry: false },
+			queries: {
+				retry: false,
+				staleTime: 0,
+				gcTime: 0,
+			},
+			mutations: {
+				retry: false,
+			},
 		},
-	})
-	return ({ children }: { children: React.ReactNode }) => (
+	});
+
+	return (
 		<QueryClientProvider client={queryClient}>
-			{children}
+			<AuthProvider>
+				{children}
+			</AuthProvider>
 		</QueryClientProvider>
-	)
-}
+	);
+};
 
-describe('ProjectDetail', () => {
+describe('ProjectDetail component', () => {
+	const mockUser = {
+		id: 1,
+		email: 'test@example.com',
+		name: 'Test User',
+	};
+
+	const mockProject = {
+		id: 1,
+		title: 'Test Project',
+		description: 'Test project description',
+		status: 'En cours' as const,
+		priority: 'Haute' as const,
+		createdAt: '2025-01-01T00:00:00.000Z',
+		updatedAt: '2025-01-02T00:00:00.000Z',
+		ownerId: 1,
+		members: [],
+	};
+
+	const mockMembers = [
+		{
+			id: 1,
+			userId: 1,
+			projectId: 1,
+			addedAt: '2025-01-01T00:00:00.000Z',
+			user: {
+				id: 1,
+				email: 'user1@test.com',
+				name: 'User One',
+			},
+		},
+		{
+			id: 2,
+			userId: 2,
+			projectId: 1,
+			addedAt: '2025-01-01T00:00:00.000Z',
+			user: {
+				id: 2,
+				email: 'user2@test.com',
+				name: 'User Two',
+			},
+		},
+	];
+
 	beforeEach(() => {
-		vi.clearAllMocks()
-		global.confirm = vi.fn(() => true)
-		global.alert = vi.fn()
-	})
+		vi.mocked(authService.getCurrentUser).mockResolvedValue({
+			user: mockUser,
+		});
 
-	it('should render loading state', () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: undefined,
-			isLoading: true,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: undefined,
-		} as any)
+		vi.mocked(projectService.fetchProjectById).mockResolvedValue(mockProject);
+		vi.mocked(projectService.fetchProjectMembers).mockResolvedValue(mockMembers);
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+		window.confirm = vi.fn(() => true);
+		window.alert = vi.fn();
+		console.error = vi.fn();
+	});
 
-		expect(screen.getByTestId('loader2')).toBeInTheDocument()
-		expect(screen.getByText('Chargement du projet…')).toBeInTheDocument()
-	})
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
 
-	it('should render error state', () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: undefined,
-			isLoading: false,
-			isError: true,
-			error: { message: 'Project not found' },
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: undefined,
-		} as any)
+	it('should display loading state initially', async () => {
+		vi.mocked(projectService.fetchProjectById).mockImplementation(
+			() => new Promise(resolve => setTimeout(() => resolve(mockProject), 100))
+		);
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
-		expect(screen.getByTestId('alert-circle')).toBeInTheDocument()
-		expect(screen.getByText('Projet introuvable')).toBeInTheDocument()
-		expect(screen.getByText('Project not found')).toBeInTheDocument()
-		expect(screen.getByText('Retour aux projets')).toBeInTheDocument()
-	})
+		expect(screen.getByText('Chargement du projet…')).toBeInTheDocument();
+		const svgElement = document.querySelector('svg.lucide-loader-circle');
+		expect(svgElement).toBeInTheDocument();
+	});
 
-	it('should render project details in overview tab', () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
+	it('should display error state when project loading fails', async () => {
+		const errorMessage = 'Project not found';
+		vi.mocked(projectService.fetchProjectById).mockRejectedValue(new Error(errorMessage));
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		expect(screen.getByText('Test Project')).toBeInTheDocument()
-		expect(screen.getByText('Test project description')).toBeInTheDocument()
-		expect(screen.getByText('Vue d\'ensemble')).toBeInTheDocument()
-		expect(screen.getByText('Kanban')).toBeInTheDocument()
-		expect(screen.getByText('Backlog')).toBeInTheDocument()
-		expect(screen.getByText('Membres')).toBeInTheDocument()
-	})
-
-	it('should switch to kanban tab', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		const kanbanTab = screen.getByText('Kanban')
-		fireEvent.click(kanbanTab)
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('kanban-board')).toBeInTheDocument()
-		})
-	})
+			expect(screen.getByText('Projet introuvable')).toBeInTheDocument();
+			expect(screen.getByText(errorMessage)).toBeInTheDocument();
+		});
 
-	it('should switch to backlog tab', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
+		expect(screen.getByText('Retour aux projets')).toBeInTheDocument();
+	});
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+	it('should display default error message when no specific error message', async () => {
+		vi.mocked(projectService.fetchProjectById).mockRejectedValue(new Error());
 
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
-	})
+			expect(screen.getByText("Ce projet n'existe pas ou vous n'avez pas accès.")).toBeInTheDocument();
+		});
+	});
 
-	it('should switch to members tab', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		const membersTab = screen.getByText('Membres')
-		fireEvent.click(membersTab)
+	it('should display project details in overview tab', async () => {
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('members-list')).toBeInTheDocument()
-		})
-	})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-	it('should open task modal when creating task from backlog', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
+		expect(screen.getByText('Test project description')).toBeInTheDocument();
+		expect(screen.getByText('En cours')).toBeInTheDocument();
+		expect(screen.getByText('Priorité Haute')).toBeInTheDocument();
+		expect(screen.getByText('2 Membres')).toBeInTheDocument();
+	});
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+	it('should display default values when project has missing information', async () => {
+		const incompleteProject = {
+			...mockProject,
+			description: undefined,
+			status: undefined,
+			priority: undefined,
+		};
 
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
+		vi.mocked(projectService.fetchProjectById).mockResolvedValue(incompleteProject);
+		vi.mocked(projectService.fetchProjectMembers).mockResolvedValue([]);
 
-		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
-
-		const createTaskButton = screen.getByText('Create Task')
-		fireEvent.click(createTaskButton)
-
-		await waitFor(() => {
-			expect(screen.getByTestId('task-modal')).toBeInTheDocument()
-		})
-	})
-
-	it('should handle task deletion', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-		vi.mocked(taskService.deleteTask).mockResolvedValue(undefined)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-		const deleteTaskButton = screen.getByText('Delete Task')
-		fireEvent.click(deleteTaskButton)
+		expect(screen.getByText('Aucune description fournie pour ce projet. Ajoutez une description pour mieux expliquer les objectifs et le contexte de ce projet.')).toBeInTheDocument();
+		expect(screen.getByText('Non défini')).toBeInTheDocument();
+		expect(screen.getByText('Priorité Non définie')).toBeInTheDocument();
+		expect(screen.getByText('0 Membre')).toBeInTheDocument();
+		expect(screen.getByText('Aucun membre')).toBeInTheDocument();
+	});
 
-		expect(global.confirm).toHaveBeenCalledWith('Êtes-vous sûr de vouloir supprimer cette tâche ?')
-		expect(taskService.deleteTask).toHaveBeenCalledWith(1)
-	})
+	it('should switch between tabs correctly', async () => {
+		const user = userEvent.setup();
 
-	it('should display project status and priority badges', () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		expect(screen.getByText('En cours')).toBeInTheDocument()
-		expect(screen.getByText('Priorité Haute')).toBeInTheDocument()
-		expect(screen.getByText('2 Membres')).toBeInTheDocument()
-	})
-
-	it('should display member information in sidebar', () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		expect(screen.getByText('John Doe')).toBeInTheDocument()
-		expect(screen.getByText('john@example.com')).toBeInTheDocument()
-		expect(screen.getByText('Jane Smith')).toBeInTheDocument()
-		expect(screen.getByText('jane@example.com')).toBeInTheDocument()
-	})
-
-	it('should display empty state when no members', () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: [],
-		} as any)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		expect(screen.getByText('Aucun membre')).toBeInTheDocument()
-		expect(screen.getByText('0 Membre')).toBeInTheDocument()
-	})
-
-	it('should handle task editing from backlog', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-		const editTaskButton = screen.getByText('Edit Task')
-		fireEvent.click(editTaskButton)
+		const kanbanTab = screen.getByText('Kanban');
+		await user.click(kanbanTab);
+		expect(screen.getByTestId('kanban-board')).toBeInTheDocument();
+
+		const backlogTab = screen.getByText('Backlog');
+		await user.click(backlogTab);
+		expect(screen.getByTestId('backlog')).toBeInTheDocument();
+
+		const membersTab = screen.getByText('Membres');
+		await user.click(membersTab);
+		expect(screen.getByTestId('members-list')).toBeInTheDocument();
+
+		const overviewTab = screen.getByText("Vue d'ensemble");
+		await user.click(overviewTab);
+		expect(screen.getByText('Description du projet')).toBeInTheDocument();
+	});
+
+	it('should navigate to members tab when clicking see all members', async () => {
+		const user = userEvent.setup();
+		const manyMembers = Array.from({ length: 5 }, (_, i) => ({
+			id: i + 1,
+			userId: i + 1,
+			projectId: 1,
+			addedAt: '2025-01-01T00:00:00.000Z',
+			user: {
+				id: i + 1,
+				email: `user${i + 1}@test.com`,
+				name: `User ${i + 1}`,
+			},
+		}));
+
+		vi.mocked(projectService.fetchProjectMembers).mockResolvedValue(manyMembers);
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('task-modal')).toBeInTheDocument()
-		})
-	})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-	it('should handle task saving for new task', async () => {
-		const mockQueryClient = {
-			invalidateQueries: vi.fn(),
-		}
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-		vi.mocked(taskService.createTask).mockResolvedValue({ id: 1, title: 'New Task' } as any)
+		const seeAllButton = screen.getByText('Voir tous les membres (5)');
+		await user.click(seeAllButton);
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+		expect(screen.getByTestId('members-list')).toBeInTheDocument();
+	});
 
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
+	it('should navigate to tabs using quick actions', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-		const createTaskButton = screen.getByText('Create Task')
-		fireEvent.click(createTaskButton)
+		const kanbanAction = screen.getByText('Voir le Kanban');
+		await user.click(kanbanAction);
+		expect(screen.getByTestId('kanban-board')).toBeInTheDocument();
+
+		await user.click(screen.getByText("Vue d'ensemble"));
+
+		const backlogAction = screen.getByText('Voir le Backlog');
+		await user.click(backlogAction);
+		expect(screen.getByTestId('backlog')).toBeInTheDocument();
+
+		await user.click(screen.getByText("Vue d'ensemble"));
+
+		const membersAction = screen.getByText("Gérer l'équipe");
+		await user.click(membersAction);
+		expect(screen.getByTestId('members-list')).toBeInTheDocument();
+	});
+
+	it('should open task modal for creating new task', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('task-modal')).toBeInTheDocument()
-		})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-		const saveButton = screen.getByText('Save')
-		fireEvent.click(saveButton)
+		await user.click(screen.getByText('Backlog'));
+
+		const createTaskBtn = screen.getByTestId('create-task-btn');
+		await user.click(createTaskBtn);
+
+		expect(screen.getByTestId('task-modal')).toBeInTheDocument();
+		expect(screen.getByText('Task: New Task')).toBeInTheDocument();
+	});
+
+	it('should open task modal for editing existing task', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
+
+		await user.click(screen.getByText('Backlog'));
+
+		const editTaskBtn = screen.getByTestId('edit-task-btn');
+		await user.click(editTaskBtn);
+
+		expect(screen.getByTestId('task-modal')).toBeInTheDocument();
+		expect(screen.getByText('Task: Test Task')).toBeInTheDocument();
+	});
+
+	it('should close task modal when close button is clicked', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
+
+		await user.click(screen.getByText('Backlog'));
+		await user.click(screen.getByTestId('create-task-btn'));
+
+		expect(screen.getByTestId('task-modal')).toBeInTheDocument();
+
+		await user.click(screen.getByTestId('close-modal'));
+
+		expect(screen.queryByTestId('task-modal')).not.toBeInTheDocument();
+	});
+
+	it('should handle task creation successfully', async () => {
+		const user = userEvent.setup();
+		vi.mocked(taskService.createTask).mockResolvedValue({
+			id: 1,
+			title: 'New Task',
+			description: '',
+			status: TaskStatus.A_FAIRE,
+			priority: TaskPriority.MOYENNE,
+			projectId: 1,
+			createdAt: '2025-01-01T00:00:00.000Z',
+			updatedAt: '2025-01-01T00:00:00.000Z',
+		});
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
+
+		await user.click(screen.getByText('Backlog'));
+		await user.click(screen.getByTestId('create-task-btn'));
+		await user.click(screen.getByTestId('save-task'));
 
 		await waitFor(() => {
 			expect(taskService.createTask).toHaveBeenCalledWith(1, {
-				title: 'New Task',
-				description: 'Description',
-				status: 'A_FAIRE',
+				title: 'Saved Task',
+				description: undefined,
+				status: TaskStatus.A_FAIRE,
 				priority: undefined,
 				dueDate: undefined,
 				assignedToId: undefined,
-			})
-		})
-	})
+			});
+		});
 
-	it('should handle task saving for existing task', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-		vi.mocked(taskService.updateTask).mockResolvedValue({ id: 1, title: 'Updated Task' } as any)
+		expect(screen.queryByTestId('task-modal')).not.toBeInTheDocument();
+	});
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+	it('should handle task update successfully', async () => {
+		const user = userEvent.setup();
+		vi.mocked(taskService.updateTask).mockResolvedValue({
+			id: 1,
+			title: 'Updated Task',
+			description: '',
+			status: TaskStatus.A_FAIRE,
+			priority: TaskPriority.MOYENNE,
+			projectId: 1,
+			createdAt: '2025-01-01T00:00:00.000Z',
+			updatedAt: '2025-01-01T00:00:00.000Z',
+		});
 
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
-
-		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
-
-		const editTaskButton = screen.getByText('Edit Task')
-		fireEvent.click(editTaskButton)
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('task-modal')).toBeInTheDocument()
-		})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-		const saveButton = screen.getByText('Save')
-		fireEvent.click(saveButton)
+		await user.click(screen.getByText('Backlog'));
+		await user.click(screen.getByTestId('edit-task-btn'));
+		await user.click(screen.getByTestId('save-task'));
 
 		await waitFor(() => {
 			expect(taskService.updateTask).toHaveBeenCalledWith(1, {
-				title: 'New Task',
-				description: 'Description',
+				title: 'Saved Task',
+				description: undefined,
 				status: undefined,
 				priority: undefined,
 				dueDate: undefined,
 				assignedToId: undefined,
-			})
-		})
-	})
+			});
+		});
 
-	it('should handle task deletion cancellation', async () => {
-		global.confirm = vi.fn(() => false)
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
+		expect(screen.queryByTestId('task-modal')).not.toBeInTheDocument();
+	});
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+	it('should handle task creation error', async () => {
+		const user = userEvent.setup();
+		vi.mocked(taskService.createTask).mockRejectedValue(new Error('Creation failed'));
 
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-		const deleteTaskButton = screen.getByText('Delete Task')
-		fireEvent.click(deleteTaskButton)
+		await user.click(screen.getByText('Backlog'));
+		await user.click(screen.getByTestId('create-task-btn'));
+		await user.click(screen.getByTestId('save-task'));
 
-		expect(global.confirm).toHaveBeenCalledWith('Êtes-vous sûr de vouloir supprimer cette tâche ?')
-		expect(taskService.deleteTask).not.toHaveBeenCalled()
-	})
+		await waitFor(() => {
+			expect(console.error).toHaveBeenCalledWith('Erreur lors de la sauvegarde de la tâche:', expect.any(Error));
+			expect(window.alert).toHaveBeenCalledWith('Erreur lors de la sauvegarde de la tâche');
+		});
+	});
+
+	it('should handle task update error', async () => {
+		const user = userEvent.setup();
+		vi.mocked(taskService.updateTask).mockRejectedValue(new Error('Update failed'));
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
+
+		await user.click(screen.getByText('Backlog'));
+		await user.click(screen.getByTestId('edit-task-btn'));
+		await user.click(screen.getByTestId('save-task'));
+
+		await waitFor(() => {
+			expect(console.error).toHaveBeenCalledWith('Erreur lors de la sauvegarde de la tâche:', expect.any(Error));
+			expect(window.alert).toHaveBeenCalledWith('Erreur lors de la sauvegarde de la tâche');
+		});
+	});
+
+	it('should handle task deletion successfully', async () => {
+		const user = userEvent.setup();
+		vi.mocked(taskService.deleteTask).mockResolvedValue(undefined);
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
+
+		await user.click(screen.getByText('Backlog'));
+		await user.click(screen.getByTestId('delete-task-btn'));
+
+		await waitFor(() => {
+			expect(window.confirm).toHaveBeenCalledWith('Êtes-vous sûr de vouloir supprimer cette tâche ?');
+			expect(taskService.deleteTask).toHaveBeenCalledWith(1);
+		});
+	});
+
+	it('should cancel task deletion when user cancels confirmation', async () => {
+		const user = userEvent.setup();
+		window.confirm = vi.fn(() => false);
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
+
+		await user.click(screen.getByText('Backlog'));
+		await user.click(screen.getByTestId('delete-task-btn'));
+
+		expect(window.confirm).toHaveBeenCalledWith('Êtes-vous sûr de vouloir supprimer cette tâche ?');
+		expect(taskService.deleteTask).not.toHaveBeenCalled();
+	});
 
 	it('should handle task deletion error', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-		vi.mocked(taskService.deleteTask).mockRejectedValue(new Error('Delete failed'))
+		const user = userEvent.setup();
+		vi.mocked(taskService.deleteTask).mockRejectedValue(new Error('Deletion failed'));
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-		const deleteTaskButton = screen.getByText('Delete Task')
-		fireEvent.click(deleteTaskButton)
-
-		await waitFor(() => {
-			expect(taskService.deleteTask).toHaveBeenCalledWith(1)
-			expect(global.alert).toHaveBeenCalledWith('Erreur lors de la suppression de la tâche')
-		})
-	})
-
-	it('should handle task save error', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-		vi.mocked(taskService.createTask).mockRejectedValue(new Error('Save failed'))
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
+		await user.click(screen.getByText('Backlog'));
+		await user.click(screen.getByTestId('delete-task-btn'));
 
 		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
+			expect(console.error).toHaveBeenCalledWith('Erreur lors de la suppression de la tâche:', expect.any(Error));
+			expect(window.alert).toHaveBeenCalledWith('Erreur lors de la suppression de la tâche');
+		});
+	});
 
-		const createTaskButton = screen.getByText('Create Task')
-		fireEvent.click(createTaskButton)
+	it('should display correct status colors and emojis', async () => {
+		const projects = [
+			{ ...mockProject, status: 'En cours' as const },
+			{ ...mockProject, status: 'Terminé' as const },
+			{ ...mockProject, status: 'En attente' as const },
+			{ ...mockProject, status: undefined },
+		];
 
-		await waitFor(() => {
-			expect(screen.getByTestId('task-modal')).toBeInTheDocument()
-		})
+		for (let i = 0; i < projects.length; i++) {
+			vi.mocked(projectService.fetchProjectById).mockResolvedValue(projects[i]);
 
-		const saveButton = screen.getByText('Save')
-		fireEvent.click(saveButton)
+			const { unmount } = render(
+				<TestWrapper>
+					<ProjectDetail />
+				</TestWrapper>
+			);
 
-		await waitFor(() => {
-			expect(global.alert).toHaveBeenCalledWith('Erreur lors de la sauvegarde de la tâche')
-		})
-	})
+			await waitFor(() => {
+				expect(screen.getByText('Test Project')).toBeInTheDocument();
+			});
 
-	it('should close task modal on close button click', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
+			if (projects[i].status === 'En cours') {
+				expect(screen.getByText('🚀')).toBeInTheDocument();
+			} else if (projects[i].status === 'Terminé') {
+				expect(screen.getByText('✅')).toBeInTheDocument();
+			} else if (projects[i].status === 'En attente') {
+				expect(screen.getByText('⏳')).toBeInTheDocument();
+			} else {
+				expect(screen.getByText('📝')).toBeInTheDocument();
+			}
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		const backlogTab = screen.getByText('Backlog')
-		fireEvent.click(backlogTab)
-
-		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
-
-		const createTaskButton = screen.getByText('Create Task')
-		fireEvent.click(createTaskButton)
-
-		await waitFor(() => {
-			expect(screen.getByTestId('task-modal')).toBeInTheDocument()
-		})
-
-		const closeButton = screen.getByText('Close')
-		fireEvent.click(closeButton)
-
-		await waitFor(() => {
-			expect(screen.queryByTestId('task-modal')).not.toBeInTheDocument()
-		})
-	})
-
-	it('should handle projects with undefined status and priority', () => {
-		const projectWithUndefined = {
-			...mockProject,
-			status: undefined,
-			priority: undefined,
+			unmount();
 		}
+	});
 
-		vi.mocked(useProject).mockReturnValue({
-			data: projectWithUndefined,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
+	it('should display correct priority colors and emojis', async () => {
+		const projects = [
+			{ ...mockProject, priority: 'Haute' as const },
+			{ ...mockProject, priority: 'Moyenne' as const },
+			{ ...mockProject, priority: 'Basse' as const },
+			{ ...mockProject, priority: undefined },
+		];
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+		for (let i = 0; i < projects.length; i++) {
+			vi.mocked(projectService.fetchProjectById).mockResolvedValue(projects[i]);
 
-		expect(screen.getByText('Non défini')).toBeInTheDocument()
-		expect(screen.getByText('Priorité Non définie')).toBeInTheDocument()
-	})
+			const { unmount } = render(
+				<TestWrapper>
+					<ProjectDetail />
+				</TestWrapper>
+			);
 
-	it('should handle projects with null description', () => {
-		const projectWithNullDescription = {
-			...mockProject,
-			description: null,
+			await waitFor(() => {
+				expect(screen.getByText('Test Project')).toBeInTheDocument();
+			});
+
+			if (projects[i].priority === 'Haute') {
+				expect(screen.getByText('🔥')).toBeInTheDocument();
+			} else if (projects[i].priority === 'Moyenne') {
+				expect(screen.getByText('⚠️')).toBeInTheDocument();
+			} else if (projects[i].priority === 'Basse') {
+				expect(screen.getByText('🌱')).toBeInTheDocument();
+			} else {
+				expect(screen.getByText('📊')).toBeInTheDocument();
+			}
+
+			unmount();
 		}
+	});
 
-		vi.mocked(useProject).mockReturnValue({
-			data: projectWithNullDescription,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		expect(screen.getByText('Aucune description fournie pour ce projet. Ajoutez une description pour mieux expliquer les objectifs et le contexte de ce projet.')).toBeInTheDocument()
-	})
-
-	it('should navigate between tabs using action buttons', async () => {
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		const kanbanActionButton = screen.getByText('Voir le Kanban').closest('button')
-		fireEvent.click(kanbanActionButton!)
+	it('should display formatted creation and update dates', async () => {
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('kanban-board')).toBeInTheDocument()
-		})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-		const overviewTab = screen.getByText('Vue d\'ensemble')
-		fireEvent.click(overviewTab)
+		expect(screen.getByText('mercredi 1 janvier 2025')).toBeInTheDocument();
+		expect(screen.getByText('jeudi 2 janvier 2025')).toBeInTheDocument();
+	});
 
-		const backlogActionButton = screen.getByText('Voir le Backlog').closest('button')
-		fireEvent.click(backlogActionButton!)
+	it('should not display update date when same as creation date', async () => {
+		const projectWithSameDates = {
+			...mockProject,
+			updatedAt: mockProject.createdAt,
+		};
 
-		await waitFor(() => {
-			expect(screen.getByTestId('backlog')).toBeInTheDocument()
-		})
+		vi.mocked(projectService.fetchProjectById).mockResolvedValue(projectWithSameDates);
 
-		fireEvent.click(overviewTab)
-
-		const membersActionButton = screen.getByText('Gérer l\'équipe').closest('button')
-		fireEvent.click(membersActionButton!)
-
-		await waitFor(() => {
-			expect(screen.getByTestId('members-list')).toBeInTheDocument()
-		})
-	})
-
-	it('should show "see all members" link when there are more than 3 members', async () => {
-		const manyMembers = [
-			...mockMembers,
-			{ user: { id: 3, name: 'Alice Johnson', email: 'alice@example.com' } },
-			{ user: { id: 4, name: 'Bob Wilson', email: 'bob@example.com' } },
-		]
-
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: manyMembers,
-		} as any)
-
-		render(<ProjectDetail />, { wrapper: createWrapper() })
-
-		expect(screen.getByText('Voir tous les membres (4)')).toBeInTheDocument()
-
-		const seeAllMembersLink = screen.getByText('Voir tous les membres (4)')
-		fireEvent.click(seeAllMembersLink)
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
 		await waitFor(() => {
-			expect(screen.getByTestId('members-list')).toBeInTheDocument()
-		})
-	})
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-	it('should handle members without names', () => {
-		const membersWithoutNames = [
+		expect(screen.getByText('mercredi 1 janvier 2025')).toBeInTheDocument();
+		expect(screen.queryByText('Modifié le')).not.toBeInTheDocument();
+	});
+
+	it('should display member count correctly', async () => {
+		const tests = [
+			{ members: [], expected: '0 Membre' },
+			{ members: [mockMembers[0]], expected: '1 Membre' },
+			{ members: mockMembers, expected: '2 Membres' },
+		];
+
+		for (const test of tests) {
+			vi.mocked(projectService.fetchProjectMembers).mockResolvedValue(test.members);
+
+			const { unmount } = render(
+				<TestWrapper>
+					<ProjectDetail />
+				</TestWrapper>
+			);
+
+			await waitFor(() => {
+				expect(screen.getByText('Test Project')).toBeInTheDocument();
+			});
+
+			expect(screen.getByText(test.expected)).toBeInTheDocument();
+
+			unmount();
+		}
+	});
+
+	it('should handle task save with no title', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
+
+		await user.click(screen.getByText('Backlog'));
+		await user.click(screen.getByTestId('create-task-btn'));
+
+		const saveButton = screen.getByTestId('save-task');
+		await user.click(saveButton);
+
+		await waitFor(() => {
+			expect(taskService.createTask).toHaveBeenCalledWith(1, {
+				title: 'Saved Task',
+				description: undefined,
+				status: TaskStatus.A_FAIRE,
+				priority: undefined,
+				dueDate: undefined,
+				assignedToId: undefined,
+			});
+		});
+	});
+
+	it('should display user name fallback for members without name', async () => {
+		const membersWithoutName = [
 			{
+				id: 1,
+				userId: 1,
+				projectId: 1,
+				addedAt: '2025-01-01T00:00:00.000Z',
 				user: {
 					id: 1,
-					name: null,
-					email: 'nomaname@example.com',
+					email: 'user1@test.com',
+					name: undefined,
 				},
 			},
-		]
+			{
+				id: 2,
+				userId: 2,
+				projectId: 1,
+				addedAt: '2025-01-01T00:00:00.000Z',
+				user: {
+					id: 2,
+					email: 'user2@test.com',
+					name: '',
+				},
+			},
+		];
 
-		vi.mocked(useProject).mockReturnValue({
-			data: mockProject,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: membersWithoutNames,
-		} as any)
+		vi.mocked(projectService.fetchProjectMembers).mockResolvedValue(membersWithoutName);
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
 
-		expect(screen.getByText('Utilisateur')).toBeInTheDocument()
-		expect(screen.getByText('nomaname@example.com')).toBeInTheDocument()
-	})
+		await waitFor(() => {
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
 
-	it('should show different date when project was updated', () => {
-		const projectWithDifferentUpdateDate = {
-			...mockProject,
-			updatedAt: '2024-02-01T00:00:00Z', // Different from createdAt
-		}
+		expect(screen.getAllByText('Utilisateur').length).toBeGreaterThan(0);
+		expect(screen.getByText('user1@test.com')).toBeInTheDocument();
+		expect(screen.getByText('user2@test.com')).toBeInTheDocument();
+	});
 
-		vi.mocked(useProject).mockReturnValue({
-			data: projectWithDifferentUpdateDate,
-			isLoading: false,
-			isError: false,
-			error: null,
-		} as any)
-		vi.mocked(useProjectMembers).mockReturnValue({
-			data: mockMembers,
-		} as any)
+	it('should display member initials from name or email', async () => {
+		const membersWithVariousNames = [
+			{
+				id: 1,
+				userId: 1,
+				projectId: 1,
+				addedAt: '2025-01-01T00:00:00.000Z',
+				user: {
+					id: 1,
+					email: 'test@example.com',
+					name: 'John Doe',
+				},
+			},
+			{
+				id: 2,
+				userId: 2,
+				projectId: 1,
+				addedAt: '2025-01-01T00:00:00.000Z',
+				user: {
+					id: 2,
+					email: 'jane@example.com',
+					name: undefined,
+				},
+			},
+		];
 
-		render(<ProjectDetail />, { wrapper: createWrapper() })
+		vi.mocked(projectService.fetchProjectMembers).mockResolvedValue(membersWithVariousNames);
 
-		expect(screen.getByText('Créé le')).toBeInTheDocument()
-		expect(screen.getByText('Modifié le')).toBeInTheDocument()
-	})
-})
+		render(
+			<TestWrapper>
+				<ProjectDetail />
+			</TestWrapper>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText('Test Project')).toBeInTheDocument();
+		});
+
+		expect(screen.getAllByText('J').length).toBeGreaterThan(0);
+		expect(screen.getByText('John Doe')).toBeInTheDocument();
+		expect(screen.getByText('jane@example.com')).toBeInTheDocument();
+	});
+});

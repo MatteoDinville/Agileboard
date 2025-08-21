@@ -1,578 +1,366 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import MembersListOnly from '../../components/MembersListOnly'
-import { useProjectMembers, useRemoveProjectMember, useAddProjectMember } from '../../utils/hooks/project'
-import { useAllUsers } from '../../utils/hooks/user'
-
-interface ReactNodeProps {
-	children: React.ReactNode;
-}
-
-interface IconProps {
-	className?: string;
-}
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import MembersListOnly from '../../components/MembersListOnly';
 
 vi.mock('../../utils/hooks/project', () => ({
 	useProjectMembers: vi.fn(),
-	useRemoveProjectMember: vi.fn(),
 	useAddProjectMember: vi.fn(),
-}))
+	useRemoveProjectMember: vi.fn(),
+}));
 
 vi.mock('../../utils/hooks/user', () => ({
 	useAllUsers: vi.fn(),
-}))
+}));
 
-vi.mock('@tanstack/react-query', async () => {
-	const actual = await vi.importActual('@tanstack/react-query')
+vi.mock('@tanstack/react-router', async () => {
+	const actual = await vi.importActual('@tanstack/react-router');
 	return {
 		...actual,
-		QueryClient: vi.fn().mockImplementation(() => ({
-			setDefaultOptions: vi.fn(),
-			getQueryData: vi.fn(),
-			setQueryData: vi.fn(),
-			invalidateQueries: vi.fn(),
-		})),
-		QueryClientProvider: ({ children }: ReactNodeProps) => children,
-	}
-})
+		useParams: vi.fn(),
+	};
+});
 
-vi.mock('lucide-react', () => ({
-	Mail: ({ className }: IconProps) => <div data-testid="mail-icon" className={className} />,
-	Loader2: ({ className }: IconProps) => <div data-testid="loader-icon" className={className} />,
-	Users: ({ className }: IconProps) => <div data-testid="users-icon" className={className} />,
-	UserMinus: ({ className }: IconProps) => <div data-testid="user-minus-icon" className={className} />,
-	UserPlus: ({ className }: IconProps) => <div data-testid="user-plus-icon" className={className} />,
-	X: ({ className }: IconProps) => <div data-testid="x-icon" className={className} />,
-	AlertCircle: ({ className }: IconProps) => <div data-testid="alert-circle-icon" className={className} />,
-}))
+import { useProjectMembers, useAddProjectMember, useRemoveProjectMember } from '../../utils/hooks/project';
+import { useAllUsers } from '../../utils/hooks/user';
+import { useParams } from '@tanstack/react-router';
 
-const mockConfirm = vi.fn()
-Object.defineProperty(window, 'confirm', {
-	value: mockConfirm,
-	writable: true,
-})
+const mockUseParams = useParams as ReturnType<typeof vi.fn>;
+const mockUseProjectMembers = useProjectMembers as ReturnType<typeof vi.fn>;
+const mockUseAddProjectMember = useAddProjectMember as ReturnType<typeof vi.fn>;
+const mockUseRemoveProjectMember = useRemoveProjectMember as ReturnType<typeof vi.fn>;
+const mockUseAllUsers = useAllUsers as ReturnType<typeof vi.fn>;
 
-const createWrapper = () => {
-	const queryClient = new QueryClient({
-		defaultOptions: {
-			queries: {
-				retry: false,
-			},
-			mutations: {
-				retry: false,
-			},
+const createTestQueryClient = () => new QueryClient({
+	defaultOptions: {
+		queries: { retry: false },
+		mutations: { retry: false },
+	},
+});
+
+const mockMembers = [
+	{
+		id: 1,
+		user: {
+			id: 1,
+			email: 'john@example.com',
+			name: 'John Doe'
 		},
-	})
+		addedAt: '2024-01-01T00:00:00.000Z'
+	},
+	{
+		id: 2,
+		user: {
+			id: 2,
+			email: 'jane@example.com',
+			name: 'Jane Smith'
+		},
+		addedAt: '2024-01-02T00:00:00.000Z'
+	}
+];
 
-	return ({ children }: { children: React.ReactNode }) => (
-		<QueryClientProvider client={queryClient}>
-			{children}
-		</QueryClientProvider>
-	)
-}
+const mockAllUsers = [
+	{ id: 1, email: 'john@example.com', name: 'John Doe' },
+	{ id: 2, email: 'jane@example.com', name: 'Jane Smith' },
+	{ id: 3, email: 'bob@example.com', name: 'Bob Wilson' },
+];
 
-describe('MembersListOnly', () => {
+describe('MembersListOnly - Member Assignment', () => {
+	let queryClient: QueryClient;
+	let addMemberMutate: ReturnType<typeof vi.fn>;
+	let removeMemberMutate: ReturnType<typeof vi.fn>;
+
 	beforeEach(() => {
-		vi.clearAllMocks()
-		mockConfirm.mockReturnValue(true)
-	})
+		queryClient = createTestQueryClient();
+		addMemberMutate = vi.fn();
+		removeMemberMutate = vi.fn();
 
-	describe('Loading state', () => {
-		it('should show loading state when members are loading', () => {
-			vi.mocked(useProjectMembers).mockReturnValue({
-				data: undefined,
-				isLoading: true,
-				error: null,
-				isError: false,
-				isSuccess: false,
-				isFetching: false,
-				refetch: vi.fn(),
+		mockUseParams.mockReturnValue({ projectId: '1' });
+		mockUseProjectMembers.mockReturnValue({
+			data: mockMembers,
+			isLoading: false,
+		});
+		mockUseAllUsers.mockReturnValue({
+			data: mockAllUsers,
+			isLoading: false,
+		});
+		mockUseAddProjectMember.mockReturnValue({
+			mutate: addMemberMutate,
+			isPending: false,
+		});
+		mockUseRemoveProjectMember.mockReturnValue({
+			mutate: removeMemberMutate,
+			isPending: false,
+		});
+
+		global.confirm = vi.fn(() => true);
+	});
+
+	it('should display existing members', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		expect(screen.getByTestId('members-list')).toBeInTheDocument();
+		expect(screen.getByText('John Doe')).toBeInTheDocument();
+		expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+		expect(screen.getByText('john@example.com')).toBeInTheDocument();
+		expect(screen.getByText('jane@example.com')).toBeInTheDocument();
+	});
+
+	it('should open add member modal when clicking add button', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+		expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
+		expect(screen.getByText('Ajouter un membre')).toBeInTheDocument();
+	});
+
+	it('should show available users in modal', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+
+		const select = screen.getByTestId('user-select');
+		expect(select).toBeInTheDocument();
+
+		expect(screen.getByText(/Bob Wilson/)).toBeInTheDocument();
+	});
+
+	it('should add member when selecting user and clicking add', async () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+
+		const select = screen.getByTestId('user-select');
+		fireEvent.change(select, { target: { value: '3' } });
+
+		fireEvent.click(screen.getByTestId('add-member-btn'));
+
+		expect(addMemberMutate).toHaveBeenCalledWith(
+			{ projectId: 1, userId: 3 },
+			expect.objectContaining({
+				onSuccess: expect.any(Function)
 			})
-
-			vi.mocked(useAllUsers).mockReturnValue({
-				data: undefined,
-				isLoading: false,
-				error: null,
-				isError: false,
-				isSuccess: false,
-				isFetching: false,
-				refetch: vi.fn(),
-			})
-
-			vi.mocked(useRemoveProjectMember).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-
-			vi.mocked(useAddProjectMember).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-
-			render(<MembersListOnly projectId={1} />, { wrapper: createWrapper() })
-
-			expect(screen.getByText('Chargement des membres...')).toBeInTheDocument()
-			expect(screen.getByTestId('loader-icon')).toBeInTheDocument()
-		})
-	})
-
-	describe('Empty state', () => {
-		beforeEach(() => {
-			vi.mocked(useProjectMembers).mockReturnValue({
-				data: [],
-				isLoading: false,
-				error: null,
-				isError: false,
-				isSuccess: true,
-				isFetching: false,
-				refetch: vi.fn(),
-			})
-
-			vi.mocked(useAllUsers).mockReturnValue({
-				data: [],
-				isLoading: false,
-				error: null,
-				isError: false,
-				isSuccess: true,
-				isFetching: false,
-				refetch: vi.fn(),
-			})
-
-			vi.mocked(useRemoveProjectMember).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-
-			vi.mocked(useAddProjectMember).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-		})
-
-		it('should show empty state when no members', () => {
-			render(<MembersListOnly projectId={1} />, { wrapper: createWrapper() })
-
-			expect(screen.getByText('Aucun membre')).toBeInTheDocument()
-			expect(screen.getByText("Ce projet n'a pas encore de membres")).toBeInTheDocument()
-			expect(screen.getByTestId('users-icon')).toBeInTheDocument()
-		})
-
-		it('should show add member button when user is owner', () => {
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			expect(screen.getByText('Ajouter un membre')).toBeInTheDocument()
-			expect(screen.getByTestId('user-plus-icon')).toBeInTheDocument()
-		})
-
-		it('should not show add member button when user is not owner', () => {
-			render(<MembersListOnly projectId={1} isOwner={false} />, { wrapper: createWrapper() })
-
-			expect(screen.queryByText('Ajouter un membre')).not.toBeInTheDocument()
-		})
-	})
-
-	describe('Members list', () => {
-		const mockMembers = [
-			{
-				id: 1,
-				projectId: 1,
-				userId: 1,
-				role: 'MEMBER',
-				joinedAt: '2024-01-01T00:00:00Z',
-				addedAt: '2024-01-01T00:00:00Z',
-				user: {
-					id: 1,
-					name: 'John Doe',
-					email: 'john@example.com'
-				}
-			},
-			{
-				id: 2,
-				projectId: 1,
-				userId: 2,
-				role: 'MEMBER',
-				joinedAt: '2024-01-01T00:00:00Z',
-				addedAt: '2024-01-01T00:00:00Z',
-				user: {
-					id: 2,
-					name: 'Jane Smith',
-					email: 'jane@example.com'
-				}
-			}
-		]
-
-		const mockAllUsers = [
-			{
-				id: 1,
-				name: 'John Doe',
-				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00Z',
-				updatedAt: '2024-01-01T00:00:00Z'
-			},
-			{
-				id: 2,
-				name: 'Jane Smith',
-				email: 'jane@example.com',
-				createdAt: '2024-01-01T00:00:00Z',
-				updatedAt: '2024-01-01T00:00:00Z'
-			},
-			{
-				id: 3,
-				name: 'Bob Wilson',
-				email: 'bob@example.com',
-				createdAt: '2024-01-01T00:00:00Z',
-				updatedAt: '2024-01-01T00:00:00Z'
-			}
-		]
-
-		beforeEach(() => {
-			vi.mocked(useProjectMembers).mockReturnValue({
-				data: mockMembers,
-				isLoading: false,
-				error: null,
-				isError: false,
-				isSuccess: true,
-				isFetching: false,
-				refetch: vi.fn(),
-			})
-
-			vi.mocked(useAllUsers).mockReturnValue({
-				data: mockAllUsers,
-				isLoading: false,
-				error: null,
-				isError: false,
-				isSuccess: true,
-				isFetching: false,
-				refetch: vi.fn(),
-			})
-
-			vi.mocked(useRemoveProjectMember).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-
-			vi.mocked(useAddProjectMember).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-		})
-
-		it('should render members list correctly', () => {
-			render(<MembersListOnly projectId={1} />, { wrapper: createWrapper() })
-
-			expect(screen.getByText('John Doe')).toBeInTheDocument()
-			expect(screen.getByText('Jane Smith')).toBeInTheDocument()
-			expect(screen.getByText('john@example.com')).toBeInTheDocument()
-			expect(screen.getByText('jane@example.com')).toBeInTheDocument()
-			expect(screen.getAllByTestId('mail-icon')).toHaveLength(2)
-		})
-
-		it('should use email initial when member has no name', () => {
-			vi.mocked(useProjectMembers).mockReturnValue({
-				data: [
-					{
-						id: 1,
-						userId: 1,
-						projectId: 1,
-						role: 'MEMBER',
-						user: { id: 1, name: null, email: 'test@example.com' }
-					}
-				],
-				isLoading: false,
-				isError: false,
-				error: null
-			})
-
-			render(<MembersListOnly projectId={1} isOwner={false} />, { wrapper: createWrapper() })
-
-			expect(screen.getByText('T')).toBeInTheDocument()
-			expect(screen.getByText('Utilisateur')).toBeInTheDocument()
-			expect(screen.getByText('test@example.com')).toBeInTheDocument()
-		})
-
-		it('should show member count in header when owner', () => {
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			expect(screen.getByText('Membres du projet (2)')).toBeInTheDocument()
-		})
-
-		it('should show add button in header when owner', () => {
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			expect(screen.getByText('Ajouter')).toBeInTheDocument()
-		})
-
-		it('should handle member removal when owner', () => {
-			const mockRemoveMember = vi.fn()
-			vi.mocked(useRemoveProjectMember).mockReturnValue({
-				mutate: mockRemoveMember,
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			const removeButtons = screen.getAllByTestId('user-minus-icon')
-			fireEvent.click(removeButtons[0])
-
-			expect(mockConfirm).toHaveBeenCalledWith('Voulez-vous vraiment retirer ce membre du projet ?')
-			expect(mockRemoveMember).toHaveBeenCalledWith({ projectId: 1, userId: 1 })
-		})
-
-		it('should not show remove buttons when not owner', () => {
-			render(<MembersListOnly projectId={1} isOwner={false} />, { wrapper: createWrapper() })
-
-			expect(screen.queryByTestId('user-minus-icon')).not.toBeInTheDocument()
-		})
-
-		it('should show loading state on remove button when pending', () => {
-			vi.mocked(useRemoveProjectMember).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: true,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			expect(screen.getAllByTestId('loader-icon')).toHaveLength(2)
-		})
-	})
-
-	describe('Add member modal', () => {
-		const mockMembers = [
-			{
-				id: 1,
-				projectId: 1,
-				userId: 1,
-				role: 'MEMBER',
-				joinedAt: '2024-01-01T00:00:00Z',
-				addedAt: '2024-01-01T00:00:00Z',
-				user: {
-					id: 1,
-					name: 'John Doe',
-					email: 'john@example.com'
-				}
-			}
-		]
-
-		const mockAllUsers = [
-			{
-				id: 1,
-				name: 'John Doe',
-				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00Z',
-				updatedAt: '2024-01-01T00:00:00Z'
-			},
-			{
-				id: 2,
-				name: 'Jane Smith',
-				email: 'jane@example.com',
-				createdAt: '2024-01-01T00:00:00Z',
-				updatedAt: '2024-01-01T00:00:00Z'
-			}
-		]
-
-		beforeEach(() => {
-			vi.mocked(useProjectMembers).mockReturnValue({
-				data: mockMembers,
-				isLoading: false,
-				error: null,
-				isError: false,
-				isSuccess: true,
-				isFetching: false,
-				refetch: vi.fn(),
-			})
-
-			vi.mocked(useAllUsers).mockReturnValue({
-				data: mockAllUsers,
-				isLoading: false,
-				error: null,
-				isError: false,
-				isSuccess: true,
-				isFetching: false,
-				refetch: vi.fn(),
-			})
-
-			vi.mocked(useRemoveProjectMember).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-
-			vi.mocked(useAddProjectMember).mockReturnValue({
-				mutate: vi.fn(),
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-		})
-
-		it('should open add member modal when add button is clicked', () => {
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			const addButton = screen.getByText('Ajouter')
-			fireEvent.click(addButton)
-
-			expect(screen.getByText('Ajouter un membre')).toBeInTheDocument()
-			expect(screen.getByText('Sélectionner un utilisateur')).toBeInTheDocument()
-		})
-
-		it('should show available users in select', () => {
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			const addButton = screen.getByText('Ajouter')
-			fireEvent.click(addButton)
-
-			expect(screen.getByText('Jane Smith (jane@example.com)')).toBeInTheDocument()
-			expect(screen.queryByText('John Doe (john@example.com)')).not.toBeInTheDocument() // Already a member
-		})
-
-		it('should handle member addition', () => {
-			const mockAddMember = vi.fn()
-			vi.mocked(useAddProjectMember).mockReturnValue({
-				mutate: mockAddMember,
-				isPending: false,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			const addButton = screen.getByText('Ajouter')
-			fireEvent.click(addButton)
-
-			const select = screen.getByRole('combobox')
-			fireEvent.change(select, { target: { value: '2' } })
-
-			const addMemberButton = screen.getByText('Ajouter au projet')
-			fireEvent.click(addMemberButton)
-
-			expect(mockAddMember).toHaveBeenCalledWith(
-				{ projectId: 1, userId: 2 },
-				expect.objectContaining({
-					onSuccess: expect.any(Function)
-				})
-			)
-
-			const onSuccessCallback = mockAddMember.mock.calls[0][1].onSuccess
-			act(() => {
-				onSuccessCallback()
-			})
-
-			expect(screen.queryByText('Ajouter un membre')).not.toBeInTheDocument()
-		})
-
-		it('should handle member addition with loading state', () => {
-			const mockAddMember = vi.fn()
-			vi.mocked(useAddProjectMember).mockReturnValue({
-				mutate: mockAddMember,
-				isPending: true,
-				isSuccess: false,
-				isError: false,
-				error: null,
-			})
-
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			const addButton = screen.getByText('Ajouter')
-			fireEvent.click(addButton)
-
-			const select = screen.getByRole('combobox')
-			fireEvent.change(select, { target: { value: '2' } })
-
-			expect(screen.getByText('Ajout en cours...')).toBeInTheDocument()
-			expect(screen.queryByText('Ajouter au projet')).not.toBeInTheDocument()
-		})
-
-		it('should close modal when cancel is clicked', () => {
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			const addButton = screen.getByText('Ajouter')
-			fireEvent.click(addButton)
-
-			const cancelButton = screen.getByText('Annuler')
-			fireEvent.click(cancelButton)
-
-			expect(screen.queryByText('Ajouter un membre')).not.toBeInTheDocument()
-		})
-
-		it('should close modal when X button is clicked', () => {
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			const addButton = screen.getByText('Ajouter')
-			fireEvent.click(addButton)
-
-			const closeButton = screen.getByTestId('x-icon')
-			fireEvent.click(closeButton)
-
-			expect(screen.queryByText('Ajouter un membre')).not.toBeInTheDocument()
-		})
-
-		it('should show loading state when users are loading', () => {
-			vi.mocked(useAllUsers).mockReturnValue({
-				data: undefined,
-				isLoading: true,
-				error: null,
-				isError: false,
-				isSuccess: false,
-				isFetching: true,
-				refetch: vi.fn(),
-			})
-
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			const addButton = screen.getByText('Ajouter')
-			fireEvent.click(addButton)
-
-			expect(screen.getByText('Chargement des utilisateurs...')).toBeInTheDocument()
-		})
-
-		it('should show no available users message when all users are members', () => {
-			vi.mocked(useAllUsers).mockReturnValue({
-				data: mockMembers.map(m => m.user),
-				isLoading: false,
-				error: null,
-				isError: false,
-				isSuccess: true,
-				isFetching: false,
-				refetch: vi.fn(),
-			})
-
-			render(<MembersListOnly projectId={1} isOwner={true} />, { wrapper: createWrapper() })
-
-			const addButton = screen.getByText('Ajouter')
-			fireEvent.click(addButton)
-
-			expect(screen.getByText('Aucun utilisateur disponible')).toBeInTheDocument()
-			expect(screen.getByText('Tous les utilisateurs sont déjà membres de ce projet')).toBeInTheDocument()
-			expect(screen.getByTestId('alert-circle-icon')).toBeInTheDocument()
-		})
-	})
-})
+		);
+	});
+
+	it('should close modal when clicking cancel', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+		expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
+
+		fireEvent.click(screen.getByTestId('cancel-btn'));
+		expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
+	});
+
+	it('should close modal when clicking close button', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+		expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
+
+		fireEvent.click(screen.getByTestId('close-modal-btn'));
+		expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
+	});
+
+	it('should remove member when clicking remove button', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('remove-member-1'));
+
+		expect(global.confirm).toHaveBeenCalledWith('Êtes-vous sûr de vouloir retirer ce membre du projet ?');
+		expect(removeMemberMutate).toHaveBeenCalledWith({
+			projectId: 1,
+			userId: 1
+		});
+	});
+
+	it('should show loading state when loading members', () => {
+		mockUseProjectMembers.mockReturnValue({
+			data: undefined,
+			isLoading: true,
+		});
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		expect(screen.getByTestId('members-loading')).toBeInTheDocument();
+		expect(screen.getByText('Chargement des membres...')).toBeInTheDocument();
+	});
+
+	it('should show no members state when no members exist', () => {
+		mockUseProjectMembers.mockReturnValue({
+			data: [],
+			isLoading: false,
+		});
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		expect(screen.getByTestId('no-members')).toBeInTheDocument();
+		expect(screen.getByText('Aucun membre')).toBeInTheDocument();
+		expect(screen.getByText('Ce projet n\'a pas encore de membres')).toBeInTheDocument();
+	});
+
+	it('should allow adding first member when no members exist', () => {
+		mockUseProjectMembers.mockReturnValue({
+			data: [],
+			isLoading: false,
+		});
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-first-member-btn'));
+		expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
+	});
+
+	it('should show users loading state in modal', () => {
+		mockUseAllUsers.mockReturnValue({
+			data: undefined,
+			isLoading: true,
+		});
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+		expect(screen.getByTestId('users-loading')).toBeInTheDocument();
+	});
+
+	it('should show no available users message when all users are members', () => {
+		mockUseAllUsers.mockReturnValue({
+			data: mockAllUsers.slice(0, 2),
+			isLoading: false,
+		});
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+		expect(screen.getByTestId('no-users-available')).toBeInTheDocument();
+		expect(screen.getByText('Aucun utilisateur disponible')).toBeInTheDocument();
+	});
+
+	it('should disable add button when no user is selected', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+
+		const addButton = screen.getByTestId('add-member-btn');
+		expect(addButton).toBeDisabled();
+	});
+
+	it('should not show add button for non-owners', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={false} />
+			</QueryClientProvider>
+		);
+
+		expect(screen.queryByTestId('add-member-header-btn')).not.toBeInTheDocument();
+	});
+
+	it('should not show remove buttons for non-owners', () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={false} />
+			</QueryClientProvider>
+		);
+
+		expect(screen.queryByTestId('remove-member-1')).not.toBeInTheDocument();
+		expect(screen.queryByTestId('remove-member-2')).not.toBeInTheDocument();
+	});
+
+	it('should show add button loading state during mutation', () => {
+		mockUseAddProjectMember.mockReturnValue({
+			mutate: addMemberMutate,
+			isPending: true,
+		});
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+
+		const select = screen.getByTestId('user-select');
+		fireEvent.change(select, { target: { value: '3' } });
+
+		const addButton = screen.getByTestId('add-member-btn');
+		expect(addButton).toBeDisabled();
+		expect(screen.getByText('Ajout en cours...')).toBeInTheDocument();
+	});
+
+	it('should handle member addition success callback', async () => {
+		addMemberMutate.mockImplementation((_args, options) => {
+			options.onSuccess();
+		});
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<MembersListOnly isOwner={true} />
+			</QueryClientProvider>
+		);
+
+		fireEvent.click(screen.getByTestId('add-member-header-btn'));
+
+		const select = screen.getByTestId('user-select');
+		fireEvent.change(select, { target: { value: '3' } });
+
+		fireEvent.click(screen.getByTestId('add-member-btn'));
+
+		await waitFor(() => {
+			expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
+		});
+	});
+});
