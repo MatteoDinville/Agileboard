@@ -4,6 +4,53 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.4.0 (2025-08-22)
+
+### 🛡️ Security & Accessibility (Pull Requests)
+
+- **🔒 OWASP Security Implementation** – Implémentation complète des mesures de sécurité OWASP
+- **♿ RGAA Accessibility** – Conformité RGAA 4.1 niveau AA avec checklist Opquast
+
+([#27](https://github.com/MatteoDinville/Agileboard/pull/27)) `accessibility-rgaa`
+
+### ➕ Added
+
+#### Sécurité OWASP
+
+- **A01 - Broken Access Control** : Middleware d'autorisation par rôles et vérification d'appartenance
+- **A02 - Cryptographic Failures** : HTTPS via Traefik, HSTS, hash Bcrypt, cookies sécurisés
+- **A03 - Injection** : Validation systématique des entrées, Prisma ORM, sanitisation
+- **A05 - Security Misconfiguration** : Helmet.js, CORS en liste blanche, CSP, rate limiting
+- **A06 - Vulnerable Components** : Audit automatique des dépendances, CI/CD sécurisé
+- **A07 - Authentication Failures** : Sessions stateless JWT, rate limit sur login
+- **A09 - Security Logging** : Logs structurés Pino, journalisation des actions sensibles
+- **A10 - SSRF** : Protection contre les requêtes réseau non autorisées
+
+#### Accessibilité RGAA
+
+- **Structure sémantique** : Hiérarchie des titres, landmarks ARIA
+- **Navigation clavier** : Skip link, ordre de tabulation logique, focus visible
+- **Contrastes conformes** : Ratios RGAA, thèmes clair/sombre, préférences utilisateur
+- **Formulaires accessibles** : Labels associés, messages d'erreur annoncés
+- **Modales accessibles** : Piégeage du focus, fermeture clavier, annonces lecteur d'écran
+- **Tests automatisés** : ESLint jsx-a11y, règles d'accessibilité strictes
+
+### 🔄 Changed
+
+- **Configuration serveur** : Intégration des middlewares de sécurité et validation
+- **Configuration client** : Provider d'accessibilité, composants accessibles
+- **Docker Compose** : Traefik avec certificats SSL, headers de sécurité
+- **CI/CD** : Workflows d'audit de sécurité, scan des vulnérabilités
+- **Documentation** : Guides de sécurité OWASP et accessibilité RGAA
+
+### 📚 Documentation
+
+- `SECURITY.md` : Guide complet des mesures de sécurité OWASP
+- `ACCESSIBILITY.md` : Guide de conformité RGAA et tests d'accessibilité
+- `ENV_SETUP.md` : Configuration des Variables d'Environnement
+
+---
+
 ## v1.3.0 (2025-08-22)
 
 ### ✨ Features (Pull Requests)
@@ -26,8 +73,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ### ✨ Features (Pull Requests)
 
-- **🌙 Dark Mode & Theme Switcher** – Implémentation du thème sombre et ajout du basculement entre les modes clair/sombre ([#23](https://github.com/MatteoDinville/Agileboard/pull/23)) `
-c0c143b`
+- **🌙 Dark Mode & Theme Switcher** – Implémentation du thème sombre et ajout du basculement entre les modes clair/sombre ([#23](https://github.com/MatteoDinville/Agileboard/pull/23)) `c0c143b`
 
 ### ➕ Added
 
@@ -45,13 +91,13 @@ c0c143b`
 
 ### 🚀 Features (Pull Requests)
 
-- **📨 Invitation System** – Proof of Concept d’invitation de membres avec notifications ([#15](https://github.com/MatteoDinville/Agileboard/pull/15)) `5e04539`
+- **📨 Invitation System** – Proof of Concept d'invitation de membres avec notifications ([#15](https://github.com/MatteoDinville/Agileboard/pull/15)) `5e04539`
 
 ### 🐛 Fixes (Pull Requests)
 
-- **🐳 Dockerfile Fix** – Correction du Dockerfile pour l’exécution en production ([#17](https://github.com/MatteoDinville/Agileboard/pull/17)) `9e5d0e1`
-- **⚙️ ESM Compatibility** – Résolution de l’erreur _ES module_ en production ([#18](https://github.com/MatteoDinville/Agileboard/pull/18)) `29b759b`
-- **📂 Import Paths** – Correction des extensions d’import pour démarrer le serveur en production ([#19](https://github.com/MatteoDinville/Agileboard/pull/19)) `b9c9e7e`
+- **🐳 Dockerfile Fix** – Correction du Dockerfile pour l'exécution en production ([#17](https://github.com/MatteoDinville/Agileboard/pull/17)) `9e5d0e1`
+- **⚙️ ESM Compatibility** – Résolution de l'erreur _ES module_ en production ([#18](https://github.com/MatteoDinville/Agileboard/pull/18)) `29b759b`
+- **📂 Import Paths** – Correction des extensions d'import pour démarrer le serveur en production ([#19](https://github.com/MatteoDinville/Agileboard/pull/19)) `b9c9e7e`
 - **🌐 API Calls** – Correction des appels API pour fonctionner correctement en production ([#20](https://github.com/MatteoDinville/Agileboard/pull/20)) `5cc9a10`
 
 ### ➕ Added

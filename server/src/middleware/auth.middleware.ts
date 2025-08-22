@@ -29,3 +29,69 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 		}
 	});
 };
+
+export const requireProjectAccess = async (req: AuthRequest, res: Response, next: NextFunction) => {
+	const projectId = parseInt(req.params.projectId || req.body.projectId);
+	const userId = req.userId;
+
+	if (!projectId || !userId) {
+		return res.status(400).json({ error: "ID de projet ou utilisateur manquant." });
+	}
+
+	try {
+		const { PrismaClient } = await import("@prisma/client");
+		const prisma = new PrismaClient();
+
+		const projectMember = await prisma.projectMember.findFirst({
+			where: {
+				projectId,
+				userId
+			}
+		});
+
+		if (!projectMember) {
+			return res.status(403).json({ error: "Accès refusé. Vous n'êtes pas membre de ce projet." });
+		}
+
+		next();
+	} catch (error) {
+		console.error("Erreur lors de la vérification d'accès au projet:", error);
+		return res.status(500).json({ error: "Erreur lors de la vérification des permissions." });
+	}
+};
+
+export const requireTaskAccess = async (req: AuthRequest, res: Response, next: NextFunction) => {
+	const taskId = parseInt(req.params.taskId || req.body.taskId);
+	const userId = req.userId;
+
+	if (!taskId || !userId) {
+		return res.status(400).json({ error: "ID de tâche ou utilisateur manquant." });
+	}
+
+	try {
+		const { PrismaClient } = await import("@prisma/client");
+		const prisma = new PrismaClient();
+
+		const task = await prisma.task.findFirst({
+			where: {
+				id: taskId,
+				project: {
+					members: {
+						some: {
+							userId
+						}
+					}
+				}
+			}
+		});
+
+		if (!task) {
+			return res.status(403).json({ error: "Accès refusé. Vous n'avez pas accès à cette tâche." });
+		}
+
+		next();
+	} catch (error) {
+		console.error("Erreur lors de la vérification d'accès à la tâche:", error);
+		return res.status(500).json({ error: "Erreur lors de la vérification des permissions." });
+	}
+};

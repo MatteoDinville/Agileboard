@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { invitationController } from "../controllers/invitationController";
-import { authenticateToken } from "../middleware/auth.middleware";
+import { invitationController } from "../controllers/invitationController.js";
+import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = Router();
 

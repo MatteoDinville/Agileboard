@@ -396,12 +396,16 @@ export const projectController = {
 						}
 					}
 				}),
-				...(userToRemove ? [prisma.projectInvitation.deleteMany({
-					where: {
-						projectId: projectId,
-						email: userToRemove.email.toLowerCase()
-					}
-				})] : [])
+				...(userToRemove
+					? [
+						prisma.projectInvitation.deleteMany({
+							where: {
+								projectId: projectId,
+								email: userToRemove.email.toLowerCase()
+							}
+						})
+					]
+					: [])
 			]);
 
 			res.status(204).send();

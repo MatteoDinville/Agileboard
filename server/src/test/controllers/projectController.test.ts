@@ -503,7 +503,9 @@ describe("ProjectController", () => {
 			await projectController.getProjectMembers(mockRequest as AuthRequest, mockResponse as Response, mockNext);
 
 			expect(mockResponse.status).toHaveBeenCalledWith(403);
-			expect(mockResponse.json).toHaveBeenCalledWith({ error: "Accès refusé. Vous n'êtes ni propriétaire ni membre de ce projet." });
+			expect(mockResponse.json).toHaveBeenCalledWith({
+				error: "Accès refusé. Vous n'êtes ni propriétaire ni membre de ce projet."
+			});
 		});
 
 		it("should handle db error with next", async () => {
