@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { PrismaClient, TaskStatus, TaskPriority } from "@prisma/client";
-import { AuthRequest } from "../middleware/auth.middleware";
+import { AuthRequest } from "../middleware/auth.middleware.js";
 
 const prisma = new PrismaClient();
 
