@@ -127,7 +127,6 @@ export const invitationController = {
 				message: "Invitation créée avec succès",
 				invitationUrl: `${process.env.FRONTEND_URL || "http://localhost:5173"}/invite/${token}`
 			});
-
 		} catch (err) {
 			next(err);
 		}
@@ -179,7 +178,6 @@ export const invitationController = {
 				invitedBy: invitation.invitedBy,
 				expiresAt: invitation.expiresAt
 			});
-
 		} catch (err) {
 			next(err);
 		}
@@ -261,7 +259,6 @@ export const invitationController = {
 				message: "Invitation acceptée avec succès",
 				project: invitation.project
 			});
-
 		} catch (err) {
 			next(err);
 		}
@@ -322,7 +319,6 @@ export const invitationController = {
 				message: "Invitation déclinée avec succès",
 				project: invitation.project
 			});
-
 		} catch (err) {
 			next(err);
 		}
@@ -368,7 +364,6 @@ export const invitationController = {
 			});
 
 			res.json(invitations);
-
 		} catch (err) {
 			next(err);
 		}
@@ -421,22 +416,23 @@ export const invitationController = {
 				orderBy: { createdAt: "desc" }
 			});
 
-			const formattedInvitations = invitations.map((inv: {
-				email: string;
-				project: { id: number; title: string; description: string | null };
-				invitedBy: { id: number; name: string | null; email: string };
-				expiresAt: Date;
-				token: string;
-			}) => ({
-				email: inv.email,
-				project: inv.project,
-				invitedBy: inv.invitedBy,
-				expiresAt: inv.expiresAt.toISOString(),
-				token: inv.token
-			}));
+			const formattedInvitations = invitations.map(
+				(inv: {
+					email: string;
+					project: { id: number; title: string; description: string | null };
+					invitedBy: { id: number; name: string | null; email: string };
+					expiresAt: Date;
+					token: string;
+				}) => ({
+					email: inv.email,
+					project: inv.project,
+					invitedBy: inv.invitedBy,
+					expiresAt: inv.expiresAt.toISOString(),
+					token: inv.token
+				})
+			);
 
 			res.json(formattedInvitations);
-
 		} catch (err) {
 			next(err);
 		}
@@ -480,18 +476,16 @@ export const invitationController = {
 				orderBy: { createdAt: "desc" }
 			});
 
-			const pending = invitations.filter((inv: {
-				acceptedAt: Date | null;
-				declinedAt: Date | null;
-				expiresAt: Date;
-			}) => !inv.acceptedAt && !inv.declinedAt && inv.expiresAt > new Date());
+			const pending = invitations.filter(
+				(inv: { acceptedAt: Date | null; declinedAt: Date | null; expiresAt: Date }) =>
+					!inv.acceptedAt && !inv.declinedAt && inv.expiresAt > new Date()
+			);
 			const accepted = invitations.filter((inv: { acceptedAt: Date | null }) => inv.acceptedAt);
 			const declined = invitations.filter((inv: { declinedAt: Date | null }) => inv.declinedAt);
-			const expired = invitations.filter((inv: {
-				acceptedAt: Date | null;
-				declinedAt: Date | null;
-				expiresAt: Date;
-			}) => !inv.acceptedAt && !inv.declinedAt && inv.expiresAt <= new Date());
+			const expired = invitations.filter(
+				(inv: { acceptedAt: Date | null; declinedAt: Date | null; expiresAt: Date }) =>
+					!inv.acceptedAt && !inv.declinedAt && inv.expiresAt <= new Date()
+			);
 
 			res.json({
 				pending,
@@ -500,7 +494,6 @@ export const invitationController = {
 				expired,
 				total: invitations.length
 			});
-
 		} catch (err) {
 			next(err);
 		}
@@ -537,7 +530,6 @@ export const invitationController = {
 			});
 
 			res.status(204).send();
-
 		} catch (err) {
 			next(err);
 		}

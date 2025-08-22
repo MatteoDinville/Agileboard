@@ -16,8 +16,8 @@ describe("taskController", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		Object.values(prismaMock.project).forEach(fn => (fn).mockReset());
-		Object.values(prismaMock.task).forEach(fn => (fn).mockReset());
+		Object.values(prismaMock.project).forEach(fn => fn.mockReset());
+		Object.values(prismaMock.task).forEach(fn => fn.mockReset());
 		req = { params: {}, body: {}, userId: 1 };
 		res = { status: vi.fn().mockReturnThis(), json: vi.fn().mockReturnThis() };
 		next = vi.fn();
