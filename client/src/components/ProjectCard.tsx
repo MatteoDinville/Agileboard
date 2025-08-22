@@ -4,7 +4,7 @@ import { useDeleteProject } from "../utils/hooks/project";
 import { Link } from "@tanstack/react-router";
 import toast from "react-hot-toast";
 
-export const ProjectCard = ({ viewMode, project, isOwner }: { viewMode: string, project: Project; isOwner: boolean }) => {
+export const ProjectCard = ({ viewMode, project, isOwner }: { viewMode: 'grid' | 'list', project: Project; isOwner: boolean }) => {
 	const deleteMutation = useDeleteProject();
 
 	const handleDelete = (id: number) => {
@@ -59,195 +59,206 @@ export const ProjectCard = ({ viewMode, project, isOwner }: { viewMode: string, 
 	const titleColorClass = isOwner
 		? "text-slate-800 hover:text-amber-600 dark:text-white dark:hover:text-amber-400"
 		: "text-slate-800 hover:text-blue-600 dark:text-white dark:hover:text-blue-400";
-	return (
-		<div className={`${cardStyles} dark:bg-gray-900 dark:[background-image:none] dark:border-gray-800 dark:ring-1 dark:ring-gray-800 dark:shadow-black/20 rounded-2xl shadow-xl hover:shadow-2xl dark:hover:shadow-gray-900/40 hover:scale-[1.02] transition-all duration-300 group ${viewMode === "list" ? "p-4 sm:p-6 lg:p-8" : "p-4 sm:p-6 lg:p-7"}`}>
-			{viewMode === "grid" ? (
-				<>
-					<div className="hidden sm:flex items-start justify-between mb-4 sm:mb-6">
-						{headerIcon}
-						<div className="flex items-center space-x-1">
-							<Link
-								to="/projects/$projectId"
-								params={{ projectId: project.id.toString() }}
-								className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
-								title="Voir les détails du projet"
-							>
-								<FolderOpen className="w-3 h-3 sm:w-4 sm:h-4" />
-							</Link>
-							{isOwner && (
-								<>
-									<Link
-										to="/projects/$projectId/edit"
-										params={{ projectId: project.id.toString() }}
-										className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
-										title="Modifier le projet"
-									>
-										<Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
-									</Link>
-									<button
-										onClick={() => handleDelete(project.id)}
-										className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
-										title="Supprimer le projet"
-									>
-										<Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-									</button>
-								</>
-							)}
-						</div>
-					</div>
 
-					<div className="hidden sm:block mb-4 sm:mb-6">
+	// Mode Grille
+	if (viewMode === "grid") {
+		return (
+			<article className={`${cardStyles} dark:bg-gray-900 dark:[background-image:none] dark:border-gray-800 dark:ring-1 dark:ring-gray-800 dark:shadow-black/20 rounded-2xl shadow-xl hover:shadow-2xl dark:hover:shadow-gray-900/40 hover:scale-[1.02] transition-all duration-300 group p-4 sm:p-6 lg:p-7`}>
+				<div className="flex items-start justify-between mb-4 sm:mb-6">
+					{headerIcon}
+					<div className="flex items-center space-x-1">
 						<Link
 							to="/projects/$projectId"
 							params={{ projectId: project.id.toString() }}
-							className="block"
+							className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+							title="Voir les détails du projet"
+							aria-label={`Voir les détails du projet ${project.title}`}
+						>
+							<FolderOpen className="w-3 h-3 sm:w-4 sm:h-4" />
+						</Link>
+						{isOwner && (
+							<>
+								<Link
+									to="/projects/$projectId/edit"
+									params={{ projectId: project.id.toString() }}
+									className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+									title="Modifier le projet"
+									aria-label={`Modifier le projet ${project.title}`}
+								>
+									<Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
+								</Link>
+								<button
+									onClick={() => handleDelete(project.id)}
+									className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+									title="Supprimer le projet"
+									aria-label={`Supprimer le projet ${project.title}`}
+								>
+									<Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+								</button>
+							</>
+						)}
+					</div>
+				</div>
+
+				<div className="mb-4 sm:mb-6">
+					<Link
+						to="/projects/$projectId"
+						params={{ projectId: project.id.toString() }}
+						className="block focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-lg"
+					>
+						<h3 className={`text-lg sm:text-xl font-bold mb-2 ${titleColorClass} hover:bg-clip-text transition-all duration-200 hover:cursor-pointer line-clamp-2`}>
+							{project.title}
+						</h3>
+					</Link>
+					<p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3">
+						{project.description || "Aucune description fournie pour ce projet"}
+					</p>
+				</div>
+
+				<div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+					<span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm border ${getStatusColor(project.status).class} dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700`}>
+						<div className="flex items-center gap-1 sm:gap-1.5">
+							<span className="text-xs sm:text-sm" aria-hidden="true">{getStatusColor(project.status).emoji}</span>
+							<span className="hidden sm:inline">{project.status ?? "Non défini"}</span>
+						</div>
+					</span>
+					<span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPriorityColor(project.priority).class} dark:bg-gray-800 dark:text-gray-200`}>
+						<div className="flex items-center gap-1 sm:gap-1.5">
+							<span className="text-xs sm:text-sm" aria-hidden="true">{getPriorityColor(project.priority).emoji}</span>
+							<span className="hidden sm:inline">{project.priority ?? "Non définie"}</span>
+						</div>
+					</span>
+					{project.members && project.members.length > 0 && (
+						<span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+							<div className="flex items-center gap-1 sm:gap-1.5">
+								<Users className="w-3 h-3" aria-hidden="true" />
+								<span>{project.members.length}</span>
+								<span className="hidden sm:inline">membre{project.members.length > 1 ? 's' : ''}</span>
+							</div>
+						</span>
+					)}
+				</div>
+
+				<div className="flex items-center justify-between pt-4 sm:pt-6 border-t border-slate-100 dark:border-gray-800">
+					<div className="flex items-center space-x-1 sm:space-x-2 text-xs text-slate-500 dark:text-gray-400">
+						<div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-gray-800 rounded-lg">
+							<Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
+						</div>
+						<time className="font-medium text-xs" dateTime={project.updatedAt}>
+							{new Date(project.updatedAt).toLocaleDateString('fr-FR', {
+								day: 'numeric',
+								month: 'short',
+								year: 'numeric'
+							})}
+						</time>
+					</div>
+				</div>
+			</article>
+		);
+	}
+
+	// Mode Liste
+	return (
+		<article className={`${cardStyles} dark:bg-gray-900 dark:[background-image:none] dark:border-gray-800 dark:ring-1 dark:ring-gray-800 dark:shadow-black/20 rounded-2xl shadow-xl hover:shadow-2xl dark:hover:shadow-gray-900/40 hover:scale-[1.02] transition-all duration-300 group p-4 sm:p-6 lg:p-8`}>
+			<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-4 sm:space-y-0">
+				<div className="flex items-start space-x-3 sm:space-x-4 flex-1 min-w-0">
+					{headerIcon}
+					<div className="flex-1 min-w-0">
+						<Link
+							to="/projects/$projectId"
+							params={{ projectId: project.id.toString() }}
+							className="block focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-lg"
 						>
 							<h3 className={`text-lg sm:text-xl font-bold mb-2 ${titleColorClass} hover:bg-clip-text transition-all duration-200 hover:cursor-pointer line-clamp-2`}>
 								{project.title}
 							</h3>
 						</Link>
-						<p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3">
+						<p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-none">
 							{project.description || "Aucune description fournie pour ce projet"}
 						</p>
-					</div>
 
-					<div className="hidden sm:flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
-						<span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm border ${getStatusColor(project.status).class} dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700`}>
-							<div className="flex items-center gap-1 sm:gap-1.5">
-								<span className="text-xs sm:text-sm">{getStatusColor(project.status).emoji}</span>
-								<span className="hidden sm:inline">{project.status ?? "Non défini"}</span>
+						<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+							<div className="flex flex-wrap gap-2 sm:gap-3">
+								<span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm border ${getStatusColor(project.status).class} dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700`}>
+									<div className="flex items-center gap-1 sm:gap-1.5">
+										<span className="text-xs sm:text-sm" aria-hidden="true">{getStatusColor(project.status).emoji}</span>
+										<span>{project.status ?? "Non défini"}</span>
+									</div>
+								</span>
+								<span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPriorityColor(project.priority).class} dark:bg-gray-800 dark:text-gray-200`}>
+									<div className="flex items-center gap-1 sm:gap-1.5">
+										<span className="text-xs sm:text-sm" aria-hidden="true">{getPriorityColor(project.priority).emoji}</span>
+										<span>{project.priority ?? "Non définie"}</span>
+									</div>
+								</span>
+								{project.members && project.members.length > 0 && (
+									<span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+										<div className="flex items-center gap-1 sm:gap-1.5">
+											<Users className="w-3 h-3" aria-hidden="true" />
+											<span>{project.members.length} membre{project.members.length > 1 ? 's' : ''}</span>
+										</div>
+									</span>
+								)}
 							</div>
-						</span>
-						<span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPriorityColor(project.priority).class} dark:bg-gray-800 dark:text-gray-200`}>
-							<div className="flex items-center gap-1 sm:gap-1.5">
-								<span className="text-xs sm:text-sm">{getPriorityColor(project.priority).emoji}</span>
-								<span className="hidden sm:inline">{project.priority ?? "Non définie"}</span>
-							</div>
-						</span>
-						{project.members && project.members.length > 0 && (
-							<span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
-								<div className="flex items-center gap-1 sm:gap-1.5">
-									<Users className="w-3 h-3" />
-									<span>{project.members.length}</span>
-									<span className="hidden sm:inline">membre{project.members.length > 1 ? 's' : ''}</span>
-								</div>
-							</span>
-						)}
+						</div>
 					</div>
+				</div>
 
-					<div className="flex items-center justify-between pt-4 sm:pt-6 border-t border-slate-100 dark:border-gray-800">
-						<div className="flex items-center space-x-1 sm:space-x-2 text-xs text-slate-500 dark:text-gray-400">
-							<div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-gray-800 rounded-lg">
-								<Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-							</div>
-							<span className="font-medium text-xs">
+				<div className="flex items-center justify-between sm:justify-end sm:flex-col sm:items-end space-x-1 sm:space-x-0 sm:space-y-3 sm:ml-4">
+					<div className="flex items-center space-x-1 sm:space-x-2 text-xs text-slate-500 dark:text-gray-400 order-2 sm:order-1">
+						<div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-gray-800 rounded-lg">
+							<Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
+						</div>
+						<time className="font-medium" dateTime={project.updatedAt}>
+							<span className="sm:hidden">
 								{new Date(project.updatedAt).toLocaleDateString('fr-FR', {
+									day: 'numeric',
+									month: 'short'
+								})}
+							</span>
+							<span className="hidden sm:inline">
+								Modifié le {new Date(project.updatedAt).toLocaleDateString('fr-FR', {
 									day: 'numeric',
 									month: 'short',
 									year: 'numeric'
 								})}
 							</span>
-						</div>
+						</time>
 					</div>
-				</>
-			) : (
-				<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-4 sm:space-y-0">
-					<div className="flex items-start space-x-3 sm:space-x-4 flex-1 min-w-0">
-						{headerIcon}
-						<div className="flex-1 min-w-0">
-							<Link
-								to="/projects/$projectId"
-								params={{ projectId: project.id.toString() }}
-								className="block"
-							>
-								<h3 className={`text-lg sm:text-xl font-bold mb-2 ${titleColorClass} hover:bg-clip-text transition-all duration-200 hover:cursor-pointer line-clamp-2`}>
-									{project.title}
-								</h3>
-							</Link>
-							<p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-none">
-								{project.description || "Aucune description fournie pour ce projet"}
-							</p>
-
-							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-								<div className="flex flex-wrap gap-2 sm:gap-3">
-									<span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm border ${getStatusColor(project.status).class} dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700`}>
-										<div className="flex items-center gap-1 sm:gap-1.5">
-											<span className="text-xs sm:text-sm">{getStatusColor(project.status).emoji}</span>
-											{project.status ?? "Non défini"}
-										</div>
-									</span>
-									<span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPriorityColor(project.priority).class} dark:bg-gray-800 dark:text-gray-200`}>
-										<div className="flex items-center gap-1 sm:gap-1.5">
-											<span className="text-xs sm:text-sm">{getPriorityColor(project.priority).emoji}</span>
-											{project.priority ?? "Non définie"}
-										</div>
-									</span>
-									{project.members && project.members.length > 0 && (
-										<span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
-											<div className="flex items-center gap-1 sm:gap-1.5">
-												<Users className="w-3 h-3" />
-												{project.members.length} membre{project.members.length > 1 ? 's' : ''}
-											</div>
-										</span>
-									)}
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div className="flex items-center justify-between sm:justify-end sm:flex-col sm:items-end space-x-1 sm:space-x-0 sm:space-y-3 sm:ml-4">
-						<div className="flex items-center space-x-1 sm:space-x-2 text-xs text-slate-500 dark:text-gray-400 order-2 sm:order-1">
-							<div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-gray-800 rounded-lg">
-								<Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-							</div>
-							<span className="font-medium">
-								<span className="sm:hidden">
-									{new Date(project.updatedAt).toLocaleDateString('fr-FR', {
-										day: 'numeric',
-										month: 'short'
-									})}
-								</span>
-								<span className="hidden sm:inline">
-									Modifié le {new Date(project.updatedAt).toLocaleDateString('fr-FR', {
-										day: 'numeric',
-										month: 'short',
-										year: 'numeric'
-									})}
-								</span>
-							</span>
-						</div>
-						<div className="flex items-center space-x-1 order-1 sm:order-2">
-							<Link
-								to="/projects/$projectId"
-								params={{ projectId: project.id.toString() }}
-								className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
-								title="Voir les détails du projet"
-							>
-								<FolderOpen className="w-3 h-3 sm:w-4 sm:h-4" />
-							</Link>
-							{isOwner && (
-								<>
-									<Link
-										to="/projects/$projectId/edit"
-										params={{ projectId: project.id.toString() }}
-										className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
-										title="Modifier le projet"
-									>
-										<Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
-									</Link>
-									<button
-										onClick={() => handleDelete(project.id)}
-										className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
-										title="Supprimer le projet"
-									>
-										<Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-									</button>
-								</>
-							)}
-						</div>
+					<div className="flex items-center space-x-1 order-1 sm:order-2">
+						<Link
+							to="/projects/$projectId"
+							params={{ projectId: project.id.toString() }}
+							className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+							title="Voir les détails du projet"
+							aria-label={`Voir les détails du projet ${project.title}`}
+						>
+							<FolderOpen className="w-3 h-3 sm:w-4 sm:h-4" />
+						</Link>
+						{isOwner && (
+							<>
+								<Link
+									to="/projects/$projectId/edit"
+									params={{ projectId: project.id.toString() }}
+									className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+									title="Modifier le projet"
+									aria-label={`Modifier le projet ${project.title}`}
+								>
+									<Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
+								</Link>
+								<button
+									onClick={() => handleDelete(project.id)}
+									className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+									title="Supprimer le projet"
+									aria-label={`Supprimer le projet ${project.title}`}
+								>
+									<Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+								</button>
+							</>
+						)}
 					</div>
 				</div>
-			)}
-		</div>
+			</div>
+		</article>
 	);
 };

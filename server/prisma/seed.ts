@@ -1,281 +1,10 @@
-import { PrismaClient, TaskStatus, TaskPriority, User, Project } from "@prisma/client";
+import { PrismaClient, TaskStatus, TaskPriority } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
-const firstNames = [
-	"Antoine",
-	"Marie",
-	"Pierre",
-	"Sophie",
-	"Lucas",
-	"Emma",
-	"Thomas",
-	"Camille",
-	"Nicolas",
-	"Julie",
-	"Alexandre",
-	"Sarah",
-	"Maxime",
-	"Laura",
-	"Benjamin",
-	"Léa",
-	"Julien",
-	"Manon",
-	"Romain",
-	"Clara"
-];
-
-const lastNames = [
-	"Martin",
-	"Bernard",
-	"Thomas",
-	"Petit",
-	"Robert",
-	"Richard",
-	"Durand",
-	"Dubois",
-	"Moreau",
-	"Laurent",
-	"Simon",
-	"Michel",
-	"Lefebvre",
-	"Leroy",
-	"Roux",
-	"David",
-	"Bertrand",
-	"Morel",
-	"Fournier",
-	"Girard"
-];
-
-const projectTitles = [
-	"Application E-commerce",
-	"Système de Gestion RH",
-	"Plateforme de Formation",
-	"Application Mobile Fitness",
-	"Dashboard Analytics",
-	"Système de Réservation",
-	"Plateforme de Streaming",
-	"Application de Livraison",
-	"Système de Facturation",
-	"Application de Chat",
-	"Plateforme de Crowdfunding",
-	"Système de Gestion Stock",
-	"Application de Voyage",
-	"Plateforme de Freelance",
-	"Système de CRM",
-	"Application de Santé",
-	"Plateforme de Gaming",
-	"Système de Monitoring",
-	"Application de Finance",
-	"Plateforme de Collaboration",
-	"Système de Sécurité",
-	"Application de Transport",
-	"Plateforme de Marketplace",
-	"Système de Support",
-	"Application de Médias",
-	"Plateforme de Formation",
-	"Système de Gestion Projet",
-	"Application de Social",
-	"Plateforme de Trading",
-	"Système de Gestion Client",
-	"Application de Design",
-	"Plateforme de Musique",
-	"Système de Gestion Événement",
-	"Application de Sport",
-	"Plateforme de Recrutement",
-	"Système de Gestion Document",
-	"Application de Cuisine",
-	"Plateforme de Location",
-	"Système de Gestion Inventaire",
-	"Application de Mode",
-	"Plateforme de Donation",
-	"Système de Gestion Budget"
-];
-
-const projectDescriptions = [
-	"Développement d'une plateforme e-commerce complète avec gestion des produits, panier et paiements",
-	"Système de gestion des ressources humaines avec suivi des employés et congés",
-	"Plateforme de formation en ligne avec cours interactifs et suivi des progrès",
-	"Application mobile de fitness avec programmes d'entraînement personnalisés",
-	"Dashboard analytique pour visualiser les données métier en temps réel",
-	"Système de réservation pour hôtels, restaurants et services",
-	"Plateforme de streaming vidéo avec gestion des contenus",
-	"Application de livraison avec suivi en temps réel",
-	"Système de facturation automatisé pour entreprises",
-	"Application de chat en temps réel avec messagerie privée et groupes",
-	"Plateforme de crowdfunding pour projets créatifs",
-	"Système de gestion de stock avec alertes automatiques",
-	"Application de voyage avec réservation et planification",
-	"Plateforme de freelance pour connecter talents et clients",
-	"Système de CRM pour gestion de la relation client",
-	"Application de santé avec suivi médical et rendez-vous",
-	"Plateforme de gaming avec tournois et classements",
-	"Système de monitoring pour infrastructure IT",
-	"Application de finance personnelle avec budgets et investissements",
-	"Plateforme de collaboration pour équipes distribuées",
-	"Système de sécurité avec authentification multi-facteurs",
-	"Application de transport avec covoiturage et VTC",
-	"Marketplace pour vente et achat de produits d'occasion",
-	"Système de support client avec tickets et chat",
-	"Application de médias avec création et partage de contenu",
-	"Plateforme de formation professionnelle avec certifications",
-	"Système de gestion de projet avec Kanban et Gantt",
-	"Application de réseau social avec partage de moments",
-	"Plateforme de trading avec graphiques et analyses",
-	"Système de gestion client avec historique et notes",
-	"Application de design avec outils créatifs",
-	"Plateforme de musique avec streaming et playlists",
-	"Système de gestion d'événements avec billetterie",
-	"Application de sport avec statistiques et défis",
-	"Plateforme de recrutement avec matching candidat-entreprise",
-	"Système de gestion documentaire avec versioning",
-	"Application de cuisine avec recettes et planification",
-	"Plateforme de location de biens entre particuliers",
-	"Système de gestion d'inventaire avec codes-barres",
-	"Application de mode avec tendances et shopping",
-	"Plateforme de donation pour associations caritatives",
-	"Système de gestion de budget personnel et familial"
-];
-
-const taskTitles = [
-	"Analyse des besoins utilisateur",
-	"Création des maquettes UI/UX",
-	"Développement frontend",
-	"Développement backend",
-	"Configuration de la base de données",
-	"Tests unitaires",
-	"Tests d'intégration",
-	"Tests de performance",
-	"Déploiement en production",
-	"Documentation technique",
-	"Formation des utilisateurs",
-	"Optimisation des performances",
-	"Sécurisation de l'application",
-	"Mise en place du monitoring",
-	"Gestion des erreurs",
-	"Interface d'administration",
-	"API REST/GraphQL",
-	"Authentification et autorisation",
-	"Gestion des fichiers",
-	"Notifications en temps réel",
-	"Système de recherche",
-	"Export de données",
-	"Import de données",
-	"Génération de rapports",
-	"Dashboard analytique",
-	"Système de backup",
-	"Intégration de paiement",
-	"Gestion des emails",
-	"Système de commentaires",
-	"Gestion des rôles",
-	"Historique des actions",
-	"Système de tags",
-	"Filtres avancés",
-	"Tri et pagination",
-	"Export PDF",
-	"Génération de QR codes",
-	"Système de géolocalisation",
-	"Push notifications",
-	"Mode hors ligne",
-	"Synchronisation des données",
-	"Gestion des versions",
-	"Système de templates"
-];
-
-const taskDescriptions = [
-	"Conduire des entretiens avec les utilisateurs pour identifier leurs besoins",
-	"Créer les maquettes et prototypes pour l'interface utilisateur",
-	"Développer l'interface utilisateur avec React/Vue/Angular",
-	"Développer l'API backend avec Node.js/Python/Java",
-	"Concevoir et implémenter le schéma de base de données",
-	"Écrire les tests unitaires pour chaque fonctionnalité",
-	"Effectuer les tests d'intégration entre les composants",
-	"Réaliser les tests de charge et de performance",
-	"Configurer et déployer l'application sur les serveurs de production",
-	"Rédiger la documentation technique et utilisateur",
-	"Former les utilisateurs finaux à l'utilisation du système",
-	"Optimiser les requêtes et améliorer les temps de réponse",
-	"Implémenter les mesures de sécurité (HTTPS, validation, etc.)",
-	"Configurer les outils de monitoring et d'alerting",
-	"Implémenter la gestion centralisée des erreurs",
-	"Développer l'interface d'administration pour les gestionnaires",
-	"Créer l'API REST ou GraphQL pour les échanges de données",
-	"Implémenter l'authentification et la gestion des autorisations",
-	"Développer le système de gestion et stockage des fichiers",
-	"Implémenter les notifications push et emails en temps réel",
-	"Développer le moteur de recherche avec filtres avancés",
-	"Créer les fonctionnalités d'export de données (CSV, Excel)",
-	"Implémenter l'import de données depuis des fichiers externes",
-	"Développer le système de génération de rapports automatisés",
-	"Créer les tableaux de bord avec graphiques et métriques",
-	"Configurer le système de sauvegarde automatique des données",
-	"Intégrer les passerelles de paiement (Stripe, PayPal)",
-	"Configurer l'envoi automatique d'emails transactionnels",
-	"Implémenter le système de commentaires et avis",
-	"Développer la gestion des rôles et permissions utilisateurs",
-	"Créer l'historique détaillé des actions utilisateurs",
-	"Implémenter le système de tags et catégorisation",
-	"Développer les filtres avancés pour la recherche",
-	"Implémenter le tri et la pagination des résultats",
-	"Créer les fonctionnalités d'export en format PDF",
-	"Implémenter la génération de QR codes pour les éléments",
-	"Intégrer la géolocalisation pour les fonctionnalités mobiles",
-	"Configurer les notifications push pour les applications mobiles",
-	"Développer le mode hors ligne avec synchronisation",
-	"Implémenter la synchronisation des données entre appareils",
-	"Créer le système de gestion des versions des documents",
-	"Développer un système de templates personnalisables"
-];
-
-const statuses = [TaskStatus.A_FAIRE, TaskStatus.EN_COURS, TaskStatus.TERMINE];
-const priorities = [TaskPriority.BASSE, TaskPriority.MOYENNE, TaskPriority.HAUTE, TaskPriority.URGENTE];
-const projectStatuses = ["En attente", "En cours", "Terminé", "En pause"];
-const projectPriorities = ["Basse", "Moyenne", "Haute", "Urgente"];
-
-const seedingConfig = {
-	users: {
-		count: 30,
-		defaultPassword: "password123"
-	},
-	projects: {
-		count: 35,
-		membersPerProject: {
-			min: 2,
-			max: 5
-		}
-	},
-	tasks: {
-		perProject: {
-			min: 5,
-			max: 15
-		},
-		assignmentRate: 0.7,
-		dueDateRate: 0.5
-	},
-	dates: {
-		startDate: new Date("2024-01-01"),
-		endDate: new Date(),
-		dueDateRange: 30
-	}
-};
-
-function getRandomElement<T>(array: T[]): T {
-	return array[Math.floor(Math.random() * array.length)];
-}
-
-function generateEmail(firstName: string, lastName: string, index: number): string {
-	const emailUser = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${index}@gmail.com`;
-	return emailUser;
-}
-
-function getRandomDate(start: Date, end: Date): Date {
-	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-}
-
 async function main() {
-	console.log("🌱 Début du seeding...");
+	console.log("🌱 Début du seeding de développement...");
 
 	console.log("🧹 Nettoyage de la base de données...");
 	await prisma.task.deleteMany({});
@@ -283,123 +12,270 @@ async function main() {
 	await prisma.project.deleteMany({});
 	await prisma.user.deleteMany({});
 
-	console.log(`👥 Création de ${seedingConfig.users.count} utilisateurs...`);
+	console.log("👨‍💻 Création du compte développeur...");
+	const devPassword = await bcrypt.hash("passworddev", 10);
+	const devUser = await prisma.user.create({
+		data: {
+			email: "dev@agileboard.fr",
+			password: devPassword,
+			name: "Développeur AgileBoard",
+			createdAt: new Date(),
+			updatedAt: new Date()
+		}
+	});
+	console.log(`✅ Compte développeur créé: ${devUser.email}`);
 
-	const hashedPassword = await bcrypt.hash(seedingConfig.users.defaultPassword, 10);
-	const users: User[] = [];
+	console.log("👥 Création d'utilisateurs de test...");
+	const testUsers: any[] = [];
+	const userData = [
+		{ email: "alice@test.fr", name: "Alice Martin", password: "test123" },
+		{ email: "bob@test.fr", name: "Bob Dupont", password: "test123" },
+		{ email: "charlie@test.fr", name: "Charlie Leroy", password: "test123" },
+		{ email: "diana@test.fr", name: "Diana Moreau", password: "test123" },
+		{ email: "emma@test.fr", name: "Emma Bernard", password: "test123" }
+	];
 
-	for (let i = 1; i <= seedingConfig.users.count; i++) {
-		const firstName = getRandomElement(firstNames);
-		const lastName = getRandomElement(lastNames);
-		const email = generateEmail(firstName, lastName, i);
-
+	for (const userInfo of userData) {
+		const hashedPassword = await bcrypt.hash(userInfo.password, 10);
 		const user = await prisma.user.create({
 			data: {
-				email: email,
+				email: userInfo.email,
 				password: hashedPassword,
-				name: `${firstName} ${lastName}`,
-				createdAt: new Date(Date.now()),
+				name: userInfo.name,
+				createdAt: new Date(),
 				updatedAt: new Date()
 			}
 		});
-
-		users.push(user);
+		testUsers.push(user);
 		console.log(`✅ Utilisateur créé: ${user.name} (${user.email})`);
 	}
 
-	console.log(`\n🏗️ Création de ${seedingConfig.projects.count} projets...`);
+	console.log("🏗️ Création de projets...");
+	const projects: any[] = [];
 
-	const projects: Project[] = [];
-	for (let i = 0; i < seedingConfig.projects.count; i++) {
-		const title = getRandomElement(projectTitles);
-		const description = getRandomElement(projectDescriptions);
-		const status = getRandomElement(projectStatuses);
-		const priority = getRandomElement(projectPriorities);
-		const owner = getRandomElement(users);
+	const devProjects = [
+		{
+			title: "Application E-commerce AgileBoard",
+			description: "Développement d'une plateforme e-commerce moderne avec React et Node.js",
+			status: "En cours",
+			priority: "Haute"
+		},
+		{
+			title: "Système de Gestion RH",
+			description: "Application de gestion des ressources humaines avec suivi des employés",
+			status: "En attente",
+			priority: "Moyenne"
+		},
+		{
+			title: "Dashboard Analytics",
+			description: "Tableau de bord analytique pour visualiser les métriques métier",
+			status: "Terminé",
+			priority: "Basse"
+		}
+	];
 
+	for (const projectData of devProjects) {
 		const project = await prisma.project.create({
 			data: {
-				title: `${title} #${i + 1}`,
-				description: description,
-				status: status,
-				priority: priority,
-				ownerId: owner.id,
-				createdAt: getRandomDate(seedingConfig.dates.startDate, seedingConfig.dates.endDate),
+				title: projectData.title,
+				description: projectData.description,
+				status: projectData.status,
+				priority: projectData.priority,
+				ownerId: devUser.id,
+				createdAt: new Date(),
 				updatedAt: new Date()
 			}
 		});
-
 		projects.push(project);
-		console.log(`✅ Projet créé: ${project.title} (Propriétaire: ${owner.name})`);
+		console.log(`✅ Projet créé (propriétaire dev): ${project.title}`);
 	}
 
-	console.log("\n👥 Ajout de membres aux projets...");
-
-	for (const project of projects) {
-		const numMembers =
-			Math.floor(
-				Math.random() * (seedingConfig.projects.membersPerProject.max - seedingConfig.projects.membersPerProject.min + 1)
-			) + seedingConfig.projects.membersPerProject.min;
-		const availableUsers = users.filter(user => user.id !== project.ownerId);
-		const selectedUsers = availableUsers.sort(() => 0.5 - Math.random()).slice(0, numMembers);
-
-		for (const user of selectedUsers) {
-			await prisma.projectMember.create({
-				data: {
-					userId: user.id,
-					projectId: project.id,
-					addedAt: getRandomDate(project.createdAt, new Date())
-				}
-			});
+	const testProjects = [
+		{
+			title: "Application Mobile Fitness",
+			description: "App mobile pour le suivi des entraînements et nutrition",
+			status: "En cours",
+			priority: "Haute",
+			owner: testUsers[0]
+		},
+		{
+			title: "Plateforme de Formation",
+			description: "Système de formation en ligne avec cours interactifs",
+			status: "En attente",
+			priority: "Moyenne",
+			owner: testUsers[1]
+		},
+		{
+			title: "Système de Réservation",
+			description: "Application de réservation pour hôtels et restaurants",
+			status: "Terminé",
+			priority: "Basse",
+			owner: testUsers[2]
 		}
+	];
 
-		console.log(`✅ ${selectedUsers.length} membres ajoutés au projet: ${project.title}`);
+	for (const projectData of testProjects) {
+		const project = await prisma.project.create({
+			data: {
+				title: projectData.title,
+				description: projectData.description,
+				status: projectData.status,
+				priority: projectData.priority,
+				ownerId: projectData.owner.id,
+				createdAt: new Date(),
+				updatedAt: new Date()
+			}
+		});
+		projects.push(project);
+		console.log(`✅ Projet créé (propriétaire ${projectData.owner.name}): ${project.title}`);
 	}
 
-	console.log("\n📋 Création de tâches pour chaque projet...");
+	console.log("👥 Ajout de membres aux projets...");
+
+	await prisma.projectMember.create({
+		data: {
+			userId: devUser.id,
+			projectId: projects[3].id,
+			addedAt: new Date()
+		}
+	});
+	console.log(`✅ Dev ajouté comme membre du projet: ${projects[3].title}`);
+
+	await prisma.projectMember.create({
+		data: {
+			userId: devUser.id,
+			projectId: projects[4].id,
+			addedAt: new Date()
+		}
+	});
+	console.log(`✅ Dev ajouté comme membre du projet: ${projects[4].title}`);
+
+	await prisma.projectMember.create({
+		data: {
+			userId: testUsers[0].id,
+			projectId: projects[0].id,
+			addedAt: new Date()
+		}
+	});
+	console.log(`✅ ${testUsers[0].name} ajouté comme membre du projet: ${projects[0].title}`);
+
+	await prisma.projectMember.create({
+		data: {
+			userId: testUsers[1].id,
+			projectId: projects[0].id,
+			addedAt: new Date()
+		}
+	});
+	console.log(`✅ ${testUsers[1].name} ajouté comme membre du projet: ${projects[0].title}`);
+
+	await prisma.projectMember.create({
+		data: {
+			userId: testUsers[2].id,
+			projectId: projects[1].id,
+			addedAt: new Date()
+		}
+	});
+	console.log(`✅ ${testUsers[2].name} ajouté comme membre du projet: ${projects[1].title}`);
+
+	console.log("📋 Création de tâches...");
+
+	const taskTemplates = [
+		{
+			title: "Analyse des besoins utilisateur",
+			description: "Conduire des entretiens avec les utilisateurs pour identifier leurs besoins",
+			status: TaskStatus.A_FAIRE,
+			priority: TaskPriority.HAUTE
+		},
+		{
+			title: "Création des maquettes UI/UX",
+			description: "Créer les maquettes et prototypes pour l'interface utilisateur",
+			status: TaskStatus.EN_COURS,
+			priority: TaskPriority.HAUTE
+		},
+		{
+			title: "Développement frontend",
+			description: "Développer l'interface utilisateur avec React",
+			status: TaskStatus.EN_COURS,
+			priority: TaskPriority.MOYENNE
+		},
+		{
+			title: "Développement backend",
+			description: "Développer l'API backend avec Node.js et Express",
+			status: TaskStatus.A_FAIRE,
+			priority: TaskPriority.MOYENNE
+		},
+		{
+			title: "Configuration de la base de données",
+			description: "Concevoir et implémenter le schéma de base de données",
+			status: TaskStatus.TERMINE,
+			priority: TaskPriority.BASSE
+		},
+		{
+			title: "Tests unitaires",
+			description: "Écrire les tests unitaires pour chaque fonctionnalité",
+			status: TaskStatus.A_FAIRE,
+			priority: TaskPriority.MOYENNE
+		},
+		{
+			title: "Tests d'intégration",
+			description: "Effectuer les tests d'intégration entre les composants",
+			status: TaskStatus.A_FAIRE,
+			priority: TaskPriority.BASSE
+		},
+		{
+			title: "Déploiement en production",
+			description: "Configurer et déployer l'application sur les serveurs de production",
+			status: TaskStatus.A_FAIRE,
+			priority: TaskPriority.URGENTE
+		}
+	];
 
 	for (const project of projects) {
-		const numTasks =
-			Math.floor(Math.random() * (seedingConfig.tasks.perProject.max - seedingConfig.tasks.perProject.min + 1)) +
-			seedingConfig.tasks.perProject.min;
-		const projectUsers = await prisma.projectMember.findMany({
+		const numTasks = Math.floor(Math.random() * 4) + 3;
+
+		const projectMembers = await prisma.projectMember.findMany({
 			where: { projectId: project.id },
 			include: { user: true }
 		});
-		const allProjectUsers = [project.ownerId, ...projectUsers.map(pm => pm.userId)];
+
+		const projectOwner = await prisma.user.findUnique({
+			where: { id: project.ownerId }
+		});
+
+		const eligibleUsers = [
+			{ id: project.ownerId, name: projectOwner?.name || 'Propriétaire' },
+			...projectMembers.map(pm => ({ id: pm.userId, name: pm.user.name }))
+		];
 
 		for (let i = 0; i < numTasks; i++) {
-			const title = getRandomElement(taskTitles);
-			const description = getRandomElement(taskDescriptions);
-			const status = getRandomElement(statuses);
-			const priority = getRandomElement(priorities);
-			const assignedToId = Math.random() < seedingConfig.tasks.assignmentRate ? getRandomElement(allProjectUsers) : null;
-			const dueDate =
-				Math.random() < seedingConfig.tasks.dueDateRate
-					? getRandomDate(new Date(), new Date(Date.now() + seedingConfig.dates.dueDateRange * 24 * 60 * 60 * 1000))
-					: null;
+			const template = taskTemplates[i % taskTemplates.length];
+			const assignedTo = Math.random() > 0.3 && eligibleUsers.length > 0
+				? eligibleUsers[Math.floor(Math.random() * eligibleUsers.length)]
+				: null;
+			const dueDate = new Date();
+			dueDate.setDate(dueDate.getDate() + Math.floor(Math.random() * 30) + 7);
 
 			await prisma.task.create({
 				data: {
-					title: `${title} #${i + 1}`,
-					description: description,
-					status: status,
-					priority: priority,
+					title: template.title,
+					description: template.description,
+					status: template.status,
+					priority: template.priority,
 					dueDate: dueDate,
 					projectId: project.id,
-					assignedToId: assignedToId,
-					createdAt: getRandomDate(project.createdAt, new Date()),
+					assignedToId: assignedTo?.id || null,
+					createdAt: new Date(),
 					updatedAt: new Date()
 				}
 			});
 		}
-
-		console.log(`✅ ${numTasks} tâches créées pour le projet: ${project.title}`);
+		console.log(`✅ ${numTasks} tâches créées pour le projet: ${project.title} (${eligibleUsers.length} membres éligibles)`);
 	}
 
-	console.log("\n🎉 Seeding terminé avec succès !");
+	console.log("\n🎉 Seeding de développement terminé avec succès !");
 	console.log(`📊 Résumé:`);
-	console.log(`   - ${users.length} utilisateurs créés`);
+	console.log(`   - 1 compte développeur: dev@agileboard.fr (mot de passe: passworddev)`);
+	console.log(`   - ${testUsers.length} utilisateurs de test créés`);
 	console.log(`   - ${projects.length} projets créés`);
 
 	const totalMembers = await prisma.projectMember.count();
@@ -407,6 +283,12 @@ async function main() {
 
 	const totalTasks = await prisma.task.count();
 	console.log(`   - ${totalTasks} tâches créées`);
+
+	console.log("\n🔑 Comptes de test:");
+	console.log(`   - dev@agileboard.fr / passworddev (développeur)`);
+	for (const user of testUsers) {
+		console.log(`   - ${user.email} / test123`);
+	}
 }
 
 main()
