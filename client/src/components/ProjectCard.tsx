@@ -47,12 +47,12 @@ export const ProjectCard = ({ viewMode, project, isOwner }: { viewMode: string, 
 		: "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200/60 shadow-blue-100/50";
 
 	const headerIcon = isOwner ? (
-		<div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 dark:bg-none dark:bg-amber-500/20 dark:border dark:border-amber-400/30 rounded-lg flex items-center justify-center shadow-lg dark:shadow-amber-500/10">
-			<Crown className="w-4 h-4 text-white dark:text-amber-300" />
+		<div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-amber-400 to-yellow-500 dark:bg-none dark:bg-amber-500/20 dark:border dark:border-amber-400/30 rounded-lg flex items-center justify-center shadow-lg dark:shadow-amber-500/10">
+			<Crown className="w-3 h-3 sm:w-4 sm:h-4 text-white dark:text-amber-300" />
 		</div>
 	) : (
-		<div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 dark:bg-none dark:bg-blue-500/20 dark:border dark:border-blue-400/30 rounded-lg flex items-center justify-center shadow-lg dark:shadow-blue-500/10">
-			<UserCheck className="w-4 h-4 text-white dark:text-blue-300" />
+		<div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-400 to-indigo-500 dark:bg-none dark:bg-blue-500/20 dark:border dark:border-blue-400/30 rounded-lg flex items-center justify-center shadow-lg dark:shadow-blue-500/10">
+			<UserCheck className="w-3 h-3 sm:w-4 sm:h-4 text-white dark:text-blue-300" />
 		</div>
 	);
 
@@ -63,40 +63,40 @@ export const ProjectCard = ({ viewMode, project, isOwner }: { viewMode: string, 
 		<div className={`${cardStyles} dark:bg-gray-900 dark:[background-image:none] dark:border-gray-800 dark:ring-1 dark:ring-gray-800 dark:shadow-black/20 rounded-2xl shadow-xl hover:shadow-2xl dark:hover:shadow-gray-900/40 hover:scale-[1.02] transition-all duration-300 group ${viewMode === "list" ? "p-4 sm:p-6 lg:p-8" : "p-4 sm:p-6 lg:p-7"}`}>
 			{viewMode === "grid" ? (
 				<>
-					<div className="flex items-start justify-between mb-4 sm:mb-6">
+					<div className="hidden sm:flex items-start justify-between mb-4 sm:mb-6">
 						{headerIcon}
 						<div className="flex items-center space-x-1">
 							<Link
 								to="/projects/$projectId"
 								params={{ projectId: project.id.toString() }}
-								className="p-1.5 sm:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
+								className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
 								title="Voir les détails du projet"
 							>
-								<FolderOpen className="w-4 h-4" />
+								<FolderOpen className="w-3 h-3 sm:w-4 sm:h-4" />
 							</Link>
 							{isOwner && (
 								<>
 									<Link
 										to="/projects/$projectId/edit"
 										params={{ projectId: project.id.toString() }}
-										className="p-1.5 sm:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
+										className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
 										title="Modifier le projet"
 									>
-										<Edit3 className="w-4 h-4" />
+										<Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
 									</Link>
 									<button
 										onClick={() => handleDelete(project.id)}
-										className="p-1.5 sm:p-2.5 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
+										className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
 										title="Supprimer le projet"
 									>
-										<Trash2 className="w-4 h-4" />
+										<Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
 									</button>
 								</>
 							)}
 						</div>
 					</div>
 
-					<div className="mb-4 sm:mb-6">
+					<div className="hidden sm:block mb-4 sm:mb-6">
 						<Link
 							to="/projects/$projectId"
 							params={{ projectId: project.id.toString() }}
@@ -111,7 +111,7 @@ export const ProjectCard = ({ viewMode, project, isOwner }: { viewMode: string, 
 						</p>
 					</div>
 
-					<div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+					<div className="hidden sm:flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
 						<span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm border ${getStatusColor(project.status).class} dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700`}>
 							<div className="flex items-center gap-1 sm:gap-1.5">
 								<span className="text-xs sm:text-sm">{getStatusColor(project.status).emoji}</span>
@@ -220,27 +220,27 @@ export const ProjectCard = ({ viewMode, project, isOwner }: { viewMode: string, 
 							<Link
 								to="/projects/$projectId"
 								params={{ projectId: project.id.toString() }}
-								className="p-1.5 sm:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
+								className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
 								title="Voir les détails du projet"
 							>
-								<FolderOpen className="w-4 h-4" />
+								<FolderOpen className="w-3 h-3 sm:w-4 sm:h-4" />
 							</Link>
 							{isOwner && (
 								<>
 									<Link
 										to="/projects/$projectId/edit"
 										params={{ projectId: project.id.toString() }}
-										className="p-1.5 sm:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
+										className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-gray-800 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110"
 										title="Modifier le projet"
 									>
-										<Edit3 className="w-4 h-4" />
+										<Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
 									</Link>
 									<button
 										onClick={() => handleDelete(project.id)}
-										className="p-1.5 sm:p-2.5 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
+										className="p-1 sm:p-1.5 lg:p-2.5 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-110 cursor-pointer"
 										title="Supprimer le projet"
 									>
-										<Trash2 className="w-4 h-4" />
+										<Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
 									</button>
 								</>
 							)}

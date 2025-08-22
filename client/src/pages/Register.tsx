@@ -32,18 +32,18 @@ const Register: React.FC = () => {
 
 	return (
 		<div className={`min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center p-4 transition-colors`}>
-			<div className="w-full max-w-md">
+			<div className="w-full max-w-sm sm:max-w-md">
 				{/* Logo/Brand */}
-				<div className="text-center mb-8">
-					<div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-						<UserPlus className="w-8 h-8 text-white" />
+				<div className="text-center mb-6 sm:mb-8">
+					<div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+						<UserPlus className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
 					</div>
-					<h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Créer votre compte</h1>
-					<p className="text-gray-600 dark:text-gray-300">Rejoignez-nous dès aujourd'hui</p>
+					<h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Créer votre compte</h1>
+					<p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Rejoignez-nous dès aujourd'hui</p>
 				</div>
 
 				{/* Form Card */}
-				<div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl shadow-emerald-100/50 dark:shadow-black/20 p-8 border border-gray-100 dark:border-gray-800 transition-colors">
+				<div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl shadow-emerald-100/50 dark:shadow-black/20 p-6 sm:p-8 border border-gray-100 dark:border-gray-800 transition-colors">
 					{/* Message d'invitation si présent */}
 					{search.message && (
 						<div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4 mb-6 flex items-center space-x-3">
@@ -63,20 +63,20 @@ const Register: React.FC = () => {
 						</div>
 					)}
 
-					<form onSubmit={handleSubmit} className="space-y-6">
+					<form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
 						{/* Name Field */}
 						<div>
 							<label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 								Nom complet
 							</label>
 							<div className="relative">
-								<User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+								<User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-500" />
 								<input
 									id="name"
 									type="text"
 									value={name}
 									onChange={(e) => setName(e.target.value)}
-									className="w-full pl-11 pr-4 py-3 border text-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800"
+									className="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 border text-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800 text-sm sm:text-base"
 									placeholder="Jean Dupont"
 									required
 								/>
@@ -88,13 +88,13 @@ const Register: React.FC = () => {
 								Adresse email
 							</label>
 							<div className="relative">
-								<Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+								<Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-500" />
 								<input
 									id="email"
 									type="email"
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
-									className="w-full pl-11 pr-4 py-3 border text-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800"
+									className="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 border text-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800 text-sm sm:text-base"
 									placeholder="nom@exemple.com"
 									required
 								/>
@@ -106,13 +106,13 @@ const Register: React.FC = () => {
 								Mot de passe
 							</label>
 							<div className="relative">
-								<Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+								<Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-500" />
 								<input
 									id="password"
 									type={showPassword ? "text" : "password"}
 									value={password}
 									onChange={(e) => setPassword(e.target.value)}
-									className="w-full pl-11 pr-12 py-3 border text-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800"
+									className="w-full pl-10 sm:pl-11 pr-12 py-2.5 sm:py-3 border text-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800 text-sm sm:text-base"
 									placeholder="••••••••"
 									required
 								/>
@@ -121,7 +121,7 @@ const Register: React.FC = () => {
 									onClick={() => setShowPassword(!showPassword)}
 									className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
 								>
-									{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+									{showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
 								</button>
 							</div>
 						</div>
@@ -130,14 +130,14 @@ const Register: React.FC = () => {
 						<button
 							type="submit"
 							disabled={registerMutation.isPending}
-							className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3 px-4 rounded-lg hover:from-emerald-600 hover:to-teal-700 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 transition-all duration-200 font-medium flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+							className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2.5 sm:py-3 px-4 rounded-lg hover:from-emerald-600 hover:to-teal-700 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 transition-all duration-200 font-medium flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
 						>
 							{registerMutation.isPending ? (
-								<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+								<div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
 							) : (
 								<>
 									<span>Créer mon compte</span>
-									<UserPlus className="w-4 h-4" />
+									<UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
 								</>
 							)}
 						</button>
