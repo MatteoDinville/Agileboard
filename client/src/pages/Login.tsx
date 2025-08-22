@@ -74,7 +74,7 @@ const Login: React.FC = () => {
 									type="email"
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
-									className="w-full pl-11 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800"
+									className="w-full pl-11 pr-4 py-3 border text-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800"
 									placeholder="nom@exemple.com"
 									required
 								/>
@@ -92,7 +92,7 @@ const Login: React.FC = () => {
 									type={showPassword ? "text" : "password"}
 									value={password}
 									onChange={(e) => setPassword(e.target.value)}
-									className="w-full pl-11 pr-12 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800"
+									className="w-full pl-11 pr-12 py-3 border text-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-gray-50 dark:bg-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800"
 									placeholder="••••••••"
 									required
 								/>
