@@ -29,6 +29,7 @@ vi.mock('lucide-react', () => ({
 	Target: () => <div>Target</div>,
 	CheckCircle2: () => <div>CheckCircle2</div>,
 	BarChart3: () => <div>BarChart3</div>,
+	Menu: () => <div>Menu</div>,
 }));
 
 const mockNavigate = vi.fn()

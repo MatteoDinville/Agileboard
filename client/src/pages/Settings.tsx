@@ -176,27 +176,27 @@ export default function SettingsPage() {
 			<header className="bg-white/80 dark:bg-gray-900 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between items-center h-16">
-						<div className="flex items-center gap-4">
+						<div className="flex items-center gap-3 sm:gap-4">
 							<button
 								onClick={() => navigate({ to: '/dashboard' })}
-								className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center"
+								className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center"
 								title="Retour au Dashboard"
 							>
-								<IconSettings className="w-5 h-5 text-white" />
+								<IconSettings className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
 							</button>
 							<div>
-								<h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Paramètres</h1>
-								<p className="text-gray-600 dark:text-gray-300 text-sm">Personnalisez votre expérience utilisateur</p>
+								<h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Paramètres</h1>
+								<p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Personnalisez votre expérience utilisateur</p>
 							</div>
 						</div>
 						<div className="flex items-center gap-2">
 							<ThemeToggle />
 							<button
 								onClick={() => navigate({ to: '/dashboard' })}
-								className="flex items-center space-x-2 px-4 py-2 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+								className="flex items-center space-x-2 px-3 sm:px-4 py-2 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
 								title="Retour au Dashboard"
 							>
-								<IconHome className="w-6 h-6 text-gray-500 dark:text-gray-300 transition-colors" />
+								<IconHome className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 dark:text-gray-300 transition-colors" />
 								<span className="text-sm font-medium">Retour au dashboard</span>
 							</button>
 						</div>
@@ -204,31 +204,31 @@ export default function SettingsPage() {
 				</div>
 			</header>
 			<main>
-				<div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
+				<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 					<div className="relative z-10 bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg rounded-3xl border border-gray-200 dark:border-gray-700 shadow-md dark:shadow-black/20 overflow-hidden">
-						<div className="p-8">
-							<div className="space-y-8">
-								<h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-									<IconUser className="w-6 h-6 text-blue-500" />
+						<div className="p-4 sm:p-6 lg:p-8">
+							<div className="space-y-6 sm:space-y-8">
+								<h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+									<IconUser className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
 									Informations du profil
 								</h2>
-								<div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
-									<div className="flex items-center gap-6">
+								<div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+									<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
 										<div className="relative">
-											<div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
+											<div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold">
 												{profileForm.firstName.charAt(0).toUpperCase()}
 												{profileForm.lastName.charAt(0).toUpperCase()}
 											</div>
-											<button className="absolute -bottom-2 -right-2 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform">
-												<IconCamera className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+											<button className="absolute -bottom-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform">
+												<IconCamera className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 dark:text-gray-300" />
 											</button>
 										</div>
 										<div className="flex-1">
-											<h3 className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-1">Photo de profil</h3>
-											<p className="text-gray-500 dark:text-gray-400 text-sm mb-4">Changez votre avatar ou photo de profil</p>
+											<h3 className="text-base sm:text-lg font-medium text-gray-700 dark:text-gray-200 mb-1">Photo de profil</h3>
+											<p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4">Changez votre avatar ou photo de profil</p>
 											<button
 												disabled={true}
-												className="px-4 py-2 bg-gray-400 dark:bg-gray-700 text-white rounded-xl cursor-not-allowed font-medium opacity-50"
+												className="px-3 sm:px-4 py-2 bg-gray-400 dark:bg-gray-700 text-white rounded-xl cursor-not-allowed font-medium opacity-50 text-sm sm:text-base"
 												title="Fonctionnalité bientôt disponible"
 											>
 												Bientôt disponible
@@ -236,16 +236,16 @@ export default function SettingsPage() {
 										</div>
 									</div>
 								</div>
-								<div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm space-y-6">
-									<h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">Informations personnelles</h3>
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4 sm:space-y-6">
+									<h3 className="text-base sm:text-lg font-medium text-gray-700 dark:text-gray-200">Informations personnelles</h3>
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
 										<div>
 											<label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Prénom</label>
 											<input
 												type="text"
 												value={profileForm.firstName}
 												onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
-												className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all"
+												className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base"
 											/>
 										</div>
 										<div>
@@ -254,7 +254,7 @@ export default function SettingsPage() {
 												type="text"
 												value={profileForm.lastName}
 												onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
-												className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all"
+												className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base"
 											/>
 										</div>
 										<div>
@@ -263,7 +263,7 @@ export default function SettingsPage() {
 												type="email"
 												value={profileForm.email}
 												onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-												className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all"
+												className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base"
 											/>
 										</div>
 									</div>
