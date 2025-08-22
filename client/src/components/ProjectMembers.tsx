@@ -64,15 +64,15 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 	}
 
 	return (
-		<div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+		<div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-black/20 border border-gray-100 dark:border-gray-700 p-6">
 			<div className="flex items-center justify-between mb-6">
 				<div className="flex items-center space-x-3">
-					<div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-						<Users className="w-5 h-5 text-indigo-600" />
+					<div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+						<Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
 					</div>
 					<div>
-						<h3 className="text-lg font-semibold text-gray-900">Membres du projet</h3>
-						<p className="text-sm text-gray-500">
+						<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Membres du projet</h3>
+						<p className="text-sm text-gray-500 dark:text-gray-400">
 							{members?.length || 0} membre{(members?.length || 0) > 1 ? 's' : ''}
 						</p>
 					</div>
@@ -81,7 +81,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 				{isOwner && (
 					<button
 						onClick={() => setShowAddModal(true)}
-						className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+						className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-md dark:shadow-black/20"
 					>
 						<UserPlus className="w-4 h-4" />
 						<span>Ajouter</span>
@@ -91,15 +91,15 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 
 			{members?.length === 0 ? (
 				<div className="text-center py-8">
-					<Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-					<p className="text-gray-500 mb-2">Aucun membre pour le moment</p>
+					<Users className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+					<p className="text-gray-500 dark:text-gray-400 mb-2">Aucun membre pour le moment</p>
 				</div>
 			) : (
 				<div className="space-y-3">
 					{members?.map((member) => (
 						<div
 							key={member.id}
-							className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100"
+							className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700"
 						>
 							<div className="flex items-center space-x-3">
 								<div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
@@ -109,14 +109,14 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 									}
 								</div>
 								<div>
-									<p className="font-medium text-gray-900">
+									<p className="font-medium text-gray-900 dark:text-gray-100">
 										{member.user.name || "Utilisateur"}
 									</p>
-									<div className="flex items-center space-x-1 text-sm text-gray-500">
+									<div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
 										<Mail className="w-3 h-3 mt-1" />
 										<span>{member.user.email}</span>
 									</div>
-									<p className="text-xs text-gray-400 mt-1">
+									<p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
 										Ajouté le {new Date(member.addedAt).toLocaleDateString('fr-FR')}
 									</p>
 								</div>
@@ -126,7 +126,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 								<button
 									onClick={() => handleRemoveMember(member.user.id)}
 									disabled={removeMemberMutation.isPending}
-									className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+									className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
 									title="Retirer du projet"
 								>
 									{removeMemberMutation.isPending ? (
@@ -143,12 +143,12 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 
 			{showAddModal && (
 				<div className="fixed inset-0 bg-[#00000063] bg-opacity-100 flex items-center justify-center z-50">
-					<div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
-						<div className="flex items-center justify-between p-6 border-b border-gray-200">
-							<h3 className="text-lg font-semibold text-gray-900">Ajouter un membre</h3>
+					<div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl dark:shadow-black/30 max-w-md w-full mx-4">
+						<div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+							<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ajouter un membre</h3>
 							<button
 								onClick={() => setShowAddModal(false)}
-								className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+								className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg"
 							>
 								<X className="w-5 h-5" />
 							</button>
@@ -159,12 +159,12 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 								<SectionLoader label="Chargement des utilisateurs..." minHeight={120} />
 							) : availableUsers.length === 0 ? (
 								<div className="text-center py-8">
-									<AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-									<p className="text-gray-500">Aucun utilisateur disponible à ajouter</p>
+									<AlertCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+									<p className="text-gray-500 dark:text-gray-400">Aucun utilisateur disponible à ajouter</p>
 								</div>
 							) : (
 								<>
-									<p className="text-sm text-gray-600 mb-4">
+									<p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
 										Sélectionnez un utilisateur à ajouter au projet :
 									</p>
 									<div className="space-y-2 max-h-60 overflow-y-auto">
@@ -173,8 +173,8 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 												key={user.id}
 												onClick={() => setSelectedUserId(user.id)}
 												className={`w-full flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${selectedUserId === user.id
-													? "border-indigo-500 bg-indigo-50"
-													: "border-gray-200 hover:bg-gray-50"
+													? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
+													: "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
 													}`}
 											>
 												<div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
@@ -184,10 +184,10 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 													}
 												</div>
 												<div className="flex-1 text-left">
-													<p className="font-medium text-gray-900">
+													<p className="font-medium text-gray-900 dark:text-gray-100">
 														{user.name || "Utilisateur"}
 													</p>
-													<p className="text-sm text-gray-500">{user.email}</p>
+													<p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
 												</div>
 											</button>
 										))}
@@ -197,17 +197,17 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 						</div>
 
 						{availableUsers.length > 0 && (
-							<div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
+							<div className="flex justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
 								<button
 									onClick={() => setShowAddModal(false)}
-									className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+									className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
 								>
 									Annuler
 								</button>
 								<button
 									onClick={handleAddMember}
 									disabled={!selectedUserId || addMemberMutation.isPending}
-									className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+									className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md dark:shadow-black/20"
 								>
 									{addMemberMutation.isPending ? (
 										<Loader2 className="w-4 h-4 animate-spin" />

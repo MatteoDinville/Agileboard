@@ -87,17 +87,17 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 
 	if (isEditMode && isErrorProject) {
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-6">
+			<div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:[background-image:none] dark:bg-gray-950 p-6">
 				<div className="max-w-2xl mx-auto">
-					<div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 p-8">
+					<div className="bg-white/80 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl shadow-xl dark:shadow-black/30 border border-white/60 dark:border-gray-700 p-8">
 						<div className="text-center py-12">
-							<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-								<svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+								<svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 								</svg>
 							</div>
-							<h3 className="text-xl font-semibold text-slate-800 mb-2">Erreur de chargement</h3>
-							<p className="text-slate-600 mb-6">{(errorProject)?.message ?? "Une erreur est survenue"}</p>
+							<h3 className="text-xl font-semibold text-slate-800 dark:text-gray-100 mb-2">Erreur de chargement</h3>
+							<p className="text-slate-600 dark:text-gray-300 mb-6">{(errorProject)?.message ?? "Une erreur est survenue"}</p>
 							<button
 								onClick={() => navigate({ to: "/projects" })}
 								className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -112,13 +112,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 	}
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-6">
+		<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:[background-image:none] dark:bg-gray-900 p-6">
 			<div className="max-w-2xl w-full mx-auto">
 				<div className="mb-8 text-center">
-					<h1 className="text-4xl font-bold bg-gradient-to-r from-blue-800 to-blue-600 bg-clip-text text-transparent mb-2">
+					<h1 className="text-4xl font-bold bg-gradient-to-r from-blue-800 to-blue-600 dark:[background-image:none] dark:!text-blue-200 bg-clip-text text-transparent mb-2">
 						{isEditMode ? "Modifier le projet" : "Créer un nouveau projet"}
 					</h1>
-					<p className="text-slate-600 text-lg">
+					<p className="text-slate-600 dark:text-gray-300 text-lg">
 						{isEditMode
 							? "Apportez les modifications nécessaires à votre projet"
 							: "Donnez vie à votre nouvelle idée"
@@ -126,13 +126,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 					</p>
 				</div>
 
-				<div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 p-8">
+				<div className="bg-white/80 dark:bg-gray-900/75 backdrop-blur-sm rounded-2xl shadow-xl dark:shadow-black/30 border border-white/60 dark:border-gray-700 p-8">
 					<form onSubmit={handleSubmit} className="space-y-8">
 						{/* Champ Titre */}
 						<div className="group">
 							<label
 								htmlFor="project-title"
-								className="block text-sm font-semibold text-slate-700 mb-3"
+								className="block text-sm font-semibold text-slate-700 dark:text-gray-200 mb-3"
 							>
 								Titre du projet
 							</label>
@@ -141,7 +141,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 								type="text"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
-								className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 group-hover:border-slate-300"
+								className="w-full bg-white/50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl px-4 py-3 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/40 focus:border-blue-500 dark:focus:border-blue-500 transition-all duration-200 group-hover:border-slate-300 dark:group-hover:border-gray-600"
 								placeholder="Mon super projet..."
 								required
 							/>
@@ -151,7 +151,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 						<div className="group">
 							<label
 								htmlFor="project-description"
-								className="block text-sm font-semibold text-slate-700 mb-3"
+								className="block text-sm font-semibold text-slate-700 dark:text-gray-200 mb-3"
 							>
 								Description{" "}
 								<span className="text-slate-400 font-normal ml-2">(optionnel)</span>
@@ -160,7 +160,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 								id="project-description"
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
-								className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 group-hover:border-slate-300 resize-none"
+								className="w-full bg-white/50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl px-4 py-3 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/40 focus:border-blue-500 dark:focus:border-blue-500 transition-all duration-200 group-hover:border-slate-300 dark:group-hover:border-gray-600 resize-none"
 								placeholder="Décrivez votre projet, ses objectifs, ses particularités..."
 								rows={4}
 							/>
@@ -170,7 +170,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 							<div className="group">
 								<label
 									htmlFor="project-status"
-									className="block text-sm font-semibold text-slate-700 mb-3"
+									className="block text-sm font-semibold text-slate-700 dark:text-gray-200 mb-3"
 								>
 									Statut
 								</label>
@@ -178,7 +178,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 									id="project-status"
 									value={status}
 									onChange={(e) => setStatus(e.target.value as ProjectStatus)}
-									className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 group-hover:border-slate-300 appearance-none cursor-pointer"
+									className="w-full bg-white/50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl px-4 py-3 text-slate-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/40 focus:border-blue-500 dark:focus:border-blue-500 transition-all duration-200 group-hover:border-slate-300 dark:group-hover:border-gray-600 appearance-none cursor-pointer"
 								>
 									<option value="En attente">En attente</option>
 									<option value="En cours">En cours</option>
@@ -189,7 +189,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 							<div className="group">
 								<label
 									htmlFor="project-priority"
-									className="block text-sm font-semibold text-slate-700 mb-3"
+									className="block text-sm font-semibold text-slate-700 dark:text-gray-200 mb-3"
 								>
 									Priorité
 								</label>
@@ -197,7 +197,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 									id="project-priority"
 									value={priority}
 									onChange={(e) => setPriority(e.target.value as ProjectPriority)}
-									className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 group-hover:border-slate-300 appearance-none cursor-pointer"
+									className="w-full bg-white/50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl px-4 py-3 text-slate-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/40 focus:border-blue-500 dark:focus:border-blue-500 transition-all duration-200 group-hover:border-slate-300 dark:group-hover:border-gray-600 appearance-none cursor-pointer"
 								>
 									<option value="Basse">Basse</option>
 									<option value="Moyenne">Moyenne</option>
@@ -206,34 +206,34 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 							</div>
 						</div>
 						{isEditMode && updateMutation.isError && (
-							<div className="bg-red-50 border border-red-200 rounded-xl p-4">
+							<div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900 rounded-xl p-4">
 								<div className="flex items-center">
-									<svg className="w-5 h-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<svg className="w-5 h-5 text-red-500 dark:text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 									</svg>
-									<p className="text-red-700 font-medium">
+									<p className="text-red-700 dark:text-red-300 font-medium">
 										{(updateMutation.error)?.message ?? "Erreur lors de la mise à jour"}
 									</p>
 								</div>
 							</div>
 						)}
 						{!isEditMode && createMutation.isError && (
-							<div className="bg-red-50 border border-red-200 rounded-xl p-4">
+							<div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900 rounded-xl p-4">
 								<div className="flex items-center">
-									<svg className="w-5 h-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<svg className="w-5 h-5 text-red-500 dark:text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 									</svg>
-									<p className="text-red-700 font-medium">
+									<p className="text-red-700 dark:text-red-300 font-medium">
 										{(createMutation.error)?.message ?? "Erreur lors de la création"}
 									</p>
 								</div>
 							</div>
 						)}
-						<div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-100">
+						<div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-100 dark:border-gray-800">
 							<button
 								type="submit"
 								disabled={
-									(isEditMode && updateMutation.isPending) ||
+									(isEditMode && updateMutation.isPending) ??
 									(!isEditMode && createMutation.isPending)
 								}
 								className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center hover:cursor-pointer"
@@ -273,7 +273,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 							<button
 								type="button"
 								onClick={() => navigate({ to: "/projects" })}
-								className="flex-1 sm:flex-initial bg-white/80 text-slate-700 px-6 py-3 rounded-xl font-semibold border border-slate-200 hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all duration-200 flex items-center justify-center hover:cursor-pointer"
+								className="flex-1 sm:flex-initial bg-white/80 dark:bg-gray-800 text-slate-700 dark:text-gray-200 px-6 py-3 rounded-xl font-semibold border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all duration-200 flex items-center justify-center hover:cursor-pointer"
 							>
 								<svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -284,7 +284,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 					</form>
 				</div>
 				<div className="mt-6 text-center">
-					<p className="text-slate-500 text-sm">
+					<p className="text-slate-500 dark:text-gray-400 text-sm">
 						{isEditMode
 							? "Les modifications seront sauvegardées immédiatement"
 							: "Votre projet sera automatiquement sauvegardé"

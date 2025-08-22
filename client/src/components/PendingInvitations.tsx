@@ -100,16 +100,16 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOw
 	};
 
 	return (
-		<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+		<div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
 			<div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-				<div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-					<Clock className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
+				<div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+					<Clock className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600 dark:text-orange-400" />
 				</div>
 				<div>
-					<h3 className="text-base sm:text-lg font-semibold text-gray-900">
+					<h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
 						Invitations en attente
 					</h3>
-					<p className="text-xs sm:text-sm text-gray-500">
+					<p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
 						{invitations.length} invitation{invitations.length > 1 ? 's' : ''} en attente de réponse
 					</p>
 				</div>
@@ -119,22 +119,22 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOw
 				{invitations.map((invitation) => (
 					<div
 						key={invitation.id}
-						className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-100 hover:shadow-md transition-all duration-200 space-y-3 sm:space-y-0"
+						className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:bg-orange-900/20 dark:bg-none rounded-lg border border-orange-100 dark:border-orange-900/40 hover:shadow-md transition-all duration-200 space-y-3 sm:space-y-0"
 					>
 						<div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-								<Mail className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+								<Mail className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
 							</div>
 							<div className="flex-1 min-w-0">
-								<p className="font-medium text-gray-900 truncate text-sm sm:text-base">
+								<p className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm sm:text-base">
 									{invitation.email}
 								</p>
 								<div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 mt-1">
-									<div className="flex items-center space-x-1 text-xs text-gray-500">
+									<div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
 										<User className="w-3 h-3 flex-shrink-0" />
 										<span className="truncate">Invité par {invitation.invitedBy.name || invitation.invitedBy.email}</span>
 									</div>
-									<div className="flex items-center space-x-1 text-xs text-gray-500">
+									<div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
 										<Clock className="w-3 h-3 flex-shrink-0" />
 										<span>{formatDate(invitation.createdAt)}</span>
 									</div>
@@ -145,10 +145,10 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOw
 						<div className="flex items-center gap-2 sm:gap-3">
 							{/* Statut d'expiration */}
 							<span className={`px-2 py-1 rounded-full text-xs font-medium ${getTimeUntilExpiry(invitation.expiresAt) === "Expirée"
-								? "bg-red-100 text-red-700"
+								? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
 								: getTimeUntilExpiry(invitation.expiresAt).includes("demain")
-									? "bg-yellow-100 text-yellow-700"
-									: "bg-green-100 text-green-700"
+									? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+									: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
 								}`}>
 								{getTimeUntilExpiry(invitation.expiresAt)}
 							</span>
@@ -160,7 +160,7 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOw
 									title="Supprimer l'invitation"
 									className="group"
 								>
-									<Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 cursor-pointer transition-transform duration-150 group-hover:scale-125" />
+									<Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 dark:text-red-400 cursor-pointer transition-transform duration-150 group-hover:scale-125" />
 								</button>
 							</div>
 						</div>
