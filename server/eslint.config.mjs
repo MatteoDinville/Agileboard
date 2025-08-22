@@ -1,7 +1,8 @@
 import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tseslintParser from '@typescript-eslint/parser';
 
-export default tseslint.config(
+export default [
 	{
 		ignores: [
 			'node_modules/**',
@@ -15,19 +16,26 @@ export default tseslint.config(
 		],
 	},
 	js.configs.recommended,
-	...tseslint.configs.recommended,
 	{
+		files: ['src/**/*.ts', 'prisma/**/*.ts'],
 		languageOptions: {
-			parser: tseslint.parser,
+			parser: tseslintParser,
 			parserOptions: {
 				project: './tsconfig.json',
 				tsconfigRootDir: import.meta.dirname,
 				ecmaVersion: 2022,
 				sourceType: 'module',
 			},
+			globals: {
+				process: 'readonly',
+				console: 'readonly',
+			},
 		},
-		files: ['src/**/*.ts', 'prisma/**/*.ts'],
+		plugins: {
+			'@typescript-eslint': tseslint,
+		},
 		rules: {
+			...tseslint.configs.recommended.rules,
 			'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
 			'@typescript-eslint/no-explicit-any': 'warn',
 			'@typescript-eslint/explicit-function-return-type': 'off',
@@ -60,4 +68,4 @@ export default tseslint.config(
 			'no-console': 'off',
 		},
 	}
-);
+];
