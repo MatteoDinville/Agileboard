@@ -1,22 +1,23 @@
-FROM node:18-bullseye AS builder
-
+FROM node:20-bullseye-slim AS builder
 WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma/
-
-RUN npm install
+RUN npm ci
+RUN npx prisma generate
 
 COPY . .
-
 RUN npm run build
+RUN npm prune --omit=dev
 
-FROM node:18-bullseye
-
+FROM node:20-bullseye-slim
 WORKDIR /app
-
-COPY --from=builder /app /app
-
+ENV NODE_ENV=production
 EXPOSE 4000
 
-CMD ["sh", "-c", "npm run db:migrate:prod && node dist/index.js"]
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/dist ./dist
+
+CMD sh -c "npm run db:migrate:prod && node dist/server.js"
