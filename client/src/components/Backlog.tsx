@@ -239,14 +239,14 @@ const Backlog: React.FC<BacklogProps> = ({
 			{/* Header avec actions */}
 			<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 				<div>
-					<h2 className="text-2xl font-bold text-gray-900">Backlog</h2>
-					<p className="text-gray-600 mt-1">
+					<h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Backlog</h2>
+					<p className="text-gray-600 dark:text-gray-300 mt-1">
 						{filteredAndSortedTasks.length} tâche{filteredAndSortedTasks.length > 1 ? 's' : ''}
 						{tasks && tasks.length !== filteredAndSortedTasks.length &&
 							` sur ${tasks.length} au total`
 						}
 						{selectedTasks.length > 0 && (
-							<span className="text-blue-600 font-medium ml-2">
+							<span className="text-blue-600 dark:text-blue-400 font-medium ml-2">
 								({selectedTasks.length} sélectionnée{selectedTasks.length > 1 ? 's' : ''})
 							</span>
 						)}
@@ -284,17 +284,17 @@ const Backlog: React.FC<BacklogProps> = ({
 			</div>
 
 			{/* Filtres */}
-			<div className="bg-white rounded-lg border border-gray-200 p-4">
+			<div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 					{/* Recherche */}
 					<div className="relative">
-						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
 						<input
 							type="text"
 							placeholder="Rechercher une tâche..."
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
-							className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+							className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
 						/>
 					</div>
 
@@ -302,7 +302,7 @@ const Backlog: React.FC<BacklogProps> = ({
 					<select
 						value={statusFilter}
 						onChange={(e) => setStatusFilter(e.target.value)}
-						className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
 					>
 						<option value="all">Tous les statuts</option>
 						{Object.entries(TaskStatusLabels).map(([key, label]) => (
@@ -314,7 +314,7 @@ const Backlog: React.FC<BacklogProps> = ({
 					<select
 						value={priorityFilter}
 						onChange={(e) => setPriorityFilter(e.target.value)}
-						className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
 					>
 						<option value="all">Toutes les priorités</option>
 						{Object.entries(TaskPriorityLabels).map(([key, label]) => (
@@ -326,7 +326,7 @@ const Backlog: React.FC<BacklogProps> = ({
 					<select
 						value={assigneeFilter}
 						onChange={(e) => setAssigneeFilter(e.target.value)}
-						className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
 					>
 						<option value="all">Tous les membres</option>
 						<option value="unassigned">Non assigné</option>
@@ -340,21 +340,21 @@ const Backlog: React.FC<BacklogProps> = ({
 			</div>
 
 			{/* Table */}
-			<div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+			<div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
 				<div className="overflow-x-auto">
-					<table className="min-w-full divide-y divide-gray-200">
-						<thead className="bg-gray-50">
+					<table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+						<thead className="bg-gray-50 dark:bg-gray-800">
 							<tr>
 								<th className="px-6 py-3 text-left">
 									<input
 										type="checkbox"
 										checked={selectedTasks.length === filteredAndSortedTasks.length && filteredAndSortedTasks.length > 0}
 										onChange={toggleSelectAll}
-										className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+										className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
 									/>
 								</th>
 								<th
-									className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+									className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
 									onClick={() => handleSort('title')}
 								>
 									<div className="flex items-center space-x-1">
@@ -363,7 +363,7 @@ const Backlog: React.FC<BacklogProps> = ({
 									</div>
 								</th>
 								<th
-									className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+									className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
 									onClick={() => handleSort('status')}
 								>
 									<div className="flex items-center space-x-1">
@@ -372,7 +372,7 @@ const Backlog: React.FC<BacklogProps> = ({
 									</div>
 								</th>
 								<th
-									className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+									className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
 									onClick={() => handleSort('priority')}
 								>
 									<div className="flex items-center space-x-1">
@@ -381,7 +381,7 @@ const Backlog: React.FC<BacklogProps> = ({
 									</div>
 								</th>
 								<th
-									className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+									className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
 									onClick={() => handleSort('assignedTo')}
 								>
 									<div className="flex items-center space-x-1">
@@ -390,7 +390,7 @@ const Backlog: React.FC<BacklogProps> = ({
 									</div>
 								</th>
 								<th
-									className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+									className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
 									onClick={() => handleSort('dueDate')}
 								>
 									<div className="flex items-center space-x-1">
@@ -399,7 +399,7 @@ const Backlog: React.FC<BacklogProps> = ({
 									</div>
 								</th>
 								<th
-									className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+									className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
 									onClick={() => handleSort('createdAt')}
 								>
 									<div className="flex items-center space-x-1">
@@ -407,29 +407,29 @@ const Backlog: React.FC<BacklogProps> = ({
 										{getSortIcon('createdAt')}
 									</div>
 								</th>
-								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
 									Actions
 								</th>
 							</tr>
 						</thead>
-						<tbody className="bg-white divide-y divide-gray-200">
+						<tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
 							{filteredAndSortedTasks.map((task) => (
-								<tr key={task.id} className="hover:bg-gray-50">
+								<tr key={task.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
 									<td className="px-6 py-4 whitespace-nowrap">
 										<input
 											type="checkbox"
 											checked={selectedTasks.includes(task.id)}
 											onChange={() => toggleTaskSelection(task.id)}
-											className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+											className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
 										/>
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										<div>
-											<div className="text-sm font-medium text-gray-900">
+											<div className="text-sm font-medium text-gray-900 dark:text-gray-100">
 												{task.title}
 											</div>
 											{task.description && (
-												<div className="text-sm text-gray-500 truncate max-w-xs">
+												<div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
 													{task.description}
 												</div>
 											)}
@@ -453,25 +453,25 @@ const Backlog: React.FC<BacklogProps> = ({
 														{(task.assignedTo.name || task.assignedTo.email).charAt(0).toUpperCase()}
 													</span>
 												</div>
-												<span className="text-sm text-gray-900">
+												<span className="text-sm text-gray-900 dark:text-gray-100">
 													{task.assignedTo.name || task.assignedTo.email}
 												</span>
 											</div>
 										) : (
-											<span className="text-sm text-gray-400">Non assigné</span>
+											<span className="text-sm text-gray-400 dark:text-gray-500">Non assigné</span>
 										)}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										{task.dueDate ? (
-											<div className="flex items-center space-x-1 text-sm text-gray-900">
-												<Calendar className="w-4 h-4 text-gray-400" />
+											<div className="flex items-center space-x-1 text-sm text-gray-900 dark:text-gray-100">
+												<Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
 												<span>{formatDate(task.dueDate)}</span>
 											</div>
 										) : (
-											<span className="text-sm text-gray-400">Aucune échéance</span>
+											<span className="text-sm text-gray-400 dark:text-gray-500">Aucune échéance</span>
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
 										{formatDate(task.createdAt)}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -479,7 +479,7 @@ const Backlog: React.FC<BacklogProps> = ({
 											{onEditTask && (
 												<button
 													onClick={() => onEditTask(task)}
-													className="group relative inline-flex items-center justify-center p-2 text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+													className="group relative inline-flex items-center justify-center p-2 text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 hover:text-blue-700 hover:border-blue-300 dark:hover:bg-blue-900/30 dark:hover:text-blue-200 dark:hover:border-blue-700 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
 													title="Modifier la tâche"
 												>
 													<Edit2 className="w-4 h-4" />
@@ -491,7 +491,7 @@ const Backlog: React.FC<BacklogProps> = ({
 											{onDeleteTask && (
 												<button
 													onClick={() => onDeleteTask(task.id)}
-													className="group relative inline-flex items-center justify-center p-2 text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+													className="group relative inline-flex items-center justify-center p-2 text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-900/30 dark:hover:text-red-200 dark:hover:border-red-700 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
 													title="Supprimer la tâche"
 												>
 													<Trash2 className="w-4 h-4" />
@@ -511,13 +511,13 @@ const Backlog: React.FC<BacklogProps> = ({
 				{filteredAndSortedTasks.length === 0 && (
 					<div className="text-center py-12">
 						<div className="text-6xl mb-4 opacity-30">📋</div>
-						<p className="text-xl font-medium text-gray-500 mb-2">
+						<p className="text-xl font-medium text-gray-500 dark:text-gray-400 mb-2">
 							{searchTerm || statusFilter !== "all" || priorityFilter !== "all" || assigneeFilter !== "all"
 								? "Aucune tâche ne correspond aux filtres"
 								: "Aucune tâche dans ce projet"
 							}
 						</p>
-						<p className="text-gray-400">
+						<p className="text-gray-400 dark:text-gray-500">
 							{searchTerm || statusFilter !== "all" || priorityFilter !== "all" || assigneeFilter !== "all"
 								? "Essayez de modifier les filtres pour voir plus de tâches"
 								: "Commencez par créer votre première tâche"

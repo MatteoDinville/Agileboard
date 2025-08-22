@@ -107,16 +107,16 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 	const currentInvitations = history[activeTab] || [];
 
 	return (
-		<div className="bg-white rounded-xl shadow-sm border border-gray-200">
+		<div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
 			{/* En-tête */}
-			<div className="p-4 sm:p-6 border-b border-gray-200">
+			<div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center space-x-2 sm:space-x-3">
-						<div className="p-1.5 sm:p-2 bg-indigo-100 rounded-lg">
-							<History className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+						<div className="p-1.5 sm:p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+							<History className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 dark:text-indigo-400" />
 						</div>
 						<div>
-							<h3 className="text-base sm:text-lg font-semibold text-gray-900">
+							<h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
 								Historique des invitations
 							</h3>
 						</div>
@@ -125,14 +125,14 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 
 				{/* Onglets */}
 				<div className="mt-4">
-					<div className="flex space-x-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
+					<div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg overflow-x-auto">
 						{tabs.map((tab) => (
 							<button
 								key={tab.key}
 								onClick={() => setActiveTab(tab.key)}
 								className={`flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap ${activeTab === tab.key
-									? 'bg-white text-gray-900 shadow-sm'
-									: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+									? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm'
+									: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
 									}`}
 							>
 								{tab.label} ({tab.count})
@@ -146,13 +146,13 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 			<div className="p-4 sm:p-6">
 				{currentInvitations.length === 0 ? (
 					<div className="text-center py-6 sm:py-8">
-						<div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+						<div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
 							{getStatusIcon(activeTab)}
 						</div>
-						<h4 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+						<h4 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
 							Aucune invitation {getStatusLabel(activeTab).toLowerCase()}
 						</h4>
-						<p className="text-gray-600 text-sm">
+						<p className="text-gray-600 dark:text-gray-300 text-sm">
 							{activeTab === 'accepted'}
 							{activeTab === 'declined'}
 							{activeTab === 'expired'}
@@ -163,14 +163,14 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 						{currentInvitations.map((invitation) => (
 							<div
 								key={invitation.id}
-								className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors"
+								className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
 							>
 								<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
 									<div className="flex-1 min-w-0">
 										<div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
 											<div className="flex items-center space-x-2">
-												<Mail className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" />
-												<span className="font-medium text-gray-900 text-sm sm:text-base truncate">
+												<Mail className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+												<span className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base truncate">
 													{invitation.email}
 												</span>
 											</div>
@@ -179,7 +179,7 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 											</span>
 										</div>
 
-										<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
 											<div className="flex items-center space-x-1 sm:space-x-2">
 												<User className="w-3 h-3 flex-shrink-0" />
 												<span className="truncate">Invité par {invitation.invitedBy.name || invitation.invitedBy.email}</span>

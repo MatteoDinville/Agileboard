@@ -1,5 +1,54 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## v1.2.0 (2025-08-22)
+
+### ✨ Features (Pull Requests)
+
+- **🌙 Dark Mode & Theme Switcher** – Implémentation du thème sombre et ajout du basculement entre les modes clair/sombre ([#23](https://github.com/MatteoDinville/Agileboard/pull/23)) `
+c0c143b`
+
+### ➕ Added
+
+- Dark mode across the entire application
+- Theme switcher allowing users to toggle between light and dark modes
+
+### 🔄 Changed
+
+- Updated UI components for better contrast and readability in dark mode
+- Improved overall user experience with theme adaptability
+
+---
+
+## v1.1.0 (2025-08-22)
+
+### 🚀 Features (Pull Requests)
+
+- **📨 Invitation System** – Proof of Concept d’invitation de membres avec notifications ([#15](https://github.com/MatteoDinville/Agileboard/pull/15)) `5e04539`
+
+### 🐛 Fixes (Pull Requests)
+
+- **🐳 Dockerfile Fix** – Correction du Dockerfile pour l’exécution en production ([#17](https://github.com/MatteoDinville/Agileboard/pull/17)) `9e5d0e1`
+- **⚙️ ESM Compatibility** – Résolution de l’erreur _ES module_ en production ([#18](https://github.com/MatteoDinville/Agileboard/pull/18)) `29b759b`
+- **📂 Import Paths** – Correction des extensions d’import pour démarrer le serveur en production ([#19](https://github.com/MatteoDinville/Agileboard/pull/19)) `b9c9e7e`
+- **🌐 API Calls** – Correction des appels API pour fonctionner correctement en production ([#20](https://github.com/MatteoDinville/Agileboard/pull/20)) `5cc9a10`
+
+### ➕ Added
+
+- Proof of concept for inviting project members with real-time notifications
+
+### 🔄 Changed
+
+- Fixed Dockerfile configuration for production builds
+- Resolved ES module errors when running Node.js in production
+- Corrected server import extensions for startup reliability
+- Fixed API call URLs for production environment
+
+---
+
 ## v1.0.0 (2025-08-21)
 
 ### 🚀 Features (Pull Requests)

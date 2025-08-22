@@ -115,7 +115,7 @@ const UserInvitationsNotifications: React.FC = () => {
 		<div className="relative" ref={dropdownRef}>
 			<button
 				onClick={toggleDropdown}
-				className="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-300"
+				className="relative p-2 text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-300"
 			>
 				<Bell className="w-5 h-5" />
 				{hasInvitations && (
@@ -126,13 +126,13 @@ const UserInvitationsNotifications: React.FC = () => {
 			</button>
 
 			{isOpen && (
-				<div className="absolute top-12 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
-					<div className="p-4 border-b border-gray-200">
-						<h3 className="font-semibold text-gray-900 flex items-center space-x-2">
+				<div className="absolute top-12 right-0 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+					<div className="p-4 border-b border-gray-200 dark:border-gray-700">
+						<h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
 							<Mail className="w-4 h-4" />
 							<span>Invitations en attente</span>
 						</h3>
-						<p className="text-sm text-gray-600">
+						<p className="text-sm text-gray-600 dark:text-gray-300">
 							{hasInvitations
 								? `${invitations.length} invitation${invitations.length > 1 ? 's' : ''} à rejoindre des projets`
 								: 'Aucune invitation en attente'
@@ -143,24 +143,24 @@ const UserInvitationsNotifications: React.FC = () => {
 					<div className="max-h-64 overflow-y-auto">
 						{hasInvitations ? (
 							invitations.map((invitation) => (
-								<div key={invitation.token} className="p-4 border-b border-gray-100 hover:bg-gray-50">
+								<div key={invitation.token} className="p-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
 									<div className="space-y-2">
 										<div>
-											<h4 className="font-medium text-gray-900">
+											<h4 className="font-medium text-gray-900 dark:text-gray-100">
 												{invitation.project.title}
 											</h4>
 											{invitation.project.description && (
-												<p className="text-sm text-gray-600 line-clamp-2">
+												<p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
 													{invitation.project.description}
 												</p>
 											)}
 										</div>
 
-										<div className="flex items-center space-x-2 text-xs text-gray-500">
+										<div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
 											<span>Invité par {invitation.invitedBy.name || invitation.invitedBy.email}</span>
 										</div>
 
-										<div className="flex items-center space-x-2 text-xs text-gray-500">
+										<div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
 											<Clock className="w-3 h-3" />
 											<span>
 												Expire le {new Date(invitation.expiresAt).toLocaleDateString('fr-FR')}
@@ -171,7 +171,7 @@ const UserInvitationsNotifications: React.FC = () => {
 											<button
 												onClick={() => handleAcceptInvitation(invitation.token!)}
 												disabled={acceptMutation.isPending || declineMutation.isPending}
-												className="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm cursor-pointer"
+												className="flex-1 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm cursor-pointer shadow-sm dark:shadow-black/20"
 											>
 												<Check className="w-3 h-3" />
 												<span>Accepter</span>
@@ -179,7 +179,7 @@ const UserInvitationsNotifications: React.FC = () => {
 											<button
 												onClick={() => handleDeclineInvitation(invitation.token!)}
 												disabled={acceptMutation.isPending || declineMutation.isPending}
-												className="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm cursor-pointer"
+												className="flex-1 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-1 text-sm cursor-pointer shadow-sm dark:shadow-black/20"
 											>
 												<X className="w-3 h-3" />
 												<span>Décliner</span>
@@ -189,7 +189,7 @@ const UserInvitationsNotifications: React.FC = () => {
 								</div>
 							))
 						) : (
-							<div className="p-8 text-center text-gray-500">
+							<div className="p-8 text-center text-gray-500 dark:text-gray-400">
 								<Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
 								<p className="text-sm">Aucune invitation en attente</p>
 							</div>

@@ -6,7 +6,7 @@ import authRoutes from "./routes/auth.js";
 import projectRoutes from "./routes/project.js";
 import userRoutes from "./routes/user.js";
 import taskRoutes from "./routes/task.js";
-import invitationRoutes from "./routes/invitation";
+import invitationRoutes from "./routes/invitation.js";
 
 dotenv.config();
 

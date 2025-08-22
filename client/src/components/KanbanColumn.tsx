@@ -11,6 +11,7 @@ interface Column {
 	icon: string;
 	textColor: string;
 	borderColor: string;
+	countBg?: string;
 }
 
 interface KanbanColumnProps {
@@ -27,7 +28,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
 	const { setNodeRef, isOver } = useDroppable({
 		id: `column-${column.id}`,
 	}); return (
-		<div className={`${column.color} border-2 ${column.borderColor} rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-[500px]`}>
+		<div className={`${column.color} border-2 ${column.borderColor} dark:border-opacity-60 rounded-2xl shadow-lg dark:shadow-black/10 hover:shadow-xl transition-all duration-300 flex flex-col h-[500px]`}>
 			<div className="flex justify-between items-center p-6 pb-4 flex-shrink-0">
 				<div className="flex items-center gap-3">
 					<span className="text-2xl">{column.icon}</span>
@@ -35,7 +36,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
 						<h3 className={`font-bold text-lg ${column.textColor}`}>
 							{column.title}
 						</h3>
-						<div className={`w-6 h-6 ${column.textColor.replace('text-', 'bg-').replace('-700', '-100')} rounded-full flex items-center justify-center`}>
+						<div className={`w-6 h-6 ${column.countBg ?? column.textColor.replace('text-', 'bg-').replace('-700', '-100')} rounded-full flex items-center justify-center`}>
 							<span className={`text-xs font-bold ${column.textColor}`}>
 								{tasks.length}
 							</span>
@@ -46,8 +47,8 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
 			<div
 				ref={setNodeRef}
 				className={`flex-1 overflow-y-auto px-6 pb-6 space-y-4 transition-all duration-300 rounded-xl kanban-column-scroll ${isOver
-					? `${column.color.replace('from-', 'from-').replace('to-', 'to-')} ring-4 ${column.borderColor.replace('border-', 'ring-')} ring-opacity-50`
-					: ''
+						? `${column.color} ring-4 ${column.borderColor.replace('border-', 'ring-')} dark:ring-opacity-30 ring-opacity-50`
+						: ''
 					}`}
 			><SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
 					{tasks.map(task => (

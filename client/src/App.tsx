@@ -2,12 +2,15 @@ import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { AppRouter } from "./router";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const queryClient = new QueryClient();
 
 const App: React.FC = () => (
 	<QueryClientProvider client={queryClient}>
-		<AppRouter />
+		<ThemeProvider>
+			<AppRouter />
+		</ThemeProvider>
 		<Toaster
 			position="top-right"
 			toastOptions={{

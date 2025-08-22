@@ -29,26 +29,29 @@ const columns = [
 	{
 		id: TaskStatus.A_FAIRE,
 		title: TaskStatusLabels.A_FAIRE,
-		color: 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200',
+		color: 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 dark:bg-gray-900 dark:bg-none',
 		icon: '📋',
-		textColor: 'text-slate-700',
-		borderColor: 'border-slate-300'
+		textColor: 'text-slate-700 dark:text-slate-300',
+		borderColor: 'border-slate-300 dark:border-slate-700',
+		countBg: 'bg-slate-100 dark:bg-slate-900/40'
 	},
 	{
 		id: TaskStatus.EN_COURS,
 		title: TaskStatusLabels.EN_COURS,
-		color: 'bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200',
+		color: 'bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200 dark:bg-gray-900 dark:bg-none',
 		icon: '🚀',
-		textColor: 'text-blue-700',
-		borderColor: 'border-blue-300'
+		textColor: 'text-blue-700 dark:text-blue-300',
+		borderColor: 'border-blue-300 dark:border-blue-800',
+		countBg: 'bg-blue-100 dark:bg-blue-900/40'
 	},
 	{
 		id: TaskStatus.TERMINE,
 		title: TaskStatusLabels.TERMINE,
-		color: 'bg-gradient-to-br from-green-50 to-emerald-100 border-green-200',
+		color: 'bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 dark:bg-gray-900 dark:bg-none',
 		icon: '✅',
-		textColor: 'text-green-700',
-		borderColor: 'border-green-300'
+		textColor: 'text-green-700 dark:text-green-300',
+		borderColor: 'border-green-300 dark:border-green-800',
+		countBg: 'bg-green-100 dark:bg-green-900/40'
 	},
 ];
 
@@ -169,18 +172,21 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 	}
 
 	return (
-		<div className="p-6 bg-gradient-to-br from-slate-50 to-white">
+		<div className="p-6 bg-gradient-to-br from-slate-50 to-white dark:bg-gray-900 dark:bg-none">
 			<div className="flex justify-between items-center mb-8">
 				<div>
-					<h2 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-						Tableau Kanban
+					<h2 className="text-3xl font-bold">
+						<span className="bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent dark:hidden">
+							Tableau Kanban
+						</span>
+						<span className="hidden dark:inline text-gray-100">Tableau Kanban</span>
 					</h2>
-					<p className="text-slate-600 mt-1">Organisez et suivez vos tâches en temps réel</p>
+					<p className="text-slate-600 dark:text-gray-300 mt-1">Organisez et suivez vos tâches en temps réel</p>
 				</div>
 				<div className="flex items-center gap-4">
 					<button
 						onClick={() => openCreateModal(TaskStatus.A_FAIRE)}
-						className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+						className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-3 shadow-lg dark:shadow-black/20 hover:shadow-xl transition-all duration-200 transform hover:scale-105 cursor-pointer"
 					>
 						<Plus className="w-4 h-4" />
 						<span className="font-medium">Nouvelle tâche</span>

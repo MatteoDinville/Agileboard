@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import type { Task } from '../services/task';
 import { projectService } from '../services/project';
 import { TaskStatus, TaskPriority, TaskStatusLabels, TaskPriorityLabels, type TaskStatusType, type TaskPriorityType } from '../types/enums';
+import { useAuth } from '../contexts/AuthContext';
 
 interface TaskModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	task?: Task | null;
-	onSave: (taskData: Partial<Task>) => Promise<void>;
 	projectId: number;
+	onSave: (taskData: Partial<Task>) => void;
 }
 
 interface User {
@@ -21,9 +22,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
 	isOpen,
 	onClose,
 	task,
-	onSave,
 	projectId,
+	onSave,
 }) => {
+	const { user } = useAuth();
 	const [formData, setFormData] = useState<{
 		title: string;
 		description: string;
@@ -93,6 +95,18 @@ const TaskModal: React.FC<TaskModalProps> = ({
 			loadUsers();
 		}
 	}, [isOpen, loadUsers]);
+
+	const isSelfAssigned = !!user && formData.assignedToId === String(user.id);
+
+	const handleSelfAssignToggle = () => {
+		if (!user?.id) return;
+		if (isSelfAssigned) {
+			setFormData(prev => ({ ...prev, assignedToId: '' }));
+		} else {
+			setFormData(prev => ({ ...prev, assignedToId: String(user.id) }));
+		}
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
@@ -104,9 +118,14 @@ const TaskModal: React.FC<TaskModalProps> = ({
 				status: formData.status,
 				priority: formData.priority,
 				dueDate: formData.dueDate || undefined,
-				assignedToId: formData.assignedToId ? Number(formData.assignedToId) : undefined,
 				projectId,
 			};
+
+			if (formData.assignedToId) {
+				taskData.assignedToId = Number(formData.assignedToId);
+			} else {
+				taskData.assignedToId = undefined;
+			}
 
 			await onSave(taskData);
 		} catch (error) {
@@ -125,8 +144,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
 	return (
 		<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-			<div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden transform transition-all">
-				<div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
+			<div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl dark:shadow-black/30 w-full max-w-2xl max-h-[90vh] overflow-hidden transform transition-all">
+				<div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:bg-blue-700 dark:bg-none px-8 py-6">
 					<div className="flex justify-between items-center">
 						<div>
 							<h3 className="text-xl font-bold text-white">
@@ -150,7 +169,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 				<div className="p-8 overflow-y-auto max-h-[calc(90vh-140px)]">
 					<form onSubmit={handleSubmit} className="space-y-6">{/* Titre */}
 						<div className="space-y-2">
-							<label htmlFor="task-title" className="block text-sm font-semibold text-gray-700">
+							<label htmlFor="task-title" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
 								Titre de la tâche <span className="text-red-500">*</span>
 							</label>
 							<input
@@ -160,13 +179,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
 								value={formData.title}
 								onChange={handleChange}
 								required
-								className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+								className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800"
 								placeholder="Ex: Implémenter la fonctionnalité de connexion"
 							/>
 						</div>
 
 						<div className="space-y-2">
-							<label htmlFor="task-description" className="block text-sm font-semibold text-gray-700">
+							<label htmlFor="task-description" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
 								Description
 							</label>
 							<textarea
@@ -175,14 +194,14 @@ const TaskModal: React.FC<TaskModalProps> = ({
 								value={formData.description}
 								onChange={handleChange}
 								rows={4}
-								className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 resize-none"
+								className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 resize-none bg-white dark:bg-gray-800"
 								placeholder="Décrivez les détails de cette tâche..."
 							/>
 						</div>
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div className="space-y-2">
-								<label htmlFor="task-status" className="block text-sm font-semibold text-gray-700">
+								<label htmlFor="task-status" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
 									Statut
 								</label>
 								<div className="relative">
@@ -191,7 +210,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 										name="status"
 										value={formData.status}
 										onChange={handleChange}
-										className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white cursor-pointer"
+										className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 appearance-none bg-white dark:bg-gray-800 cursor-pointer"
 									>
 										<option value={TaskStatus.A_FAIRE}>{TaskStatusLabels.A_FAIRE}</option>
 										<option value={TaskStatus.EN_COURS}>{TaskStatusLabels.EN_COURS}</option>
@@ -203,10 +222,61 @@ const TaskModal: React.FC<TaskModalProps> = ({
 										</svg>
 									</div>
 								</div>
+								<div className="mt-3">
+									<p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Déplacement rapide :</p>
+									<div className="flex gap-2">
+										{Object.values(TaskStatus).map((status) => {
+											const isCurrentStatus = formData.status === status;
+											const getStatusIcon = (status: string) => {
+												switch (status) {
+													case TaskStatus.A_FAIRE: return '📋';
+													case TaskStatus.EN_COURS: return '🚀';
+													case TaskStatus.TERMINE: return '✅';
+													default: return '📋';
+												}
+											};
+
+											const getStatusColor = (status: string) => {
+												switch (status) {
+													case TaskStatus.A_FAIRE: return 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-600 dark:text-slate-300';
+													case TaskStatus.EN_COURS: return 'bg-blue-100 hover:bg-blue-200 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:border-blue-600 dark:text-blue-300';
+													case TaskStatus.TERMINE: return 'bg-green-100 hover:bg-green-200 border-green-300 text-green-700 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:border-green-600 dark:text-green-300';
+													default: return 'bg-gray-100 hover:bg-gray-200 border-gray-300 text-gray-700';
+												}
+											};
+
+											return (
+												<button
+													key={status}
+													type="button"
+													onClick={() => setFormData(prev => ({ ...prev, status }))}
+													disabled={isCurrentStatus}
+													className={`
+														flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-medium transition-all duration-200
+														${isCurrentStatus
+															? 'opacity-50 cursor-not-allowed ring-2 ring-blue-500/50'
+															: 'cursor-pointer hover:scale-105 transform'
+														}
+														${getStatusColor(status)}
+													`}
+													title={`Déplacer vers ${TaskStatusLabels[status as keyof typeof TaskStatusLabels]}`}
+												>
+													<span className="text-sm">{getStatusIcon(status)}</span>
+													<span className="hidden sm:inline">{TaskStatusLabels[status as keyof typeof TaskStatusLabels]}</span>
+													{isCurrentStatus && (
+														<svg className="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+															<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+														</svg>
+													)}
+												</button>
+											);
+										})}
+									</div>
+								</div>
 							</div>
 
 							<div className="space-y-2">
-								<label htmlFor="task-priority" className="block text-sm font-semibold text-gray-700">
+								<label htmlFor="task-priority" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
 									Priorité
 								</label>
 								<div className="relative">
@@ -215,7 +285,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 										name="priority"
 										value={formData.priority}
 										onChange={handleChange}
-										className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white cursor-pointer"
+										className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 appearance-none bg-white dark:bg-gray-800 cursor-pointer"
 									>
 										<option value={TaskPriority.BASSE}>{TaskPriorityLabels.BASSE}</option>
 										<option value={TaskPriority.MOYENNE}>{TaskPriorityLabels.MOYENNE}</option>
@@ -233,7 +303,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div className="space-y-2">
-								<label htmlFor="task-dueDate" className="block text-sm font-semibold text-gray-700">
+								<label htmlFor="task-dueDate" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
 									Date d'échéance
 								</label>
 								<input
@@ -242,13 +312,36 @@ const TaskModal: React.FC<TaskModalProps> = ({
 									name="dueDate"
 									value={formData.dueDate}
 									onChange={handleChange}
-									className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 cursor-pointer"
+									className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 cursor-pointer"
 								/>
 							</div>
 
 							<div className="space-y-2">
-								<label htmlFor="task-assignedToId" className="block text-sm font-semibold text-gray-700">
-									Assigné à
+								<label htmlFor="task-assignedToId" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+									<div className="flex items-center justify-between gap-3">
+										<span>Assigné à</span>
+										{user && (
+											<div className="flex items-center gap-2">
+												<label className="inline-flex items-center gap-2 cursor-pointer" title={"M'assigner cette tâche"}>
+													<input
+														type="checkbox"
+														checked={isSelfAssigned}
+														onChange={handleSelfAssignToggle}
+														disabled={isLoading || !user}
+														role="switch"
+														aria-checked={isSelfAssigned}
+														className="sr-only"
+													/>
+													<span
+														className={`relative inline-block w-10 h-6 rounded-full transition-colors ${isSelfAssigned ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700'}`}
+													>
+														<span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${isSelfAssigned ? 'translate-x-4' : ''}`}></span>
+													</span>
+													<span className="text-xs text-gray-700 dark:text-gray-300">M'assigner à cette tâche</span>
+												</label>
+											</div>
+										)}
+									</div>
 								</label>
 								<div className="relative">
 									<select
@@ -256,9 +349,12 @@ const TaskModal: React.FC<TaskModalProps> = ({
 										name="assignedToId"
 										value={formData.assignedToId}
 										onChange={handleChange}
-										className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white cursor-pointer"
+										className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 appearance-none bg-white dark:bg-gray-800 cursor-pointer border-gray-300 dark:border-gray-700`}
 									>
 										<option value="">Aucun utilisateur</option>
+										{user && !users.some(u => u.id === user.id) && (
+											<option value={user.id}>Vous ({user.name || user.email})</option>
+										)}
 										{users.map(user => (
 											<option key={user.id} value={user.id}>
 												{user.name || user.email}
@@ -274,18 +370,18 @@ const TaskModal: React.FC<TaskModalProps> = ({
 							</div>
 						</div>
 
-						<div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+						<div className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
 							<button
 								type="button"
 								onClick={onClose}
-								className="px-6 py-3 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 cursor-pointer"
+								className="px-6 py-3 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 cursor-pointer"
 							>
 								Annuler
 							</button>
 							<button
 								type="submit"
 								disabled={isLoading || !formData.title.trim()}
-								className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 transition-all duration-200 font-medium shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:scale-105"
+								className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 dark:bg-blue-700 dark:bg-none text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 transition-all duration-200 font-medium shadow-lg dark:shadow-black/20 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:scale-105"
 							>
 								{isLoading ? (
 									<>
@@ -296,12 +392,12 @@ const TaskModal: React.FC<TaskModalProps> = ({
 										{task?.id ? 'Modification...' : 'Création...'}
 									</>
 								) : (
-									<>
+									<div className='flex items-center gap-2 cursor-pointer'>
 										<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
 										</svg>
 										{task?.id ? 'Modifier' : 'Créer'}
-									</>
+									</div>
 								)}
 							</button>
 						</div>
