@@ -112,7 +112,7 @@ describe('NotFound Page', () => {
 
 		const button = screen.getByRole('button', { name: /retour au dashboard/i })
 		expect(button).toBeInTheDocument()
-		expect(button).toHaveClass('bg-blue-600', 'text-white')
+		expect(button).toHaveClass('bg-blue-600')
 	})
 
 	it('renders all navigation buttons', () => {

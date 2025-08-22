@@ -224,7 +224,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 					setEditingTask(null);
 				}}
 				task={editingTask}
-				onSave={(taskData: Partial<Task>) => {
+				onSave={async (taskData: Partial<Task>) => {
 					if (editingTask?.id) {
 						const updateData: UpdateTaskData = {
 							title: taskData.title,
@@ -234,7 +234,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 							dueDate: taskData.dueDate,
 							assignedToId: taskData.assignedToId,
 						};
-						handleUpdateTask(editingTask.id, updateData);
+						await handleUpdateTask(editingTask.id, updateData);
 					} else {
 						const createData: CreateTaskData = {
 							title: taskData.title ?? "",
@@ -244,7 +244,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 							dueDate: taskData.dueDate,
 							assignedToId: taskData.assignedToId,
 						};
-						handleCreateTask(createData);
+						await handleCreateTask(createData);
 					}
 				}}
 				projectId={projectId}

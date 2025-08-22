@@ -233,7 +233,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 							<button
 								type="submit"
 								disabled={
-									(isEditMode && updateMutation.isPending) ??
+									(isEditMode && updateMutation.isPending) ||
 									(!isEditMode && createMutation.isPending)
 								}
 								className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center hover:cursor-pointer"

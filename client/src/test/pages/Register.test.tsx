@@ -10,16 +10,46 @@ vi.mock('@tanstack/react-router', () => ({
 		`<a href="${to}">${children}</a>`,
 }))
 
-const createMockMutation = () => ({
+interface User {
+	id: number;
+	email: string;
+	name?: string;
+}
+
+interface AuthResponse {
+	user: User;
+	message?: string;
+}
+
+interface LoginData {
+	email: string;
+	password: string;
+}
+
+interface RegisterData {
+	email: string;
+	password: string;
+	name?: string;
+}
+
+const createMockRegisterMutation = (): Partial<UseMutationResult<AuthResponse, Error, RegisterData>> => ({
 	mutate: vi.fn(),
 	isPending: false,
 	isError: false,
 	error: null,
-	data: null,
-} as unknown as UseMutationResult<any, Error, any>)
+	data: undefined,
+})
+
+const createMockLoginMutation = (): Partial<UseMutationResult<AuthResponse, Error, LoginData>> => ({
+	mutate: vi.fn(),
+	isPending: false,
+	isError: false,
+	error: null,
+	data: undefined,
+})
 
 const renderWithAuth = () => {
-	const mockRegisterMutation = createMockMutation()
+	const mockRegisterMutation = createMockRegisterMutation()
 
 	return {
 		mockRegisterMutation,
@@ -29,8 +59,8 @@ const renderWithAuth = () => {
 					user: null,
 					isLoading: false,
 					setUser: vi.fn(),
-					loginMutation: createMockMutation(),
-					registerMutation: mockRegisterMutation as unknown as UseMutationResult<any, Error, any>,
+					loginMutation: createMockLoginMutation() as UseMutationResult<AuthResponse, Error, LoginData>,
+					registerMutation: mockRegisterMutation as UseMutationResult<AuthResponse, Error, RegisterData>,
 					logout: vi.fn(),
 				}}
 			>
@@ -129,8 +159,8 @@ describe('Register Page', () => {
 					user: null,
 					isLoading: false,
 					setUser: vi.fn(),
-					loginMutation: createMockMutation(),
-					registerMutation: mockRegisterMutation as unknown as UseMutationResult<any, Error, any>,
+					loginMutation: createMockLoginMutation() as UseMutationResult<AuthResponse, Error, LoginData>,
+					registerMutation: mockRegisterMutation as UseMutationResult<AuthResponse, Error, RegisterData>,
 					logout: vi.fn(),
 				}}
 			>

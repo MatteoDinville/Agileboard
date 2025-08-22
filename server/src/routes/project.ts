@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { projectController } from "../controllers/projectController";
+import { projectController } from "../controllers/projectController.js";
 import { invitationController } from "../controllers/invitationController";
-import { authenticateToken } from "../middleware/auth.middleware";
+import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = Router();
 

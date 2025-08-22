@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import Welcome from '../../pages/Welcome'
 
 vi.mock('@tanstack/react-router', () => ({
-	Link: ({ children, to, ...props }: any) => (
+	Link: ({ children, to, ...props }: { children: React.ReactNode; to: string; [key: string]: unknown }) => (
 		<a href={to} {...props}>{children}</a>
 	),
 }))

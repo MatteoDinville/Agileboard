@@ -1,18 +1,49 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi } from 'vitest'
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
 	const actual = await importOriginal()
 	return {
-		...actual,
+		...(actual as object),
 	}
 })
 import { useProfile, useAllUsers } from '../../../utils/hooks/user'
 import { userService } from '../../../services/user'
 import { AuthContext } from '../../../contexts/AuthContext'
 import type { IUser, UpdateProfileData, ChangePasswordData } from '../../../services/user'
+import type { UseMutationResult } from '@tanstack/react-query'
+
+interface User {
+	id: number;
+	email: string;
+	name?: string;
+}
+
+interface AuthResponse {
+	user: User;
+	message?: string;
+}
+
+interface LoginData {
+	email: string;
+	password: string;
+}
+
+interface RegisterData {
+	email: string;
+	password: string;
+	name?: string;
+}
+
+interface AuthContextType {
+	user: User | null;
+	isLoading: boolean;
+	setUser: React.Dispatch<React.SetStateAction<User | null>>;
+	loginMutation: UseMutationResult<AuthResponse, Error, LoginData, unknown>;
+	registerMutation: UseMutationResult<AuthResponse, Error, RegisterData, unknown>;
+	logout: () => void;
+}
 
 vi.mock('../../../services/user', () => ({
 	userService: {
@@ -33,7 +64,7 @@ Object.defineProperty(window, 'localStorage', {
 	value: localStorageMock
 })
 
-const createWrapper = (authContextValue: any) => {
+const createWrapper = (authContextValue: unknown) => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
@@ -46,7 +77,7 @@ const createWrapper = (authContextValue: any) => {
 	})
 
 	return ({ children }: { children: React.ReactNode }) => (
-		<AuthContext.Provider value={authContextValue} >
+		<AuthContext.Provider value={authContextValue as AuthContextType} >
 			<QueryClientProvider client={queryClient}>
 				{children}
 			</QueryClientProvider>

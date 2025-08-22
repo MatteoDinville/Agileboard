@@ -20,7 +20,7 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
-	const actual = await importOriginal() as any
+	const actual = await importOriginal() as typeof import('@tanstack/react-query')
 	return {
 		...actual,
 		useQuery: vi.fn(() => ({

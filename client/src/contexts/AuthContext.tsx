@@ -4,18 +4,18 @@ import { authService } from "../services/auth";
 import type { RegisterData, LoginData } from "../services/auth";
 import { useNavigate } from "@tanstack/react-router";
 
-interface User {
+export interface User {
 	id: number;
 	email: string;
 	name?: string;
 }
 
-interface AuthResponse {
+export interface AuthResponse {
 	user: User;
 	message?: string;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
 	user: User | null;
 	isLoading: boolean;
 	isAuthenticated: boolean;

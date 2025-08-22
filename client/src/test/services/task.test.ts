@@ -209,7 +209,7 @@ describe('Task Service', () => {
 				id: 1,
 				title: 'Test Task',
 				description: 'Test Description',
-				status: TaskStatus.TERMINEE,
+				status: TaskStatus.TERMINE,
 				priority: TaskPriority.MOYENNE,
 				createdAt: '2024-01-01T00:00:00Z',
 				updatedAt: '2024-01-01T00:00:00Z',
@@ -221,7 +221,7 @@ describe('Task Service', () => {
 				json: vi.fn().mockResolvedValue(mockTask)
 			} as unknown as Response)
 
-			const result = await taskService.updateTaskStatus(1, TaskStatus.TERMINEE)
+			const result = await taskService.updateTaskStatus(1, TaskStatus.TERMINE)
 
 			expect(fetch).toHaveBeenCalledWith('http://localhost:4000/api/tasks/1/status',
 				{
@@ -230,7 +230,7 @@ describe('Task Service', () => {
 						'Content-Type': 'application/json',
 					},
 					credentials: 'include',
-					body: JSON.stringify({ status: TaskStatus.TERMINEE }),
+					body: JSON.stringify({ status: TaskStatus.TERMINE }),
 				})
 			expect(result).toEqual(mockTask)
 		})
@@ -241,7 +241,7 @@ describe('Task Service', () => {
 				json: vi.fn().mockResolvedValue({ error: 'Failed to update status' })
 			} as unknown as Response)
 
-			await expect(taskService.updateTaskStatus(1, TaskStatus.TERMINEE)).rejects.toThrow('Failed to update status')
+			await expect(taskService.updateTaskStatus(1, TaskStatus.TERMINE)).rejects.toThrow('Failed to update status')
 		})
 	})
 })

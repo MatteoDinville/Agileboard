@@ -1,11 +1,11 @@
 import { Router, RequestHandler } from "express";
-import { getProfile, updateProfile, changePassword, getAllUsers } from "../controllers/userController";
+import { getProfile, updateProfile, changePassword, getAllUsers } from "../controllers/userController.js";
 import { invitationController } from "../controllers/invitationController";
-import { authenticateToken } from "../middleware/auth.middleware";
+import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
-router.use(authenticateToken as any);
+router.use(authenticateToken);
 
 // GET /api/user/profile - Récupérer le profil
 router.get("/profile", getProfile as RequestHandler);

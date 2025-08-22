@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import Dashboard from '../../pages/Dashboard'
 import { AuthContext } from '../../contexts/AuthContext'
+import type { UseMutationResult } from '@tanstack/react-query'
 
 const mockNavigate = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
@@ -21,6 +22,28 @@ vi.mock('../../utils/hooks/project', () => ({
 	}))
 }))
 
+interface User {
+	id: number;
+	email: string;
+	name?: string;
+}
+
+interface AuthResponse {
+	user: User;
+	message?: string;
+}
+
+interface LoginData {
+	email: string;
+	password: string;
+}
+
+interface RegisterData {
+	email: string;
+	password: string;
+	name?: string;
+}
+
 const mockUser = {
 	id: 1,
 	email: 'test@example.com',
@@ -31,8 +54,8 @@ const mockAuthContext = {
 	user: mockUser,
 	isLoading: false,
 	setUser: vi.fn(),
-	loginMutation: {} as any,
-	registerMutation: {} as any,
+	loginMutation: {} as UseMutationResult<AuthResponse, Error, LoginData, unknown>,
+	registerMutation: {} as UseMutationResult<AuthResponse, Error, RegisterData, unknown>,
 	logout: vi.fn(),
 }
 
@@ -54,7 +77,7 @@ describe('Dashboard', () => {
 	it('renders welcome message with "utilisateur" when no name', () => {
 		const contextWithoutName = {
 			...mockAuthContext,
-			user: { ...mockUser, name: null }
+			user: { ...mockUser, name: undefined }
 		}
 
 		render(
