@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
@@ -20,19 +20,20 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+app.set("trust proxy", 1);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/tasks", taskRoutes);
-app.use((err: Error, req: Request, res: Response) => {
-	console.error(err);
-	res.status(500).json({ error: err.message ?? "Erreur serveur" });
+
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+	console.error("[API ERROR]", err);
+	const message = err instanceof Error ? err.message : "Erreur serveur";
+	res.status(500).json({ error: message });
 });
-app.use((err: Error, req: Request, res: Response) => {
-	console.error(err);
-	res.status(500).json({ error: err.message ?? "Erreur serveur" });
-});
+
+app.get("/api/healthz", (_req, res) => res.json({ ok: true }));
 
 app.listen(PORT, () => {
 	console.log(`🚀 Serveur démarré sur le port ${PORT}`);
