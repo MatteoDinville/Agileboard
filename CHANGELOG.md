@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.2.0 (2025-08-22)
+
+### ✨ Features (Pull Requests)
+
+- **🌙 Dark Mode & Theme Switcher** – Implémentation du thème sombre et ajout du basculement entre les modes clair/sombre ([#23](https://github.com/MatteoDinville/Agileboard/pull/23)) `
+c0c143b`
+
+### ➕ Added
+
+- Dark mode across the entire application
+- Theme switcher allowing users to toggle between light and dark modes
+
+### 🔄 Changed
+
+- Updated UI components for better contrast and readability in dark mode
+- Improved overall user experience with theme adaptability
+
+---
+
 ## v1.1.0 (2025-08-22)
 
 ### 🚀 Features (Pull Requests)
