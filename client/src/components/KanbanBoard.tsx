@@ -173,23 +173,23 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 
 	return (
 		<div className="p-6 bg-gradient-to-br from-slate-50 to-white dark:bg-gray-900 dark:bg-none">
-			<div className="flex justify-between items-center mb-8">
+			<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
 				<div>
-					<h2 className="text-3xl font-bold">
+					<h2 className="text-2xl sm:text-3xl font-bold">
 						<span className="bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent dark:hidden">
 							Tableau Kanban
 						</span>
 						<span className="hidden dark:inline text-gray-100">Tableau Kanban</span>
 					</h2>
-					<p className="text-slate-600 dark:text-gray-300 mt-1">Organisez et suivez vos tâches en temps réel</p>
+					<p className="text-slate-600 dark:text-gray-300 mt-1 text-sm sm:text-base">Organisez et suivez vos tâches en temps réel</p>
 				</div>
-				<div className="flex items-center gap-4">
+				<div className="flex items-center justify-center sm:justify-end">
 					<button
 						onClick={() => openCreateModal(TaskStatus.A_FAIRE)}
-						className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-3 shadow-lg dark:shadow-black/20 hover:shadow-xl transition-all duration-200 transform hover:scale-105 cursor-pointer"
+						className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl flex items-center gap-2 sm:gap-3 shadow-lg dark:shadow-black/20 hover:shadow-xl transition-all duration-200 transform hover:scale-105 cursor-pointer w-full sm:w-auto"
 					>
-						<Plus className="w-4 h-4" />
-						<span className="font-medium">Nouvelle tâche</span>
+						<Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+						<span className="font-medium text-sm sm:text-base">Nouvelle tâche</span>
 					</button>
 				</div>
 			</div>

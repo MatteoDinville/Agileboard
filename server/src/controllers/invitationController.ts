@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
-import { AuthRequest } from "../middleware/auth.middleware";
+import { AuthRequest } from "../middleware/auth.middleware.js";
 import crypto from "crypto";
 
 let prisma: PrismaClient = new PrismaClient();
