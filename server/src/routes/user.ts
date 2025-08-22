@@ -1,6 +1,6 @@
 import { Router, RequestHandler } from "express";
 import { getProfile, updateProfile, changePassword, getAllUsers } from "../controllers/userController.js";
-import { invitationController } from "../controllers/invitationController";
+import { invitationController } from "../controllers/invitationController.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = Router();
