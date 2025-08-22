@@ -2,7 +2,7 @@
 	"name": "agileboard-server",
 	"version": "1.0.0",
 	"description": "Server for Agileboard application",
-	"main": "src/server.ts",
+	"main": "dist/server.js",
 	"type": "module",
 	"scripts": {
 		"test": "vitest",
@@ -10,7 +10,8 @@
 		"test:coverage": "vitest run --coverage",
 		"test:watch": "vitest --watch",
 		"dev": "nodemon --exec tsx src/server.ts",
-		"start": "ts-node-esm src/server.ts",
+		"start": "node dist/server.js",
+		"start:prod": "node dist/server.js",
 		"build": "tsc",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
