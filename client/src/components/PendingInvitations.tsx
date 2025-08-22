@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Mail, Clock, User, Loader2, AlertCircle, Trash2, RefreshCw, Check } from "lucide-react";
 import { invitationService, ProjectInvitation } from "../services/invitation";
 import toast from "react-hot-toast";
-import InvitationsSkeleton from "./skeleton/InvitationsSkeleton";
+import { SectionLoader } from "./Loading";
 
 interface PendingInvitationsProps {
 	projectId: number;
@@ -55,7 +55,7 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({ projectId, isOw
 	}
 
 	if (isLoading) {
-		return <InvitationsSkeleton />;
+		return <SectionLoader label="Chargement des invitations..." minHeight={140} />;
 	}
 
 	if (error) {

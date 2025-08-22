@@ -6,7 +6,7 @@ import {
 } from "../utils/hooks/project";
 import { useNavigate } from "@tanstack/react-router";
 import type { ProjectStatus, ProjectPriority } from "../services/project";
-import ProjectFormSkeleton from "../components/skeleton/ProjectFormSkeleton";
+import { PageLoader } from "../components/Loading";
 import toast from "react-hot-toast";
 import { Check } from "lucide-react";
 
@@ -82,7 +82,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 	};
 
 	if (isEditMode && isLoadingProject) {
-		return <ProjectFormSkeleton />;
+		return <PageLoader label="Chargement du projet..." />;
 	}
 
 	if (isEditMode && isErrorProject) {

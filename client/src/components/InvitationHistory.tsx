@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Check, X, History, Mail, Calendar, User } from "lucide-react";
 import { invitationService } from "../services/invitation";
-import InvitationHistorySkeleton from "./skeleton/InvitationHistorySkeleton";
+import { SectionLoader } from "./Loading";
 
 interface InvitationHistoryProps {
 	projectId: number;
@@ -28,7 +28,7 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, isOwne
 	}
 
 	if (isLoading) {
-		return <InvitationHistorySkeleton />;
+		return <SectionLoader label="Chargement de l'historique..." minHeight={200} />;
 	}
 
 	if (isError || !history) {

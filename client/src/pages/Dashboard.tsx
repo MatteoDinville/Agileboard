@@ -9,7 +9,7 @@ import {
 import { useTaskStatistics, useProjectStatistics, useAllUserTasks } from "../utils/hooks/task";
 import { useProjects } from "../utils/hooks/project";
 import UserInvitationsNotifications from "../components/UserInvitationsNotifications";
-import DashboardSkeleton from "../components/skeleton/DashboardSkeleton";
+import { PageLoader } from "../components/Loading";
 import toast from "react-hot-toast";
 
 const Dashboard: React.FC = () => {
@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
 	};
 
 	if (isLoading) {
-		return <DashboardSkeleton />;
+		return <PageLoader label="Chargement du tableau de bord..." />;
 	}
 
 	return (

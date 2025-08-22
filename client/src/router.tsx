@@ -19,13 +19,13 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import InvitationAcceptPage from "./pages/InvitationAcceptPage";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
-import AuthLoadingSkeleton from "./components/skeleton/AuthLoadingSkeleton";
+import { PageLoader } from "./components/Loading";
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 	const { user, isLoading } = React.useContext(AuthContext);
 
 	if (isLoading) {
-		return <AuthLoadingSkeleton />;
+		return <PageLoader label="Initialisation de la session..." />;
 	}
 
 	if (!user) {

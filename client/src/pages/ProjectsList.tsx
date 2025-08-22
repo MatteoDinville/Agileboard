@@ -19,7 +19,6 @@ import {
 	ArrowLeft,
 	Check
 } from "lucide-react";
-import ProjectsListSkeleton from "../components/skeleton/ProjectsListSkeleton";
 import { Project } from "../services/project";
 import toast from "react-hot-toast";
 
@@ -292,7 +291,7 @@ const ProjectsList: React.FC = () => {
 	};
 
 	if (isLoading) {
-		return <ProjectsListSkeleton />;
+		return <PageLoader label="Chargement des projets..." />;
 	}
 
 	if (isError) {

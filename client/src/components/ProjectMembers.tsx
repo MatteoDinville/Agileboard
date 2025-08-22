@@ -15,8 +15,7 @@ import {
 	AlertCircle,
 	Loader2
 } from "lucide-react";
-import ProjectMembersSkeleton from "./skeleton/ProjectMembersSkeleton";
-import UserSearchSkeleton from "./skeleton/UserSearchSkeleton";
+import { SectionLoader } from "./Loading";
 
 interface ProjectMembersProps {
 	projectId: number;
@@ -61,7 +60,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 	};
 
 	if (membersLoading) {
-		return <ProjectMembersSkeleton />;
+		return <SectionLoader label="Chargement des membres..." minHeight={180} />;
 	}
 
 	return (
@@ -157,7 +156,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 
 						<div className="p-6">
 							{usersLoading ? (
-								<UserSearchSkeleton />
+								<SectionLoader label="Chargement des utilisateurs..." minHeight={120} />
 							) : availableUsers.length === 0 ? (
 								<div className="text-center py-8">
 									<AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />

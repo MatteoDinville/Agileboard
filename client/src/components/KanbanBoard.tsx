@@ -14,7 +14,7 @@ import { taskService } from '../services/task';
 import type { CreateTaskData, Task, UpdateTaskData } from '../services/task';
 import { TaskStatus, TaskStatusLabels, type TaskStatusType } from '../types/enums';
 import KanbanColumn from './KanbanColumn.tsx';
-import KanbanBoardSkeleton from './skeleton/KanbanBoardSkeleton.tsx';
+import { SectionLoader } from './Loading';
 import TaskCard from './TaskCard.tsx';
 import TaskModal from './TaskModal.tsx';
 import {
@@ -165,7 +165,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 	};
 
 	if (loading) {
-		return <KanbanBoardSkeleton />;
+		return <SectionLoader label="Chargement du Kanban..." minHeight={320} />;
 	}
 
 	return (

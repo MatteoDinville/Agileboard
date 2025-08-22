@@ -13,7 +13,7 @@ import {
 	Loader2,
 	AlertCircle
 } from "lucide-react";
-import BacklogSkeleton from "./skeleton/BacklogSkeleton";
+import { SectionLoader } from "./Loading";
 
 interface BacklogProps {
 	projectId: number;
@@ -222,7 +222,7 @@ const Backlog: React.FC<BacklogProps> = ({
 	};
 
 	if (isLoading) {
-		return <BacklogSkeleton />;
+		return <SectionLoader label="Chargement du backlog..." minHeight={320} />;
 	}
 
 	if (error) {

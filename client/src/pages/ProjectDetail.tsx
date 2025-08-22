@@ -6,7 +6,7 @@ import MembersListOnly from "../components/MembersListOnly";
 import KanbanBoard from "../components/KanbanBoard";
 import Backlog from "../components/Backlog";
 import TaskModal from "../components/TaskModal";
-import ProjectDetailSkeleton from "../components/skeleton/ProjectDetailSkeleton";
+import { PageLoader } from "../components/Loading";
 import { taskService, type Task, type CreateTaskData, type UpdateTaskData } from "../services/task";
 import { useQueryClient } from "@tanstack/react-query";
 import { TaskStatus } from "../types/enums";
@@ -35,9 +35,7 @@ const ProjectDetail: React.FC = () => {
 	const { data: project, isLoading, isError, error } = useProject(projectIdNum);
 	const { data: members } = useProjectMembers(projectIdNum);
 
-	if (isLoading) {
-		return <ProjectDetailSkeleton />;
-	}
+	if (isLoading) return <PageLoader label="Chargement du projet..." />;
 
 	if (isError || !project) {
 		return (

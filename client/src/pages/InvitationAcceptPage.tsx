@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Mail, Users, Check, X, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import { invitationService, InvitationInfo } from "../services/invitation";
 import { useAuth } from "../contexts/AuthContext";
-import InvitationAcceptSkeleton from "../components/skeleton/InvitationAcceptSkeleton";
+import { PageLoader } from "../components/Loading";
 
 const InvitationAcceptPage: React.FC = () => {
 	const { token } = useParams({ from: "/invite/$token" });
@@ -112,7 +112,7 @@ const InvitationAcceptPage: React.FC = () => {
 	};
 
 	if (loading) {
-		return <InvitationAcceptSkeleton />;
+		return <PageLoader label="Vérification de l'invitation..." />;
 	}
 
 	if (error && !invitation) {

@@ -4,7 +4,7 @@ import { Mail, Loader2, Users, UserMinus } from "lucide-react";
 import InviteModal from "./InviteModal";
 import PendingInvitations from "./PendingInvitations";
 import InvitationHistory from "./InvitationHistory";
-import MembersListSkeleton from "./skeleton/MembersListSkeleton";
+import { SectionLoader } from "./Loading";
 import toast from "react-hot-toast";
 
 interface MembersListOnlyProps {
@@ -37,7 +37,7 @@ const MembersListOnly: React.FC<MembersListOnlyProps> = ({ projectId, isOwner = 
 	};
 
 	if (membersLoading) {
-		return <MembersListSkeleton />;
+		return <SectionLoader label="Chargement des membres..." minHeight={180} />;
 	}
 
 	if (!members || members.length === 0) {
