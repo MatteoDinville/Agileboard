@@ -1,8 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TaskModal from '../../components/TaskModal';
 import { TaskStatus, TaskPriority } from '../../types/enums';
+
+vi.mock('lucide-react', () => ({
+	X: () => <div>X</div>,
+	Save: () => <div>Save</div>,
+	Calendar: () => <div>Calendar</div>,
+	User: () => <div>User</div>,
+	Flag: () => <div>Flag</div>,
+	FileText: () => <div>FileText</div>,
+	ChevronDown: () => <div>ChevronDown</div>,
+}));
 
 vi.mock('../../services/project', () => ({
 	projectService: {
@@ -309,10 +319,14 @@ describe('TaskModal - Task Creation', () => {
 		});
 
 		const titleInput = screen.getByLabelText(/titre de la tâche/i);
-		fireEvent.change(titleInput, { target: { value: 'New Task' } });
+		act(() => {
+			fireEvent.change(titleInput, { target: { value: 'New Task' } });
+		});
 
 		const saveButton = screen.getByRole('button', { name: /créer/i });
-		fireEvent.click(saveButton);
+		act(() => {
+			fireEvent.click(saveButton);
+		});
 
 		await waitFor(() => {
 			expect(saveButton).toBeDisabled();

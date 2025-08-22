@@ -9,4 +9,6 @@ RUN npm install
 
 COPY . .
 
-CMD ["sh", "-c", "npm run db:migrate && npm run dev"]
+RUN npx prisma generate
+
+CMD ["sh", "-c", "npx prisma db push && npm run dev"]

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { UseQueryResult, UseMutationResult } from '@tanstack/react-query'
 import ProjectMembers from '../../components/ProjectMembers'
@@ -9,6 +9,7 @@ import type { ProjectMember } from '../../services/project'
 import type { IUser } from '../../services/user'
 
 type MockIconProps = { className?: string }
+
 vi.mock('../../utils/hooks/project', () => ({
 	useProjectMembers: vi.fn(),
 	useRemoveProjectMember: vi.fn(),
@@ -76,7 +77,7 @@ describe('ProjectMembers', () => {
 	})
 
 	describe('Loading state', () => {
-		it('should show loading state when members are loading', () => {
+		it('should show loading state when members are loading', async () => {
 			vi.mocked(useProjectMembers).mockReturnValue({
 				data: undefined,
 				isLoading: true,
@@ -115,8 +116,9 @@ describe('ProjectMembers', () => {
 
 			render(<ProjectMembers projectId={1} />, { wrapper: createWrapper() })
 
-			expect(screen.getByText('Chargement des membres...')).toBeInTheDocument()
-			expect(screen.getByTestId('loader-icon')).toBeInTheDocument()
+			await waitFor(() => {
+				expect(screen.getByText('Chargement des membres...')).toBeInTheDocument()
+			})
 		})
 	})
 
@@ -497,7 +499,7 @@ describe('ProjectMembers', () => {
 			expect(screen.queryByText('Ajouter un membre')).not.toBeInTheDocument()
 		})
 
-		it('should show loading state when users are loading', () => {
+		it('should show loading state when users are loading', async () => {
 			vi.mocked(useAllUsers).mockReturnValue({
 				data: undefined,
 				isLoading: true,
@@ -513,7 +515,9 @@ describe('ProjectMembers', () => {
 			const addButton = screen.getByText('Ajouter')
 			fireEvent.click(addButton)
 
-			expect(screen.getByText('Chargement des utilisateurs...')).toBeInTheDocument()
+			await waitFor(() => {
+				expect(screen.getByText('Chargement des utilisateurs...')).toBeInTheDocument()
+			})
 		})
 
 		it('should show no available users message when all users are members', () => {

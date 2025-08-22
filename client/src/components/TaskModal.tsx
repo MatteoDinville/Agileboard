@@ -138,7 +138,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 						</div>
 						<button
 							onClick={onClose}
-							className="text-white/80 hover:text-white hover:bg-white/10 rounded-lg p-2 transition-all duration-200"
+							className="text-white/80 hover:text-white hover:bg-white/10 rounded-lg p-2 transition-all duration-200 cursor-pointer"
 						>
 							<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -191,7 +191,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 										name="status"
 										value={formData.status}
 										onChange={handleChange}
-										className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white"
+										className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white cursor-pointer"
 									>
 										<option value={TaskStatus.A_FAIRE}>{TaskStatusLabels.A_FAIRE}</option>
 										<option value={TaskStatus.EN_COURS}>{TaskStatusLabels.EN_COURS}</option>
@@ -215,7 +215,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 										name="priority"
 										value={formData.priority}
 										onChange={handleChange}
-										className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white"
+										className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white cursor-pointer"
 									>
 										<option value={TaskPriority.BASSE}>{TaskPriorityLabels.BASSE}</option>
 										<option value={TaskPriority.MOYENNE}>{TaskPriorityLabels.MOYENNE}</option>
@@ -242,7 +242,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 									name="dueDate"
 									value={formData.dueDate}
 									onChange={handleChange}
-									className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
+									className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 cursor-pointer"
 								/>
 							</div>
 
@@ -256,7 +256,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 										name="assignedToId"
 										value={formData.assignedToId}
 										onChange={handleChange}
-										className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white"
+										className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white cursor-pointer"
 									>
 										<option value="">Aucun utilisateur</option>
 										{users.map(user => (
@@ -278,7 +278,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 							<button
 								type="button"
 								onClick={onClose}
-								className="px-6 py-3 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+								className="px-6 py-3 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 cursor-pointer"
 							>
 								Annuler
 							</button>

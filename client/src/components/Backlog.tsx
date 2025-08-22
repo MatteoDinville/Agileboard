@@ -13,6 +13,7 @@ import {
 	Loader2,
 	AlertCircle
 } from "lucide-react";
+import { SectionLoader } from "./Loading";
 
 interface BacklogProps {
 	projectId: number;
@@ -221,12 +222,7 @@ const Backlog: React.FC<BacklogProps> = ({
 	};
 
 	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center p-12">
-				<Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-				<span className="ml-3 text-gray-600">Chargement des tâches...</span>
-			</div>
-		);
+		return <SectionLoader label="Chargement du backlog..." minHeight={320} />;
 	}
 
 	if (error) {
@@ -278,7 +274,7 @@ const Backlog: React.FC<BacklogProps> = ({
 					{onCreateTask && (
 						<button
 							onClick={onCreateTask}
-							className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+							className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
 						>
 							<Plus className="w-4 h-4" />
 							<span>Nouvelle tâche</span>

@@ -1,5 +1,3 @@
-// frontend/src/pages/ProjectForm.tsx
-
 import React, { useEffect, useState } from "react";
 import {
 	useCreateProject,
@@ -8,6 +6,9 @@ import {
 } from "../utils/hooks/project";
 import { useNavigate } from "@tanstack/react-router";
 import type { ProjectStatus, ProjectPriority } from "../services/project";
+import { PageLoader } from "../components/Loading";
+import toast from "react-hot-toast";
+import { Check } from "lucide-react";
 
 interface ProjectFormProps {
 	projectId?: number;
@@ -50,7 +51,14 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 				{ id: projectId, data: { title, description, status, priority } },
 				{
 					onSuccess: () => {
-						navigate({ to: "/projects" });
+						toast.success("Projet modifié avec succès !", {
+							icon: <Check className="text-green-500 w-4 h-4" />,
+							duration: 3000,
+							style: {
+								background: '#DCFCE7',
+							},
+						});
+						navigate({ to: `/projects/${projectId}` });
 					},
 				}
 			);
@@ -59,6 +67,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 				{ title, description, status, priority },
 				{
 					onSuccess: () => {
+						toast.success("Projet créé avec succès !", {
+							icon: <Check className="text-green-500 w-4 h-4" />,
+							duration: 3000,
+							style: {
+								background: '#DCFCE7',
+							},
+						});
 						navigate({ to: "/projects" });
 					},
 				}
@@ -67,20 +82,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
 	};
 
 	if (isEditMode && isLoadingProject) {
-		return (
-			<div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-6">
-				<div className="max-w-2xl mx-auto">
-					<div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 p-8">
-						<div className="flex items-center justify-center py-12">
-							<div className="flex items-center space-x-3">
-								<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-								<span className="text-lg text-slate-600 font-medium">Chargement du projet…</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		);
+		return <PageLoader label="Chargement du projet..." />;
 	}
 
 	if (isEditMode && isErrorProject) {

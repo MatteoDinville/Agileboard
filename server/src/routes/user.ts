@@ -1,5 +1,6 @@
 import { Router, RequestHandler } from "express";
 import { getProfile, updateProfile, changePassword, getAllUsers } from "../controllers/userController.js";
+import { invitationController } from "../controllers/invitationController.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = Router();
@@ -17,5 +18,8 @@ router.put("/profile", updateProfile as RequestHandler);
 
 // PUT /api/user/password - Changer le mot de passe
 router.put("/password", changePassword as RequestHandler);
+
+// GET /api/user/invitations - Récupérer les invitations en attente de l'utilisateur
+router.get("/invitations", invitationController.getUserInvitations as RequestHandler);
 
 export default router;

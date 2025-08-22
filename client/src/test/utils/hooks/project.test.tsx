@@ -60,6 +60,8 @@ describe('Project Hooks', () => {
 					priority: 'Haute',
 					createdAt: '2024-01-01T00:00:00Z',
 					updatedAt: '2024-01-01T00:00:00Z',
+					ownerId: 1,
+					members: [],
 				}
 			]
 
@@ -103,6 +105,8 @@ describe('Project Hooks', () => {
 				priority: 'Haute',
 				createdAt: '2024-01-01T00:00:00Z',
 				updatedAt: '2024-01-01T00:00:00Z',
+				ownerId: 1,
+				members: [],
 			}
 
 			vi.mocked(projectService.fetchProjectById).mockResolvedValue(mockProject)
@@ -139,6 +143,8 @@ describe('Project Hooks', () => {
 				priority: 'Haute',
 				createdAt: '2024-01-01T00:00:00Z',
 				updatedAt: '2024-01-01T00:00:00Z',
+				ownerId: 1,
+				members: [],
 			}
 
 			const projectInput: ProjectInput = {
@@ -175,6 +181,8 @@ describe('Project Hooks', () => {
 				priority: 'Haute',
 				createdAt: '2024-01-01T00:00:00Z',
 				updatedAt: '2024-01-01T00:00:00Z',
+				ownerId: 1,
+				members: [],
 			}
 
 			const projectInput: ProjectInput = {

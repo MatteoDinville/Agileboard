@@ -51,7 +51,9 @@ describe('Backlog', () => {
 
 			render(<Backlog projectId={1} />)
 
-			expect(screen.getByText('Chargement des tâches...')).toBeInTheDocument()
+			await waitFor(() => {
+				expect(screen.getByText('Chargement du backlog...')).toBeInTheDocument()
+			})
 		})
 
 		it('shows error state when loading fails', async () => {
@@ -171,7 +173,7 @@ describe('Backlog', () => {
 
 			expect(screen.getByText('2 tâches')).toBeInTheDocument()
 			expect(screen.getAllByText('Non assigné').length).toBeGreaterThan(0)
-			expect(screen.getAllByText('Échéance').length).toBeGreaterThan(0)
+			expect(screen.getAllByText('Aucune échéance').length).toBeGreaterThan(0)
 		})
 
 		it('filters by search, status, priority and assignee', async () => {
@@ -197,7 +199,6 @@ describe('Backlog', () => {
 			fireEvent.change(screen.getByDisplayValue('À faire'), { target: { value: 'all' } })
 			fireEvent.change(screen.getByDisplayValue('Haute'), { target: { value: 'all' } })
 
-
 			fireEvent.change(screen.getByDisplayValue('Tous les membres'), { target: { value: 'unassigned' } })
 			expect(screen.getByText('Task B')).toBeInTheDocument()
 			expect(screen.queryByText('Task A')).not.toBeInTheDocument()
@@ -222,11 +223,11 @@ describe('Backlog', () => {
 			})
 
 			const header = screen.getByText('Tâche')
-			fireEvent.click(header) // asc
+			fireEvent.click(header)
 			let rows = Array.from(container.querySelectorAll('tbody tr'))
 			expect(rows[0].textContent).toContain('Task A')
 
-			fireEvent.click(header) // desc
+			fireEvent.click(header)
 			rows = Array.from(container.querySelectorAll('tbody tr'))
 			expect(rows[0].textContent).toContain('Task B')
 		})
@@ -274,11 +275,9 @@ describe('Backlog', () => {
 				expect(screen.getByText('Task A')).toBeInTheDocument()
 			})
 
-
 			const editButtons = screen.getAllByTitle('Modifier la tâche')
 			fireEvent.click(editButtons[0])
 			expect(onEditTask).toHaveBeenCalledWith(expect.objectContaining({ id: 2 }))
-
 
 			const deleteButtons = screen.getAllByTitle('Supprimer la tâche')
 			fireEvent.click(deleteButtons[0])
@@ -288,6 +287,7 @@ describe('Backlog', () => {
 		it('bulk delete shows alert on error', async () => {
 			vi.mocked(taskService.deleteTask).mockRejectedValueOnce(new Error('x'))
 			const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => { })
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
 			render(<Backlog projectId={1} />)
 
@@ -303,6 +303,7 @@ describe('Backlog', () => {
 				expect(alertSpy).toHaveBeenCalled()
 			})
 			alertSpy.mockRestore()
+			consoleSpy.mockRestore()
 		})
 
 		it('toggleSelectAll clears selection when all selected', async () => {
@@ -326,15 +327,19 @@ describe('Backlog', () => {
 				{
 					id: 1,
 					title: 'Test Task',
-					status: 'À faire' as TaskStatus,
-					priority: 'Haute' as TaskPriority,
-					createdAt: '2024-01-01',
+					description: 'Test Description',
+					status: TaskStatus.A_FAIRE,
+					priority: TaskPriority.HAUTE,
+					dueDate: '2024-01-01',
+					createdAt: '2024-01-01T00:00:00Z',
+					updatedAt: '2024-01-01T00:00:00Z',
+					projectId: 1,
+					assignedToId: 1,
 					assignedTo: {
 						id: 1,
 						name: 'John Doe',
 						email: 'john@example.com'
-					},
-					assignedToId: 1
+					}
 				}
 			]
 
@@ -365,10 +370,14 @@ describe('Backlog', () => {
 				{
 					id: 1,
 					title: 'Task with null values',
-					status: 'À faire' as TaskStatus,
-					priority: 'Haute' as TaskPriority,
-					createdAt: '2024-01-01',
+					description: 'Test Description',
+					status: TaskStatus.A_FAIRE,
+					priority: TaskPriority.HAUTE,
 					dueDate: null,
+					createdAt: '2024-01-01T00:00:00Z',
+					updatedAt: '2024-01-01T00:00:00Z',
+					projectId: 1,
+					assignedToId: null,
 					assignedTo: null
 				}
 			]
@@ -399,9 +408,15 @@ describe('Backlog', () => {
 				{
 					id: 1,
 					title: 'Test Task',
-					status: 'À faire' as TaskStatus,
-					priority: 'Haute' as TaskPriority,
-					createdAt: '2024-01-01',
+					description: 'Test Description',
+					status: TaskStatus.A_FAIRE,
+					priority: TaskPriority.HAUTE,
+					dueDate: null,
+					createdAt: '2024-01-01T00:00:00Z',
+					updatedAt: '2024-01-01T00:00:00Z',
+					projectId: 1,
+					assignedToId: null,
+					assignedTo: null
 				}
 			]
 
@@ -416,14 +431,13 @@ describe('Backlog', () => {
 			} as unknown as ReturnType<typeof useQuery>)
 
 			vi.mocked(taskService.deleteTask).mockRejectedValue(new Error('Delete failed'))
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
 			render(<Backlog projectId={1} />)
-
 
 			const checkboxes = screen.getAllByRole('checkbox')
 			const taskCheckbox = checkboxes[1]
 			fireEvent.click(taskCheckbox)
-
 
 			const deleteButton = screen.getByText('Supprimer (1)')
 			fireEvent.click(deleteButton)
@@ -431,6 +445,7 @@ describe('Backlog', () => {
 			await waitFor(() => {
 				expect(mockAlert).toHaveBeenCalledWith('Erreur lors de la suppression des tâches')
 			})
+			consoleSpy.mockRestore()
 		})
 
 		it('should handle empty assignee filter correctly', async () => {

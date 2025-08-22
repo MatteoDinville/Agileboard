@@ -2,8 +2,7 @@
 	"name": "agileboard-server",
 	"version": "1.0.0",
 	"description": "Server for Agileboard application",
-	"main": "dist/server.js",
-	"type": "module",
+	"main": "src/server.ts",
 	"scripts": {
 		"test": "vitest",
 		"test:run": "vitest run",
@@ -14,8 +13,7 @@
 		"start:prod": "node dist/server.js",
 		"build": "tsc",
 		"lint": "eslint .",
-		"lint:fix": "eslint . --fix",
-		"format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.ts\"",
+		"format": "prettier --write src",
 		"typecheck": "tsc --noEmit",
 		"db:push": "prisma db push",
 		"db:generate": "prisma generate",
@@ -33,18 +31,20 @@
 	"license": "ISC",
 	"dependencies": {
 		"@prisma/client": "^5.10.0",
+		"@types/nodemailer": "^6.4.17",
 		"bcrypt": "^6.0.0",
 		"bcryptjs": "^2.4.3",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
+		"crypto": "^1.0.1",
 		"dotenv": "^16.4.5",
 		"eslint": "^9.33.0",
 		"express": "^4.18.2",
 		"express-async-errors": "^3.1.1",
-		"jsonwebtoken": "^9.0.2"
+		"jsonwebtoken": "^9.0.2",
+		"nodemailer": "^7.0.5"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.33.0",
 		"@types/bcrypt": "^5.0.2",
 		"@types/bcryptjs": "^2.4.6",
 		"@types/cookie-parser": "^1.4.7",
@@ -56,14 +56,11 @@
 		"@typescript-eslint/eslint-plugin": "^8.40.0",
 		"@typescript-eslint/parser": "^8.40.0",
 		"@vitest/coverage-v8": "^2.1.8",
-		"nodemon": "^3.1.10",
-		"prettier": "^3.6.2",
+		"nodemon": "^3.0.3",
 		"prisma": "^5.10.0",
 		"supertest": "^7.0.0",
 		"ts-node": "^10.9.2",
-		"tsx": "^4.20.4",
-		"typescript": "^5.9.2",
-		"typescript-eslint": "^8.40.0",
+		"typescript": "^5.8.3",
 		"vitest": "^2.1.8"
 	}
 }

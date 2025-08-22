@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { projectController } from "../controllers/projectController.js";
+import { invitationController } from "../controllers/invitationController.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = Router();
@@ -30,5 +31,17 @@ router.post("/:id/members", projectController.addProjectMember);
 
 // DELETE /api/projects/:id/members/:userId → supprimer un membre d'un projet
 router.delete("/:id/members/:userId", projectController.removeProjectMember);
+
+// POST /api/projects/:id/invite     → envoyer une invitation par email
+router.post("/:id/invite", invitationController.sendInvitation);
+
+// GET /api/projects/:id/invitations → récupérer les invitations en attente
+router.get("/:id/invitations", invitationController.getProjectInvitations);
+
+// GET /api/projects/:id/invitations/history → récupérer l'historique des invitations
+router.get("/:id/invitations/history", invitationController.getProjectInvitationsHistory);
+
+// DELETE /api/projects/:id/invitations/:invitationId → supprimer une invitation
+router.delete("/:id/invitations/:invitationId", invitationController.deleteInvitation);
 
 export default router;

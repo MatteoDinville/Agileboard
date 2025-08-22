@@ -5,8 +5,7 @@ import type { Project, ProjectInput, ProjectMember } from "../../services/projec
 export function useProjects() {
 	return useQuery<Project[], Error>({
 		queryKey: ["projects"],
-		queryFn: projectService.fetchProjects,
-		staleTime: 1000 * 60 * 5,
+		queryFn: () => projectService.fetchProjects(),
 	});
 }
 

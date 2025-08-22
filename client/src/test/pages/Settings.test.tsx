@@ -32,6 +32,10 @@ vi.mock('lucide-react', () => ({
 	Save: () => <div data-testid="save">Save</div>,
 }))
 
+vi.mock('../../components/ThemeToggle', () => ({
+	default: () => <div data-testid="theme-toggle">Theme Toggle</div>,
+}))
+
 const mockUser = {
 	id: 1,
 	name: 'John Doe',
@@ -90,6 +94,7 @@ const createWrapper = () => {
 	const mockAuthContext: AuthContextType = {
 		user: mockUser,
 		isLoading: false,
+		isAuthenticated: true,
 		setUser: vi.fn(),
 		loginMutation: {} as AuthContextType['loginMutation'],
 		registerMutation: {} as AuthContextType['registerMutation'],
@@ -258,16 +263,23 @@ describe('SettingsPage', () => {
 	it('should disable password change button when form is invalid', () => {
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
-			isLoading: false,
-			error: null,
-			refetch: vi.fn(),
-			updateProfile: createMockUpdateProfileMutation(),
-			changePassword: createMockChangePasswordMutation(),
+			updateProfile: {
+				mutate: vi.fn(),
+				isPending: false,
+				isSuccess: false,
+				error: null
+			},
+			changePassword: {
+				mutate: vi.fn(),
+				isPending: false,
+				isSuccess: false,
+				error: null
+			}
 		} as unknown as ReturnType<typeof useProfile>)
 
 		render(<SettingsPage />, { wrapper: createWrapper() })
 
-		const changePasswordButton = screen.getByText('Changer le mot de passe')
+		const changePasswordButton = screen.getByRole('button', { name: /changer le mot de passe/i })
 		expect(changePasswordButton).toBeDisabled()
 	})
 
@@ -385,6 +397,7 @@ describe('SettingsPage', () => {
 
 	it('should handle password change error', async () => {
 		const mockChangePassword = vi.fn().mockRejectedValue(new Error('Password change failed'))
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
 			isLoading: false,
@@ -412,5 +425,6 @@ describe('SettingsPage', () => {
 		await waitFor(() => {
 			expect(mockChangePassword).toHaveBeenCalled()
 		})
+		consoleSpy.mockRestore()
 	})
 })

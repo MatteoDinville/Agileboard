@@ -34,6 +34,7 @@ export default defineConfig({
 				'src/App.tsx',
 				'src/router.tsx',
 				'src/contexts/**/*.tsx',
+				'src/contexts/*.ts',
 				'src/lib/**/*.ts',
 			],
 			thresholds: {
