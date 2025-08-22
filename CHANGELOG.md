@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## 🚀 v2.0.0 - MVP Fonctionnel
+
+Cette version marque la sortie officielle du **MVP (Minimum Viable Product)** d’AgileBoard.
+Elle propose une application pleinement fonctionnelle, intégrant les principales fonctionnalités nécessaires à la gestion de projets en mode agile.
+
+### ✨ Fonctionnalités principales
+
+- 🔐 **Authentification complète** : inscription, connexion et gestion de compte utilisateur.
+- 📋 **Gestion de projets** : création, édition et suppression de projets.
+- 📊 **Vue Kanban** : gestion des tâches par colonnes avec support drag & drop.
+- 📂 **Backlog** : organisation des tâches à venir.
+- 👥 **Gestion des membres** : ajout et suppression de membres dans un projet.
+- ⚙️ **Paramètres du compte** : modification des informations personnelles.
+- 🌓 **Mode sombre / clair** : bascule entre les thèmes pour améliorer l’accessibilité.
+- 📱 **Responsive Design** : expérience adaptée aux ordinateurs, tablettes et mobiles.
+
+### 🔄 Améliorations et corrections
+
+- Refactorisation du code backend pour une meilleure maintenabilité.
+- Correction d’une erreur critique de connexion en production.
+- Optimisation des appels API côté frontend et backend.
+- Amélioration des performances générales et de la stabilité.
+
+### 🔮 Prochaines étapes
+
+- Mise en place de nouvelles fonctionnalités collaboratives (notifications, suivi en temps réel).
+- Optimisation continue des performances et de l’accessibilité.
+- Préparation des futures versions avec des intégrations avancées (rapports, statistiques, etc.).
+
+---
+
 ## v1.4.0 (2025-08-22)
 
 ### 🛡️ Security & Accessibility (Pull Requests)
