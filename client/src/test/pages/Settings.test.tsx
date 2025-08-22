@@ -397,6 +397,7 @@ describe('SettingsPage', () => {
 
 	it('should handle password change error', async () => {
 		const mockChangePassword = vi.fn().mockRejectedValue(new Error('Password change failed'))
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 		vi.mocked(useProfile).mockReturnValue({
 			user: mockProfileUser,
 			isLoading: false,
@@ -424,5 +425,6 @@ describe('SettingsPage', () => {
 		await waitFor(() => {
 			expect(mockChangePassword).toHaveBeenCalled()
 		})
+		consoleSpy.mockRestore()
 	})
 })

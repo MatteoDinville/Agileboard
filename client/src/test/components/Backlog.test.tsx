@@ -287,6 +287,7 @@ describe('Backlog', () => {
 		it('bulk delete shows alert on error', async () => {
 			vi.mocked(taskService.deleteTask).mockRejectedValueOnce(new Error('x'))
 			const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => { })
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
 			render(<Backlog projectId={1} />)
 
@@ -302,6 +303,7 @@ describe('Backlog', () => {
 				expect(alertSpy).toHaveBeenCalled()
 			})
 			alertSpy.mockRestore()
+			consoleSpy.mockRestore()
 		})
 
 		it('toggleSelectAll clears selection when all selected', async () => {
@@ -429,6 +431,7 @@ describe('Backlog', () => {
 			} as unknown as ReturnType<typeof useQuery>)
 
 			vi.mocked(taskService.deleteTask).mockRejectedValue(new Error('Delete failed'))
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
 			render(<Backlog projectId={1} />)
 
@@ -442,6 +445,7 @@ describe('Backlog', () => {
 			await waitFor(() => {
 				expect(mockAlert).toHaveBeenCalledWith('Erreur lors de la suppression des tâches')
 			})
+			consoleSpy.mockRestore()
 		})
 
 		it('should handle empty assignee filter correctly', async () => {

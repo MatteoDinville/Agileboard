@@ -216,7 +216,10 @@ describe('ProjectCard', () => {
 		fireEvent.click(deleteButton!)
 
 		expect(global.confirm).toHaveBeenCalledWith('Voulez-vous vraiment supprimer ce projet ?')
-		expect(mockMutate).toHaveBeenCalledWith(1)
+		expect(mockMutate).toHaveBeenCalledWith(1, expect.objectContaining({
+			onSuccess: expect.any(Function),
+			onError: expect.any(Function)
+		}))
 	})
 
 	it('should not delete when user cancels confirmation', () => {
