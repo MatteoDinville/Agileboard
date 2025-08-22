@@ -34,7 +34,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 	useEffect(() => {
 		const media = window.matchMedia("(prefers-color-scheme: dark)");
 		const saved = localStorage.getItem("theme");
-		if (saved === "dark" || saved === "light") return; // user preference overrides
+		if (saved === "dark" || saved === "light") return;
 		const handler = (e: MediaQueryListEvent) => setThemeState(e.matches ? "dark" : "light");
 		media.addEventListener("change", handler);
 		return () => media.removeEventListener("change", handler);

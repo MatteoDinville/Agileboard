@@ -31,10 +31,19 @@ export const securityMiddleware = helmet({
 
 export const rateLimitMiddleware = rateLimit({
 	windowMs: 15 * 60 * 1000,
-	max: 100,
+	max: process.env.NODE_ENV === "production" ? 1000 : 100,
 	message: "Trop de requêtes depuis cette IP, veuillez réessayer plus tard.",
 	standardHeaders: true,
-	legacyHeaders: false
+	legacyHeaders: false,
+	skip: (req) => {
+		return req.path.startsWith("/api/auth/me") ||
+			req.path.startsWith("/api/healthz") ||
+			req.path === "/";
+	},
+	handler: (req, res) => {
+		console.warn(`Rate limit exceeded for IP: ${req.ip}, Path: ${req.path}`);
+		res.status(429).json({ error: "Trop de requêtes depuis cette IP, veuillez réessayer plus tard." });
+	}
 });
 
 export const loginRateLimit = rateLimit({
@@ -44,6 +53,17 @@ export const loginRateLimit = rateLimit({
 	standardHeaders: true,
 	legacyHeaders: false,
 	skipSuccessfulRequests: true
+});
+
+export const authRateLimit = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: process.env.NODE_ENV === "production" ? 500 : 100,
+	message: "Trop de requêtes d'authentification, veuillez réessayer plus tard.",
+	standardHeaders: true,
+	legacyHeaders: false,
+	skip: (req) => {
+		return req.path === "/me";
+	}
 });
 
 export const corsOptions = {

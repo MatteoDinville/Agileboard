@@ -60,7 +60,6 @@ export const ProjectCard = ({ viewMode, project, isOwner }: { viewMode: 'grid' |
 		? "text-slate-800 hover:text-amber-600 dark:text-white dark:hover:text-amber-400"
 		: "text-slate-800 hover:text-blue-600 dark:text-white dark:hover:text-blue-400";
 
-	// Mode Grille
 	if (viewMode === "grid") {
 		return (
 			<article className={`${cardStyles} dark:bg-gray-900 dark:[background-image:none] dark:border-gray-800 dark:ring-1 dark:ring-gray-800 dark:shadow-black/20 rounded-2xl shadow-xl hover:shadow-2xl dark:hover:shadow-gray-900/40 hover:scale-[1.02] transition-all duration-300 group p-4 sm:p-6 lg:p-7`}>
@@ -157,7 +156,6 @@ export const ProjectCard = ({ viewMode, project, isOwner }: { viewMode: 'grid' |
 		);
 	}
 
-	// Mode Liste
 	return (
 		<article className={`${cardStyles} dark:bg-gray-900 dark:[background-image:none] dark:border-gray-800 dark:ring-1 dark:ring-gray-800 dark:shadow-black/20 rounded-2xl shadow-xl hover:shadow-2xl dark:hover:shadow-gray-900/40 hover:scale-[1.02] transition-all duration-300 group p-4 sm:p-6 lg:p-8`}>
 			<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-4 sm:space-y-0">
