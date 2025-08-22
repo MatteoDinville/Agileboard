@@ -10,16 +10,34 @@ export function setPrismaInstance(instance: PrismaClient) {
 export const projectController = {
 	/**
 	 * GET /api/projects
-	 * Récupère tous les projets de l'utilisateur connecté
+	 * Récupère tous les projets de l'utilisateur connecté (owner ou membre)
 	 */
 	getAllProjects: async (req: AuthRequest, res: Response, next: NextFunction) => {
 		try {
-			// req.userId provient du middleware authenticateToken
 			const userId = req.userId!;
+
 			const projects = await prisma.project.findMany({
-				where: { ownerId: userId },
+				where: {
+					OR: [
+						{ ownerId: userId },
+						{
+							members: {
+								some: {
+									userId: userId
+								}
+							}
+						}
+					]
+				},
 				orderBy: { createdAt: "desc" },
 				include: {
+					owner: {
+						select: {
+							id: true,
+							name: true,
+							email: true
+						}
+					},
 					members: {
 						include: {
 							user: {
@@ -30,9 +48,16 @@ export const projectController = {
 								}
 							}
 						}
+					},
+					_count: {
+						select: {
+							members: true,
+							tasks: true
+						}
 					}
 				}
 			});
+
 			res.json(projects);
 		} catch (err) {
 			next(err);
@@ -41,7 +66,7 @@ export const projectController = {
 
 	/**
 	 * GET /api/projects/:id
-	 * Récupère un seul projet, si l'utilisateur en est propriétaire
+	 * Récupère un seul projet, si l'utilisateur en est propriétaire ou membre
 	 */
 	getProjectById: async (req: AuthRequest, res: Response, next: NextFunction) => {
 		try {
@@ -51,6 +76,13 @@ export const projectController = {
 			const project = await prisma.project.findUnique({
 				where: { id: projectId },
 				include: {
+					owner: {
+						select: {
+							id: true,
+							name: true,
+							email: true
+						}
+					},
 					members: {
 						include: {
 							user: {
@@ -61,12 +93,25 @@ export const projectController = {
 								}
 							}
 						}
+					},
+					_count: {
+						select: {
+							members: true,
+							tasks: true
+						}
 					}
 				}
 			});
 
-			if (!project || project.ownerId !== userId) {
-				return res.status(404).json({ error: "Projet non trouvé ou accès refusé." });
+			if (!project) {
+				return res.status(404).json({ error: "Projet non trouvé." });
+			}
+
+			const isOwner = project.ownerId === userId;
+			const isMember = project.members.some(member => member.userId === userId);
+
+			if (!isOwner && !isMember) {
+				return res.status(403).json({ error: "Accès refusé. Vous n'êtes ni propriétaire ni membre de ce projet." });
 			}
 
 			res.json(project);
@@ -198,11 +243,25 @@ export const projectController = {
 			const projectId = parseInt(req.params.id, 10);
 
 			const project = await prisma.project.findUnique({
-				where: { id: projectId }
+				where: { id: projectId },
+				include: {
+					members: {
+						select: {
+							userId: true
+						}
+					}
+				}
 			});
 
-			if (!project || project.ownerId !== userId) {
-				return res.status(404).json({ error: "Projet non trouvé ou accès refusé." });
+			if (!project) {
+				return res.status(404).json({ error: "Projet non trouvé." });
+			}
+
+			const isOwner = project.ownerId === userId;
+			const isMember = project.members.some(member => member.userId === userId);
+
+			if (!isOwner && !isMember) {
+				return res.status(403).json({ error: "Accès refusé. Vous n'êtes ni propriétaire ni membre de ce projet." });
 			}
 
 			const members = await prisma.projectMember.findMany({
@@ -323,14 +382,27 @@ export const projectController = {
 				return res.status(404).json({ error: "Membre non trouvé dans ce projet." });
 			}
 
-			await prisma.projectMember.delete({
-				where: {
-					userId_projectId: {
-						userId: memberUserId,
-						projectId
-					}
-				}
+			const userToRemove = await prisma.user.findUnique({
+				where: { id: memberUserId },
+				select: { email: true }
 			});
+
+			await prisma.$transaction([
+				prisma.projectMember.delete({
+					where: {
+						userId_projectId: {
+							userId: memberUserId,
+							projectId
+						}
+					}
+				}),
+				...(userToRemove ? [prisma.projectInvitation.deleteMany({
+					where: {
+						projectId: projectId,
+						email: userToRemove.email.toLowerCase()
+					}
+				})] : [])
+			]);
 
 			res.status(204).send();
 		} catch (err) {

@@ -2,6 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import NotFound from '../../pages/NotFound'
 
+// Mock lucide-react icons
+vi.mock('lucide-react', () => ({
+	Home: () => <div>Home</div>,
+	ArrowLeft: () => <div>ArrowLeft</div>,
+	Search: () => <div>Search</div>,
+	AlertCircle: () => <div>AlertCircle</div>,
+	Compass: () => <div>Compass</div>,
+	RefreshCw: () => <div>RefreshCw</div>,
+}));
+
 const mockNavigate = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => mockNavigate,

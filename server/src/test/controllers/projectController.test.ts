@@ -21,6 +21,10 @@ const mockPrisma = {
 	user: {
 		findUnique: vi.fn()
 	},
+	projectInvitation: {
+		deleteMany: vi.fn()
+	},
+	$transaction: vi.fn(),
 	$connect: vi.fn(),
 	$disconnect: vi.fn()
 };
@@ -35,6 +39,8 @@ describe("ProjectController", () => {
 		Object.values(mockPrisma.project).forEach(fn => fn.mockReset());
 		Object.values(mockPrisma.projectMember).forEach(fn => fn.mockReset());
 		Object.values(mockPrisma.user).forEach(fn => fn.mockReset());
+		mockPrisma.projectInvitation.deleteMany.mockReset();
+		mockPrisma.$transaction.mockReset();
 		mockPrisma.$connect.mockReset();
 		mockPrisma.$disconnect.mockReset();
 
@@ -63,14 +69,18 @@ describe("ProjectController", () => {
 					title: "Project 1",
 					description: "Description 1",
 					ownerId: 1,
-					members: []
+					members: [],
+					owner: { id: 1, name: "User", email: "user@test.com" },
+					_count: { members: 0, tasks: 0 }
 				},
 				{
 					id: 2,
 					title: "Project 2",
 					description: "Description 2",
 					ownerId: 1,
-					members: []
+					members: [],
+					owner: { id: 1, name: "User", email: "user@test.com" },
+					_count: { members: 0, tasks: 0 }
 				}
 			];
 
@@ -79,9 +89,27 @@ describe("ProjectController", () => {
 			await projectController.getAllProjects(mockRequest as AuthRequest, mockResponse as Response, mockNext);
 
 			expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
-				where: { ownerId: 1 },
+				where: {
+					OR: [
+						{ ownerId: 1 },
+						{
+							members: {
+								some: {
+									userId: 1
+								}
+							}
+						}
+					]
+				},
 				orderBy: { createdAt: "desc" },
 				include: {
+					owner: {
+						select: {
+							id: true,
+							name: true,
+							email: true
+						}
+					},
 					members: {
 						include: {
 							user: {
@@ -91,6 +119,12 @@ describe("ProjectController", () => {
 									email: true
 								}
 							}
+						}
+					},
+					_count: {
+						select: {
+							members: true,
+							tasks: true
 						}
 					}
 				}
@@ -115,7 +149,9 @@ describe("ProjectController", () => {
 				title: "Test Project",
 				description: "Test Description",
 				ownerId: 1,
-				members: []
+				members: [],
+				owner: { id: 1, name: "User", email: "user@test.com" },
+				_count: { members: 0, tasks: 0 }
 			};
 
 			mockRequest.params = { id: "1" };
@@ -126,6 +162,13 @@ describe("ProjectController", () => {
 			expect(mockPrisma.project.findUnique).toHaveBeenCalledWith({
 				where: { id: 1 },
 				include: {
+					owner: {
+						select: {
+							id: true,
+							name: true,
+							email: true
+						}
+					},
 					members: {
 						include: {
 							user: {
@@ -135,6 +178,12 @@ describe("ProjectController", () => {
 									email: true
 								}
 							}
+						}
+					},
+					_count: {
+						select: {
+							members: true,
+							tasks: true
 						}
 					}
 				}
@@ -150,17 +199,19 @@ describe("ProjectController", () => {
 
 			expect(mockResponse.status).toHaveBeenCalledWith(404);
 			expect(mockResponse.json).toHaveBeenCalledWith({
-				error: "Projet non trouvé ou accès refusé."
+				error: "Projet non trouvé."
 			});
 		});
 
-		it("should return 404 when user is not owner", async () => {
+		it("should return 403 when user is not owner or member", async () => {
 			const mockProject = {
 				id: 1,
 				title: "Test Project",
 				description: "Test Description",
 				ownerId: 2, // Different owner
-				members: []
+				members: [],
+				owner: { id: 2, name: "Other User", email: "other@test.com" },
+				_count: { members: 0, tasks: 0 }
 			};
 
 			mockRequest.params = { id: "1" };
@@ -168,9 +219,9 @@ describe("ProjectController", () => {
 
 			await projectController.getProjectById(mockRequest as AuthRequest, mockResponse as Response, mockNext);
 
-			expect(mockResponse.status).toHaveBeenCalledWith(404);
+			expect(mockResponse.status).toHaveBeenCalledWith(403);
 			expect(mockResponse.json).toHaveBeenCalledWith({
-				error: "Projet non trouvé ou accès refusé."
+				error: "Accès refusé. Vous n'êtes ni propriétaire ni membre de ce projet."
 			});
 		});
 	});
@@ -421,7 +472,11 @@ describe("ProjectController", () => {
 	describe("getProjectMembers", () => {
 		it("should return members for owner", async () => {
 			mockRequest.params = { id: "1" };
-			mockPrisma.project.findUnique.mockResolvedValue({ id: 1, ownerId: 1 });
+			mockPrisma.project.findUnique.mockResolvedValue({
+				id: 1,
+				ownerId: 1,
+				members: [{ userId: 2 }]
+			});
 			const members = [{ id: 1, userId: 2, projectId: 1, user: { id: 2, name: "A", email: "a@a.com" } }];
 			mockPrisma.projectMember.findMany.mockResolvedValue(members);
 
@@ -439,12 +494,16 @@ describe("ProjectController", () => {
 
 		it("should return 404 when not owner", async () => {
 			mockRequest.params = { id: "1" };
-			mockPrisma.project.findUnique.mockResolvedValue({ id: 1, ownerId: 2 });
+			mockPrisma.project.findUnique.mockResolvedValue({
+				id: 1,
+				ownerId: 2,
+				members: []
+			});
 
 			await projectController.getProjectMembers(mockRequest as AuthRequest, mockResponse as Response, mockNext);
 
-			expect(mockResponse.status).toHaveBeenCalledWith(404);
-			expect(mockResponse.json).toHaveBeenCalledWith({ error: "Projet non trouvé ou accès refusé." });
+			expect(mockResponse.status).toHaveBeenCalledWith(403);
+			expect(mockResponse.json).toHaveBeenCalledWith({ error: "Accès refusé. Vous n'êtes ni propriétaire ni membre de ce projet." });
 		});
 
 		it("should handle db error with next", async () => {
@@ -557,12 +616,12 @@ describe("ProjectController", () => {
 			mockRequest.params = { id: "1", userId: "2" };
 			mockPrisma.project.findUnique.mockResolvedValue({ id: 1, ownerId: 1 });
 			mockPrisma.projectMember.findUnique.mockResolvedValue({ userId: 2, projectId: 1 });
+			mockPrisma.user.findUnique.mockResolvedValue({ email: "test@test.com" });
+			mockPrisma.$transaction.mockResolvedValue([]);
 
 			await projectController.removeProjectMember(mockRequest as AuthRequest, mockResponse as Response, mockNext);
 
-			expect(mockPrisma.projectMember.delete).toHaveBeenCalledWith({
-				where: { userId_projectId: { userId: 2, projectId: 1 } }
-			});
+			expect(mockPrisma.$transaction).toHaveBeenCalled();
 			expect(mockResponse.status).toHaveBeenCalledWith(204);
 		});
 
@@ -570,7 +629,8 @@ describe("ProjectController", () => {
 			mockRequest.params = { id: "1", userId: "2" };
 			mockPrisma.project.findUnique.mockResolvedValue({ id: 1, ownerId: 1 });
 			mockPrisma.projectMember.findUnique.mockResolvedValue({ userId: 2, projectId: 1 });
-			mockPrisma.projectMember.delete.mockRejectedValue(new Error("db"));
+			mockPrisma.user.findUnique.mockResolvedValue({ email: "test@test.com" });
+			mockPrisma.$transaction.mockRejectedValue(new Error("db"));
 
 			await projectController.removeProjectMember(mockRequest as AuthRequest, mockResponse as Response, mockNext);
 

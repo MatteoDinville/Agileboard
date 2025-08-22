@@ -6,6 +6,20 @@ import { taskService } from '../../services/task'
 import { TaskStatus, TaskPriority } from '../../types/enums'
 import type { Task } from '../../services/task'
 
+vi.mock('lucide-react', () => ({
+	Plus: () => <div>Plus</div>,
+	Circle: () => <div>Circle</div>,
+	Clock: () => <div>Clock</div>,
+	CheckCircle: () => <div>CheckCircle</div>,
+	AlertCircle: () => <div>AlertCircle</div>,
+	Edit: () => <div>Edit</div>,
+	Trash2: () => <div>Trash2</div>,
+	MoreHorizontal: () => <div>MoreHorizontal</div>,
+	Calendar: () => <div>Calendar</div>,
+	User: () => <div>User</div>,
+	Flag: () => <div>Flag</div>,
+}));
+
 vi.mock('../../services/task', () => ({
 	taskService: {
 		getProjectTasks: vi.fn(),
@@ -128,7 +142,9 @@ describe('KanbanBoard', () => {
 				container = result.container
 			})
 
-			expect(container!.querySelector('.animate-spin')).not.toBeNull()
+			await waitFor(() => {
+				expect(container!.querySelector('.animate-spin')).not.toBeNull()
+			})
 		})
 	})
 

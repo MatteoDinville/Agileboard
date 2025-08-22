@@ -14,6 +14,7 @@ import { taskService } from '../services/task';
 import type { CreateTaskData, Task, UpdateTaskData } from '../services/task';
 import { TaskStatus, TaskStatusLabels, type TaskStatusType } from '../types/enums';
 import KanbanColumn from './KanbanColumn.tsx';
+import { SectionLoader } from './Loading';
 import TaskCard from './TaskCard.tsx';
 import TaskModal from './TaskModal.tsx';
 import {
@@ -164,11 +165,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 	};
 
 	if (loading) {
-		return (
-			<div className="flex justify-center items-center h-64">
-				<div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
-			</div>
-		);
+		return <SectionLoader label="Chargement du Kanban..." minHeight={320} />;
 	}
 
 	return (

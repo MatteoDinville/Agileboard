@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.js";
 import projectRoutes from "./routes/project.js";
 import userRoutes from "./routes/user.js";
 import taskRoutes from "./routes/task.js";
+import invitationRoutes from "./routes/invitation";
 
 dotenv.config();
 
@@ -26,6 +27,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/invite", invitationRoutes);
+app.get("/", async (req: Request, res: Response) => {
+	res.json({ message: "API en fonctionnement." });
+});
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 	console.error("[API ERROR]", err);

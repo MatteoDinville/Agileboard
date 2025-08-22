@@ -17,19 +17,15 @@ import ProjectForm from "./pages/ProjectForm";
 import ProjectDetail from "./pages/ProjectDetail";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import InvitationAcceptPage from "./pages/InvitationAcceptPage";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
+import { PageLoader } from "./components/Loading";
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 	const { user, isLoading } = React.useContext(AuthContext);
 
 	if (isLoading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<div className="text-center">
-					<div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-				</div>
-			</div>
-		);
+		return <PageLoader label="Initialisation de la session..." />;
 	}
 
 	if (!user) {
@@ -149,6 +145,12 @@ const SettingsRoute = createRoute({
 	component: ProtectedSettingsRoute,
 });
 
+const InviteRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/invite/$token",
+	component: InvitationAcceptPage,
+});
+
 const NotFoundRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '*',
@@ -166,6 +168,7 @@ const routeTree = rootRoute.addChildren([
 	EditProjectRoute,
 	ProjectDetailRoute,
 	SettingsRoute,
+	InviteRoute,
 	NotFoundRoute,
 ]);
 

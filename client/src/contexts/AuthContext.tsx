@@ -18,6 +18,7 @@ export interface AuthResponse {
 export interface AuthContextType {
 	user: User | null;
 	isLoading: boolean;
+	isAuthenticated: boolean;
 	setUser: React.Dispatch<React.SetStateAction<User | null>>;
 	loginMutation: ReturnType<typeof useMutation<AuthResponse, Error, LoginData>>;
 	registerMutation: ReturnType<typeof useMutation<AuthResponse, Error, RegisterData>>;
@@ -28,6 +29,7 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType>({
 	user: null,
 	isLoading: true,
+	isAuthenticated: false,
 	setUser: () => { },
 	loginMutation: {} as ReturnType<typeof useMutation<AuthResponse, Error, LoginData>>,
 	registerMutation: {} as ReturnType<typeof useMutation<AuthResponse, Error, RegisterData>>,
@@ -69,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		onSuccess: (data) => {
 			setUser(data.user);
 			queryClient.invalidateQueries({ queryKey: ['auth'] });
-			navigate({ to: "/dashboard" });
+			// Ne plus rediriger automatiquement ici - laissons les pages gérer
 		},
 	});
 
@@ -82,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		onSuccess: (data) => {
 			setUser(data.user);
 			queryClient.invalidateQueries({ queryKey: ['auth'] });
-			navigate({ to: "/dashboard" });
+			// Ne plus rediriger automatiquement ici - laissons les pages gérer
 		},
 	});
 
@@ -101,6 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const contextValue = useMemo(() => ({
 		user,
 		isLoading: !isInitialized,
+		isAuthenticated: !!user,
 		setUser,
 		loginMutation,
 		registerMutation,

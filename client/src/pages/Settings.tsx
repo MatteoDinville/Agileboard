@@ -1,15 +1,16 @@
 import { useState, useContext, useEffect } from 'react';
 import {
-Settings as IconSettings,
-User as IconUser,
-Lock as IconLock,
-Home as IconHome,
-Camera as IconCamera,
-Save as IconSave,
+	Settings as IconSettings,
+	User as IconUser,
+	Lock as IconLock,
+	Home as IconHome,
+	Camera as IconCamera,
+	Save as IconSave,
 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { AuthContext } from '../contexts/AuthContext';
 import { useProfile } from '../utils/hooks/user';
+import toast from 'react-hot-toast';
 
 
 export default function SettingsPage() {
@@ -51,31 +52,35 @@ export default function SettingsPage() {
 	const handleProfileSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		try {
-			const fullName = `${profileForm.firstName?.trim() || ''} ${profileForm.lastName?.trim() || ''}`.trim();
+		const fullName = `${profileForm.firstName?.trim() || ''} ${profileForm.lastName?.trim() || ''}`.trim();
 
-			await updateProfile.mutateAsync({
-				name: fullName || undefined,
-				email: profileForm.email
-			});
-
-			const successMessage = document.createElement('div');
-			successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
-			successMessage.innerHTML = `
-				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-				</svg>
-				Profil mis à jour avec succès !
-			`;
-			document.body.appendChild(successMessage);
-
-			setTimeout(() => {
-				successMessage.remove();
-			}, 3000);
-		} catch (error) {
-			console.error('Erreur lors de la mise à jour du profil:', error);
-			alert('Erreur lors de la mise à jour du profil');
-		}
+		toast.promise(updateProfile.mutateAsync({
+			name: fullName || undefined,
+			email: profileForm.email
+		}), {
+			loading: 'Mise à jour du profil...',
+			success: 'Profil mis à jour avec succès !',
+			error: 'Erreur lors de la mise à jour du profil'
+		}, {
+			loading: {
+				style: {
+					background: '#fef3c7',
+					color: '#92400e',
+				}
+			},
+			success: {
+				style: {
+					background: '#d1fae5',
+					color: '#065f46',
+				}
+			},
+			error: {
+				style: {
+					background: '#fee2e2',
+					color: '#991b1b',
+				}
+			}
+		});
 	};
 
 	const handlePasswordSubmit = async (e: React.FormEvent) => {

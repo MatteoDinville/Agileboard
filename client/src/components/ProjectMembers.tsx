@@ -15,6 +15,7 @@ import {
 	AlertCircle,
 	Loader2
 } from "lucide-react";
+import { SectionLoader } from "./Loading";
 
 interface ProjectMembersProps {
 	projectId: number;
@@ -59,12 +60,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 	};
 
 	if (membersLoading) {
-		return (
-			<div className="flex items-center justify-center p-6">
-				<Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-				<span className="ml-2 text-gray-600">Chargement des membres...</span>
-			</div>
-		);
+		return <SectionLoader label="Chargement des membres..." minHeight={180} />;
 	}
 
 	return (
@@ -160,10 +156,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({
 
 						<div className="p-6">
 							{usersLoading ? (
-								<div className="flex items-center justify-center py-8">
-									<Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-									<span className="ml-2 text-gray-600">Chargement des utilisateurs...</span>
-								</div>
+								<SectionLoader label="Chargement des utilisateurs..." minHeight={120} />
 							) : availableUsers.length === 0 ? (
 								<div className="text-center py-8">
 									<AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />

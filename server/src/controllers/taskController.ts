@@ -1,11 +1,11 @@
-import { Response } from "express";
+import { Response, NextFunction } from "express";
 import { PrismaClient, TaskStatus, TaskPriority } from "@prisma/client";
 import { AuthRequest } from "../middleware/auth.middleware.js";
 
 const prisma = new PrismaClient();
 
 export const taskController = {
-	async getProjectTasks(req: AuthRequest, res: Response) {
+	async getProjectTasks(req: AuthRequest, res: Response, next: NextFunction) {
 		try {
 			const { projectId } = req.params;
 			const userId = req.userId;
@@ -37,12 +37,11 @@ export const taskController = {
 
 			res.json(tasks);
 		} catch (error) {
-			console.error(error);
-			res.status(500).json({ error: "Erreur lors de la récupération des tâches" });
+			next(error);
 		}
 	},
 
-	async createTask(req: AuthRequest, res: Response) {
+	async createTask(req: AuthRequest, res: Response, next: NextFunction) {
 		try {
 			const { projectId } = req.params;
 			const { title, description, status, priority, dueDate, assignedToId } = req.body;
@@ -95,12 +94,11 @@ export const taskController = {
 
 			res.status(201).json(task);
 		} catch (error) {
-			console.error(error);
-			res.status(500).json({ error: "Erreur lors de la création de la tâche" });
+			next(error);
 		}
 	},
 
-	async updateTask(req: AuthRequest, res: Response) {
+	async updateTask(req: AuthRequest, res: Response, next: NextFunction) {
 		try {
 			const { taskId } = req.params;
 			const { title, description, status, priority, dueDate, assignedToId } = req.body;
@@ -133,7 +131,6 @@ export const taskController = {
 				}
 			}
 
-			// Type pour les données de mise à jour partielles
 			interface TaskUpdateData {
 				title?: string;
 				description?: string | null;
@@ -146,8 +143,8 @@ export const taskController = {
 			const updateData: TaskUpdateData = {};
 			if (title !== undefined) updateData.title = title;
 			if (description !== undefined) updateData.description = description;
-			if (status !== undefined) updateData.status = status;
-			if (priority !== undefined) updateData.priority = priority;
+			if (status !== undefined) updateData.status = status as TaskStatus;
+			if (priority !== undefined) updateData.priority = priority as TaskPriority;
 			if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
 			if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
 			const task = await prisma.task.update({
@@ -166,12 +163,11 @@ export const taskController = {
 
 			res.json(task);
 		} catch (error) {
-			console.error(error);
-			res.status(500).json({ error: "Erreur lors de la mise à jour de la tâche" });
+			next(error);
 		}
 	},
 
-	async deleteTask(req: AuthRequest, res: Response) {
+	async deleteTask(req: AuthRequest, res: Response, next: NextFunction) {
 		try {
 			const { taskId } = req.params;
 			const userId = req.userId;
@@ -195,12 +191,11 @@ export const taskController = {
 
 			res.json({ message: "Tâche supprimée avec succès" });
 		} catch (error) {
-			console.error(error);
-			res.status(500).json({ error: "Erreur lors de la suppression de la tâche" });
+			next(error);
 		}
 	},
 
-	async updateTaskStatus(req: AuthRequest, res: Response) {
+	async updateTaskStatus(req: AuthRequest, res: Response, next: NextFunction) {
 		try {
 			const { taskId } = req.params;
 			const { status } = req.body;
@@ -235,8 +230,7 @@ export const taskController = {
 
 			res.json(task);
 		} catch (error) {
-			console.error(error);
-			res.status(500).json({ error: "Erreur lors de la mise à jour du statut" });
+			next(error);
 		}
 	}
 };
