@@ -17,8 +17,8 @@ const Dashboard: React.FC = () => {
 	const { user, logout } = useContext(AuthContext);
 	const [message, setMessage] = useState<string>("");
 
-	const { data: projects, isLoading: projectsLoading } = useProjects();
-	const { data: tasks, isLoading: tasksLoading } = useAllUserTasks();
+	const { isLoading: projectsLoading } = useProjects();
+	const { isLoading: tasksLoading } = useAllUserTasks();
 
 	const taskStats = useTaskStatistics();
 	const projectStats = useProjectStatistics();

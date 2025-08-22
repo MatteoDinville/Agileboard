@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Mail, Clock, User, Loader2, AlertCircle, Trash2, RefreshCw, Check } from "lucide-react";
+import { Mail, Clock, User, AlertCircle, Trash2, Check } from "lucide-react";
 import { invitationService, ProjectInvitation } from "../services/invitation";
 import toast from "react-hot-toast";
 import { SectionLoader } from "./Loading";
