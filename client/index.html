@@ -5,7 +5,29 @@
 	<meta charset="UTF-8" />
 	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<meta name="theme-color" content="#2563eb" />
+	<meta name="theme-color" content="#ffffff" />
+	<meta name="color-scheme" content="dark light" />
+	<style>
+		html { background-color: #ffffff; }
+		@media (prefers-color-scheme: dark) { html { background-color: #0b0f19; } }
+		html.dark { background-color: #0b0f19; }
+		html.light { background-color: #ffffff; }
+		body { background-color: inherit; }
+	</style>
+	<script>
+		(function() {
+			try {
+				var saved = localStorage.getItem('theme');
+				var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+				var theme = (saved === 'dark' || saved === 'light') ? saved : (prefersDark ? 'dark' : 'light');
+				var root = document.documentElement;
+				root.classList.toggle('dark', theme === 'dark');
+				root.classList.toggle('light', theme === 'light');
+				var meta = document.querySelector('meta[name="theme-color"]');
+				if (meta) meta.setAttribute('content', theme === 'dark' ? '#0b0f19' : '#ffffff');
+			} catch (_) {}
+		})();
+	</script>
 	<meta name="description" content="Agileboard - Votre solution tout-en-un pour la gestion de projet agile" />
 	<title>Agileboard</title>
 </head>

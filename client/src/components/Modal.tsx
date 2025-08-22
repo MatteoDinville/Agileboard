@@ -23,14 +23,14 @@ export const Modal = ({
 	return (
 		<div className="fixed inset-0 z-50 overflow-y-auto">
 			<div
-				className="fixed inset-0 bg-[#00000061]"
+				className="fixed inset-0 bg-[#00000061] dark:bg-black/60"
 				onClick={onClose}
 				data-testid="modal-backdrop"
 			/>
 			<div className="flex min-h-screen items-center justify-center p-4">
 				<div
 					className={cn(
-						"relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg",
+						"relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg",
 						className
 					)}
 					data-testid="modal-content"
@@ -38,14 +38,14 @@ export const Modal = ({
 					{(title || showCloseButton) && (
 						<div className="flex items-start justify-between px-6 pt-6 pb-4">
 							{title && (
-								<h3 className="text-lg font-semibold leading-6 text-gray-900">
+								<h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-gray-100">
 									{title}
 								</h3>
 							)}
 							{showCloseButton && (
 								<button
 									onClick={onClose}
-									className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+									className="rounded-md bg-white dark:bg-gray-900 text-gray-400 hover:text-gray-500 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 								>
 									<span className="sr-only">Fermer</span>
 									<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

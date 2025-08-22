@@ -11,6 +11,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { AuthContext } from '../contexts/AuthContext';
 import { useProfile } from '../utils/hooks/user';
 import toast from 'react-hot-toast';
+import ThemeToggle from '../components/ThemeToggle';
 
 
 export default function SettingsPage() {
@@ -171,8 +172,8 @@ export default function SettingsPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-100">
-			<header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50">
+		<div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-100 dark:[background-image:none] dark:bg-gray-900">
+			<header className="bg-white/80 dark:bg-gray-900 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between items-center h-16">
 						<div className="flex items-center gap-4">
@@ -184,47 +185,50 @@ export default function SettingsPage() {
 								<IconSettings className="w-5 h-5 text-white" />
 							</button>
 							<div>
-								<h1 className="text-xl font-semibold text-gray-900">Paramètres</h1>
-								<p className="text-gray-600 text-sm">Personnalisez votre expérience utilisateur</p>
+								<h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Paramètres</h1>
+								<p className="text-gray-600 dark:text-gray-300 text-sm">Personnalisez votre expérience utilisateur</p>
 							</div>
 						</div>
-						<button
-							onClick={() => navigate({ to: '/dashboard' })}
-							className="flex items-center space-x-2 px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
-							title="Retour au Dashboard"
-						>
-							<IconHome className="w-6 h-6 text-gray-500 hover:text-gray-700 transition-colors" />
-							<span className="text-sm font-medium">Retour au dashboard</span>
-						</button>
+						<div className="flex items-center gap-2">
+							<ThemeToggle />
+							<button
+								onClick={() => navigate({ to: '/dashboard' })}
+								className="flex items-center space-x-2 px-4 py-2 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+								title="Retour au Dashboard"
+							>
+								<IconHome className="w-6 h-6 text-gray-500 dark:text-gray-300 transition-colors" />
+								<span className="text-sm font-medium">Retour au dashboard</span>
+							</button>
+						</div>
 					</div>
 				</div>
 			</header>
 			<main>
 				<div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
-					<div className="relative z-10 bg-white/60 backdrop-blur-lg rounded-3xl border border-gray-200 shadow-md overflow-hidden">
+					<div className="relative z-10 bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg rounded-3xl border border-gray-200 dark:border-gray-700 shadow-md dark:shadow-black/20 overflow-hidden">
 						<div className="p-8">
 							<div className="space-y-8">
-								<h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+								<h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
 									<IconUser className="w-6 h-6 text-blue-500" />
 									Informations du profil
 								</h2>
-								<div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+								<div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
 									<div className="flex items-center gap-6">
 										<div className="relative">
 											<div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
 												{profileForm.firstName.charAt(0).toUpperCase()}
 												{profileForm.lastName.charAt(0).toUpperCase()}
 											</div>
-											<button className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform">
-												<IconCamera className="w-4 h-4 text-gray-600" />
+											<button className="absolute -bottom-2 -right-2 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform">
+												<IconCamera className="w-4 h-4 text-gray-600 dark:text-gray-300" />
 											</button>
 										</div>
 										<div className="flex-1">
-											<h3 className="text-lg font-medium text-gray-700 mb-1">Photo de profil</h3>
-											<p className="text-gray-500 text-sm mb-4">Changez votre avatar ou photo de profil</p>
+											<h3 className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-1">Photo de profil</h3>
+											<p className="text-gray-500 dark:text-gray-400 text-sm mb-4">Changez votre avatar ou photo de profil</p>
 											<button
 												disabled={true}
-												className="px-4 py-2 bg-gray-400 text-white rounded-xl cursor-not-allowed font-medium opacity-50"
+												className="px-4 py-2 bg-gray-400 dark:bg-gray-700 text-white rounded-xl cursor-not-allowed font-medium opacity-50"
 												title="Fonctionnalité bientôt disponible"
 											>
 												Bientôt disponible
@@ -232,43 +236,43 @@ export default function SettingsPage() {
 										</div>
 									</div>
 								</div>
-								<div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
-									<h3 className="text-lg font-medium text-gray-700">Informations personnelles</h3>
+								<div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm space-y-6">
+									<h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">Informations personnelles</h3>
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 										<div>
-											<label className="block text-sm font-medium text-gray-600 mb-1">Prénom</label>
+											<label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Prénom</label>
 											<input
 												type="text"
 												value={profileForm.firstName}
 												onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
-												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+												className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all"
 											/>
 										</div>
 										<div>
-											<label className="block text-sm font-medium text-gray-600 mb-1">Nom</label>
+											<label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Nom</label>
 											<input
 												type="text"
 												value={profileForm.lastName}
 												onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
-												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+												className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all"
 											/>
 										</div>
 										<div>
-											<label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
+											<label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Email</label>
 											<input
 												type="email"
 												value={profileForm.email}
 												onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+												className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all"
 											/>
 										</div>
 									</div>
-									<div className="flex justify-end pt-4 border-t border-gray-200">
+									<div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-800">
 										<button
 											type="button"
 											onClick={handleProfileSubmit}
 											disabled={updateProfile.isPending}
-											className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:opacity-90 transition-opacity font-medium shadow-lg cursor-pointer disabled:opacity-50"
+											className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:opacity-90 transition-opacity font-medium shadow-lg dark:shadow-black/20 cursor-pointer disabled:opacity-50"
 										>
 											{updateProfile.isPending ? (
 												<>
@@ -284,43 +288,43 @@ export default function SettingsPage() {
 										</button>
 									</div>
 								</div>
-								<div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-									<h3 className="text-lg font-medium text-gray-700 flex items-center gap-2 mb-6">
+								<div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+									<h3 className="text-lg font-medium text-gray-700 dark:text-gray-200 flex items-center gap-2 mb-6">
 										<IconLock className="w-5 h-5 text-blue-500" />
 										Changement de mot de passe
 									</h3>
 									<form onSubmit={handlePasswordSubmit} className="space-y-6">
 										<div>
-											<label className="block text-sm font-medium text-gray-600 mb-2">Mot de passe actuel</label>
+											<label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Mot de passe actuel</label>
 											<input
 												type="password"
 												value={passwordForm.currentPassword}
 												onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
 												placeholder="Entrez votre mot de passe actuel"
-												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+												className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all"
 												required
 											/>
 										</div>
 										<div>
-											<label className="block text-sm font-medium text-gray-600 mb-2">Nouveau mot de passe</label>
+											<label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Nouveau mot de passe</label>
 											<input
 												type="password"
 												value={passwordForm.newPassword}
 												onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
 												placeholder="Entrez votre nouveau mot de passe"
-												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+												className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all"
 												required
 												minLength={6}
 											/>
 										</div>
 										<div>
-											<label className="block text-sm font-medium text-gray-600 mb-2">Confirmer le nouveau mot de passe</label>
+											<label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Confirmer le nouveau mot de passe</label>
 											<input
 												type="password"
 												value={passwordForm.confirmPassword}
 												onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
 												placeholder="Confirmez votre nouveau mot de passe"
-												className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+												className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 focus:border-transparent transition-all"
 												required
 												minLength={6}
 											/>
@@ -341,8 +345,8 @@ export default function SettingsPage() {
 										)}
 
 										{passwordForm.newPassword && (
-											<div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-												<h4 className="text-sm font-medium text-blue-800 mb-2">Critères de sécurité :</h4>
+											<div className="bg-blue-50 dark:bg-blue-950/40 p-4 rounded-xl border border-blue-200 dark:border-blue-900">
+												<h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Critères de sécurité :</h4>
 												<ul className="text-sm space-y-1">
 													<li className={`flex items-center gap-2 ${passwordForm.newPassword.length >= 6 ? 'text-green-600' : 'text-gray-500'}`}>
 														<span className={`w-2 h-2 rounded-full ${passwordForm.newPassword.length >= 6 ? 'bg-green-500' : 'bg-gray-300'}`}></span>
@@ -364,7 +368,7 @@ export default function SettingsPage() {
 											</div>
 										)}
 
-										<div className="flex justify-end pt-4 border-t border-gray-200">
+										<div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-800">
 											<button
 												type="submit"
 												disabled={
@@ -375,7 +379,7 @@ export default function SettingsPage() {
 													passwordForm.newPassword !== passwordForm.confirmPassword ||
 													passwordForm.newPassword.length < 6
 												}
-												className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:opacity-90 transition-opacity font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+												className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 dark:[background-image:none] dark:bg-red-600 hover:dark:bg-red-700 text-white rounded-xl hover:opacity-90 transition-opacity font-medium shadow-lg dark:shadow-black/20 disabled:opacity-50 disabled:cursor-not-allowed"
 											>
 												{changePassword.isPending ? (
 													<>
@@ -383,10 +387,10 @@ export default function SettingsPage() {
 														Modification...
 													</>
 												) : (
-													<>
+													<div className="cursor-pointer flex items-center gap-2">
 														<IconLock className="w-5 h-5" />
 														Changer le mot de passe
-													</>
+													</div>
 												)}
 											</button>
 										</div>
