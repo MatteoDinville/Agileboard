@@ -11,7 +11,7 @@ export const authService = {
 			return res as { user: { id: number; email: string; name?: string }; };
 		} catch (error: unknown) {
 			const axiosError = error as AxiosError<{ error?: string; message?: string }>;
-			const message = axiosError.response?.data?.error || axiosError.response?.data?.message || "Registration failed";
+			const message = axiosError.response?.data?.error || axiosError.response?.data?.message || "Inscription échouée : Erreur serveur";
 			throw new Error(message);
 		}
 	},
@@ -21,7 +21,7 @@ export const authService = {
 			return res as { user: { id: number; email: string; name?: string }; };
 		} catch (error: unknown) {
 			const axiosError = error as AxiosError<{ error?: string; message?: string }>;
-			const message = axiosError.response?.data?.error || axiosError.response?.data?.message || "Login failed";
+			const message = axiosError.response?.data?.error || axiosError.response?.data?.message || "Connexion échouée : Erreur serveur";
 			throw new Error(message);
 		}
 	},
