@@ -2,10 +2,10 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import authRoutes from "./routes/auth";
-import projectRoutes from "./routes/project";
-import userRoutes from "./routes/user";
-import taskRoutes from "./routes/task";
+import authRoutes from "./routes/auth.js";
+import projectRoutes from "./routes/project.js";
+import userRoutes from "./routes/user.js";
+import taskRoutes from "./routes/task.js";
 
 dotenv.config();
 

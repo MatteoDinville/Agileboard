@@ -1,6 +1,6 @@
 import { Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
-import { AuthRequest } from "../middleware/auth.middleware";
+import { AuthRequest } from "../middleware/auth.middleware.js";
 
 let prisma: PrismaClient = new PrismaClient();
 export function setPrismaInstance(instance: PrismaClient) {
