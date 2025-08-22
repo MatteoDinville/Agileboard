@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from "../middleware/auth.middleware";
-import crypto from 'crypto';
+import crypto from "crypto";
 
 let prisma: PrismaClient = new PrismaClient();
 export function setPrismaInstance(instance: PrismaClient) {
@@ -20,7 +20,7 @@ export const invitationController = {
 			const projectId = parseInt(req.params.id, 10);
 			const { email } = req.body;
 
-			if (!email || !email.includes('@')) {
+			if (!email || !email.includes("@")) {
 				return res.status(400).json({ error: "Email valide requis." });
 			}
 
@@ -93,9 +93,9 @@ export const invitationController = {
 					}
 
 					return res.status(409).json({
-						type: 'pending_invitation_exists',
-						message: 'Une invitation est déjà en attente pour cet email.',
-						invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${existingInvitation.token}`
+						type: "pending_invitation_exists",
+						message: "Une invitation est déjà en attente pour cet email.",
+						invitationUrl: `${process.env.FRONTEND_URL || "http://localhost:5173"}/invite/${existingInvitation.token}`
 					});
 				} else {
 					await prisma.projectInvitation.delete({
@@ -108,7 +108,7 @@ export const invitationController = {
 				});
 			}
 
-			const token = crypto.randomBytes(32).toString('hex');
+			const token = crypto.randomBytes(32).toString("hex");
 			const expiresAt = new Date();
 			expiresAt.setDate(expiresAt.getDate() + 7);
 
@@ -123,9 +123,9 @@ export const invitationController = {
 			});
 
 			res.status(201).json({
-				type: 'invitation_created',
-				message: 'Invitation créée avec succès',
-				invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${token}`
+				type: "invitation_created",
+				message: "Invitation créée avec succès",
+				invitationUrl: `${process.env.FRONTEND_URL || "http://localhost:5173"}/invite/${token}`
 			});
 
 		} catch (err) {
@@ -364,7 +364,7 @@ export const invitationController = {
 						}
 					}
 				},
-				orderBy: { createdAt: 'desc' }
+				orderBy: { createdAt: "desc" }
 			});
 
 			res.json(invitations);
@@ -418,10 +418,16 @@ export const invitationController = {
 						}
 					}
 				},
-				orderBy: { createdAt: 'desc' }
+				orderBy: { createdAt: "desc" }
 			});
 
-			const formattedInvitations = invitations.map(inv => ({
+			const formattedInvitations = invitations.map((inv: {
+				email: string;
+				project: { id: number; title: string; description: string | null };
+				invitedBy: { id: number; name: string | null; email: string };
+				expiresAt: Date;
+				token: string;
+			}) => ({
 				email: inv.email,
 				project: inv.project,
 				invitedBy: inv.invitedBy,
@@ -471,13 +477,21 @@ export const invitationController = {
 						}
 					}
 				},
-				orderBy: { createdAt: 'desc' }
+				orderBy: { createdAt: "desc" }
 			});
 
-			const pending = invitations.filter(inv => !inv.acceptedAt && !inv.declinedAt && inv.expiresAt > new Date());
-			const accepted = invitations.filter(inv => inv.acceptedAt);
-			const declined = invitations.filter(inv => inv.declinedAt);
-			const expired = invitations.filter(inv => !inv.acceptedAt && !inv.declinedAt && inv.expiresAt <= new Date());
+			const pending = invitations.filter((inv: {
+				acceptedAt: Date | null;
+				declinedAt: Date | null;
+				expiresAt: Date;
+			}) => !inv.acceptedAt && !inv.declinedAt && inv.expiresAt > new Date());
+			const accepted = invitations.filter((inv: { acceptedAt: Date | null }) => inv.acceptedAt);
+			const declined = invitations.filter((inv: { declinedAt: Date | null }) => inv.declinedAt);
+			const expired = invitations.filter((inv: {
+				acceptedAt: Date | null;
+				declinedAt: Date | null;
+				expiresAt: Date;
+			}) => !inv.acceptedAt && !inv.declinedAt && inv.expiresAt <= new Date());
 
 			res.json({
 				pending,
@@ -527,5 +541,5 @@ export const invitationController = {
 		} catch (err) {
 			next(err);
 		}
-	},
+	}
 };

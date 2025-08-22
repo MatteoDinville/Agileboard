@@ -39,6 +39,7 @@ interface RegisterData {
 interface AuthContextType {
 	user: User | null;
 	isLoading: boolean;
+	isAuthenticated: boolean;
 	setUser: React.Dispatch<React.SetStateAction<User | null>>;
 	loginMutation: UseMutationResult<AuthResponse, Error, LoginData, unknown>;
 	registerMutation: UseMutationResult<AuthResponse, Error, RegisterData, unknown>;
@@ -64,7 +65,7 @@ Object.defineProperty(window, 'localStorage', {
 	value: localStorageMock
 })
 
-const createWrapper = (authContextValue: unknown) => {
+const createWrapper = (authContextValue: Partial<AuthContextType>) => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
@@ -76,8 +77,20 @@ const createWrapper = (authContextValue: unknown) => {
 		},
 	})
 
+	const defaultAuthValue: AuthContextType = {
+		user: null,
+		isLoading: false,
+		isAuthenticated: false,
+		setUser: vi.fn(),
+		loginMutation: {} as UseMutationResult<AuthResponse, Error, LoginData, unknown>,
+		registerMutation: {} as UseMutationResult<AuthResponse, Error, RegisterData, unknown>,
+		logout: vi.fn(),
+	}
+
+	const completeAuthValue = { ...defaultAuthValue, ...authContextValue }
+
 	return ({ children }: { children: React.ReactNode }) => (
-		<AuthContext.Provider value={authContextValue as AuthContextType} >
+		<AuthContext.Provider value={completeAuthValue} >
 			<QueryClientProvider client={queryClient}>
 				{children}
 			</QueryClientProvider>
@@ -118,7 +131,7 @@ describe('User Hooks', () => {
 
 		it('should not fetch when setUser is not available', () => {
 			const { result } = renderHook(() => useProfile(), {
-				wrapper: createWrapper({ setUser: null })
+				wrapper: createWrapper({ setUser: undefined })
 			})
 
 			expect(result.current.isLoading).toBe(false)
@@ -189,7 +202,7 @@ describe('User Hooks', () => {
 			vi.mocked(userService.updateProfile).mockResolvedValue({ user: mockUser })
 
 			const { result } = renderHook(() => useProfile(), {
-				wrapper: createWrapper({ setUser: null })
+				wrapper: createWrapper({ setUser: undefined })
 			})
 
 			result.current.updateProfile.mutate(updateData)
@@ -283,7 +296,7 @@ describe('User Hooks', () => {
 			vi.mocked(userService.getAllUsers).mockResolvedValue(mockUsers)
 
 			const { result } = renderHook(() => useAllUsers(), {
-				wrapper: createWrapper({ user: { id: 1 } })
+				wrapper: createWrapper({ user: { id: 1, email: 'test@example.com', name: 'Test User' } })
 			})
 
 			await waitFor(() => {
@@ -309,7 +322,7 @@ describe('User Hooks', () => {
 			vi.mocked(userService.getAllUsers).mockRejectedValue(error)
 
 			const { result } = renderHook(() => useAllUsers(), {
-				wrapper: createWrapper({ user: { id: 1 } })
+				wrapper: createWrapper({ user: { id: 1, email: 'test@example.com', name: 'Test User' } })
 			})
 
 			await waitFor(() => {

@@ -14,15 +14,12 @@ export const projectController = {
 	 */
 	getAllProjects: async (req: AuthRequest, res: Response, next: NextFunction) => {
 		try {
-			// req.userId provient du middleware authenticateToken
 			const userId = req.userId!;
 
 			const projects = await prisma.project.findMany({
 				where: {
 					OR: [
-						// Projets dont l'utilisateur est propriétaire
 						{ ownerId: userId },
-						// Projets dont l'utilisateur est membre
 						{
 							members: {
 								some: {
@@ -38,7 +35,7 @@ export const projectController = {
 						select: {
 							id: true,
 							name: true,
-							email: true,
+							email: true
 						}
 					},
 					members: {
@@ -83,7 +80,7 @@ export const projectController = {
 						select: {
 							id: true,
 							name: true,
-							email: true,
+							email: true
 						}
 					},
 					members: {
@@ -110,7 +107,6 @@ export const projectController = {
 				return res.status(404).json({ error: "Projet non trouvé." });
 			}
 
-			// Vérifier si l'utilisateur est owner ou membre
 			const isOwner = project.ownerId === userId;
 			const isMember = project.members.some(member => member.userId === userId);
 
@@ -261,7 +257,6 @@ export const projectController = {
 				return res.status(404).json({ error: "Projet non trouvé." });
 			}
 
-			// Vérifier si l'utilisateur est owner ou membre
 			const isOwner = project.ownerId === userId;
 			const isMember = project.members.some(member => member.userId === userId);
 

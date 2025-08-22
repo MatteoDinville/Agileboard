@@ -4,6 +4,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TaskModal from '../../components/TaskModal';
 import { TaskStatus, TaskPriority } from '../../types/enums';
 
+// Mock lucide-react icons
+vi.mock('lucide-react', () => ({
+	X: () => <div>X</div>,
+	Save: () => <div>Save</div>,
+	Calendar: () => <div>Calendar</div>,
+	User: () => <div>User</div>,
+	Flag: () => <div>Flag</div>,
+	FileText: () => <div>FileText</div>,
+	ChevronDown: () => <div>ChevronDown</div>,
+}));
+
 vi.mock('../../services/project', () => ({
 	projectService: {
 		fetchProjectMembers: vi.fn(),

@@ -6,6 +6,7 @@ import type { UseMutationResult } from '@tanstack/react-query'
 
 vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => vi.fn(),
+	useSearch: () => ({ redirect: undefined, message: undefined }),
 	Link: ({ children, to }: { children: React.ReactNode; to: string }) =>
 		`<a href="${to}">${children}</a>`,
 }))
@@ -58,6 +59,7 @@ const renderWithAuth = () => {
 				value={{
 					user: null,
 					isLoading: false,
+					isAuthenticated: false,
 					setUser: vi.fn(),
 					loginMutation: createMockLoginMutation() as UseMutationResult<AuthResponse, Error, LoginData>,
 					registerMutation: mockRegisterMutation as UseMutationResult<AuthResponse, Error, RegisterData>,
@@ -98,11 +100,14 @@ describe('Register Page', () => {
 		fireEvent.change(passwordInput, { target: { value: 'password123' } })
 		fireEvent.click(submitButton)
 
-		expect(mockRegisterMutation.mutate).toHaveBeenCalledWith({
-			name: 'Test User',
-			email: 'test@example.com',
-			password: 'password123'
-		})
+		expect(mockRegisterMutation.mutate).toHaveBeenCalledWith(
+			{
+				name: 'Test User',
+				email: 'test@example.com',
+				password: 'password123'
+			},
+			expect.any(Object) // Allow for onSuccess callback
+		)
 	})
 
 	it('shows error when required fields are empty', async () => {
@@ -158,6 +163,7 @@ describe('Register Page', () => {
 				value={{
 					user: null,
 					isLoading: false,
+					isAuthenticated: false,
 					setUser: vi.fn(),
 					loginMutation: createMockLoginMutation() as UseMutationResult<AuthResponse, Error, LoginData>,
 					registerMutation: mockRegisterMutation as UseMutationResult<AuthResponse, Error, RegisterData>,

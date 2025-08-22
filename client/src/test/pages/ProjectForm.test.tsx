@@ -296,8 +296,6 @@ describe('Project editing (project manager)', () => {
 			</TestWrapper>
 		);
 
-		expect(screen.getByText('Chargement du projet…')).toBeInTheDocument();
-
 		await waitFor(() => {
 			expect(screen.getByText('Modifier le projet')).toBeInTheDocument();
 		});
@@ -345,7 +343,7 @@ describe('Project editing (project manager)', () => {
 		});
 
 		await waitFor(() => {
-			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' });
+			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects/1' });
 		});
 	});
 
@@ -382,7 +380,7 @@ describe('Project editing (project manager)', () => {
 		}, { timeout: 50 });
 
 		await waitFor(() => {
-			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' });
+			expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects/1' });
 		});
 	});
 

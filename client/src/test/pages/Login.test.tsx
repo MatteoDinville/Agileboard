@@ -6,6 +6,17 @@ import { AuthProvider } from '../../contexts/AuthContext';
 import Login from '../../pages/Login';
 import { authService } from '../../services/auth';
 
+// Mock lucide-react icons
+vi.mock('lucide-react', () => ({
+	Eye: () => <div>Eye</div>,
+	EyeOff: () => <div>EyeOff</div>,
+	LogIn: () => <div>LogIn</div>,
+	Mail: () => <div>Mail</div>,
+	Lock: () => <div>Lock</div>,
+	ArrowRight: () => <div>ArrowRight</div>,
+	AlertCircle: () => <div>AlertCircle</div>,
+}));
+
 vi.mock('../../services/auth', () => ({
 	authService: {
 		login: vi.fn(),
@@ -23,6 +34,7 @@ vi.mock('@tanstack/react-router', async () => {
 			<a href={to} {...props}>{children}</a>
 		),
 		useNavigate: () => vi.fn(),
+		useSearch: () => ({ redirect: undefined, message: undefined }),
 	};
 });
 
@@ -169,10 +181,11 @@ describe('Login (success)', () => {
 		);
 
 		const passwordInput = screen.getByLabelText(/mot de passe/i);
-		const toggleButtons = screen.getAllByRole('button');
-		const toggleButton = toggleButtons.find(btn =>
-			btn.querySelector('svg') && btn !== screen.getByRole('button', { name: /se connecter/i })
-		);
+
+		// Find the toggle button by looking for buttons that are not the submit button
+		const submitButton = screen.getByRole('button', { name: /se connecter/i });
+		const allButtons = screen.getAllByRole('button');
+		const toggleButton = allButtons.find(btn => btn !== submitButton);
 
 		expect(toggleButton).toBeInTheDocument();
 

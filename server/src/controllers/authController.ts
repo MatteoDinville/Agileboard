@@ -100,7 +100,7 @@ export const authController = {
 	},
 
 	refresh: (req: Request, res: Response) => {
-		const token = (req as Request).cookies?.["refresh_token"];
+		const token = (req as Request & { cookies?: Record<string, string> }).cookies?.["refresh_token"];
 		if (!token) return res.status(401).json({ error: "Refresh token manquant." });
 
 		try {
