@@ -65,7 +65,7 @@ export class InvitationService {
 
 			if (res.status === 409) {
 				if (err.type) {
-					return err; // Retourner la réponse pour gérer le renvoi d'invitation
+					return err;
 				}
 				throw new Error(err.error || "Erreur lors de l'envoi de l'invitation");
 			}

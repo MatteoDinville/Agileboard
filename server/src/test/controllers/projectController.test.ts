@@ -208,7 +208,7 @@ describe("ProjectController", () => {
 				id: 1,
 				title: "Test Project",
 				description: "Test Description",
-				ownerId: 2, // Different owner
+				ownerId: 2,
 				members: [],
 				owner: { id: 2, name: "Other User", email: "other@test.com" },
 				_count: { members: 0, tasks: 0 }

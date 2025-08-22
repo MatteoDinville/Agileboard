@@ -60,7 +60,6 @@ const InvitationAcceptPage: React.FC = () => {
 			await invitationService.acceptInvitation(token);
 			setSuccess(true);
 
-			// Invalider les caches pour que l'utilisateur voit bien ses nouveaux projets
 			queryClient.invalidateQueries({ queryKey: ['projects'] });
 			queryClient.invalidateQueries({ queryKey: ['projects', invitation?.project.id] });
 			queryClient.invalidateQueries({ queryKey: ['user', 'invitations'] });
@@ -98,7 +97,6 @@ const InvitationAcceptPage: React.FC = () => {
 			await invitationService.declineInvitation(token);
 			setDeclined(true);
 
-			// Invalider le cache des invitations
 			queryClient.invalidateQueries({ queryKey: ['user', 'invitations'] });
 
 			setTimeout(() => {
