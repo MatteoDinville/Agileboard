@@ -20,4 +20,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/dist ./dist
 
-CMD sh -c "npm run db:migrate:prod && node dist/server.js"
+CMD sh -c "npm run db:migrate:prod && npm run start:prod"
