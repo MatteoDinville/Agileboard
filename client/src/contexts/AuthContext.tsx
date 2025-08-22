@@ -71,7 +71,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		onSuccess: (data) => {
 			setUser(data.user);
 			queryClient.invalidateQueries({ queryKey: ['auth'] });
-			// Ne plus rediriger automatiquement ici - laissons les pages gérer
 		},
 	});
 
@@ -84,7 +83,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		onSuccess: (data) => {
 			setUser(data.user);
 			queryClient.invalidateQueries({ queryKey: ['auth'] });
-			// Ne plus rediriger automatiquement ici - laissons les pages gérer
 		},
 	});
 

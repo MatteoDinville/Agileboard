@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
 import type { Mock } from 'vitest'
 
-// Mock lucide-react icons
 vi.mock('lucide-react', () => ({
 	Calendar: () => <div>Calendar</div>,
 	FolderKanban: () => <div>FolderKanban</div>,

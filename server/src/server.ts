@@ -10,7 +10,7 @@ import invitationRoutes from "./routes/invitation.js";
 import {
 	securityMiddleware,
 	rateLimitMiddleware,
-	loginRateLimit,
+	authRateLimit,
 	corsOptions,
 	validateContentType,
 	validatePayloadSize
@@ -33,7 +33,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 app.set("trust proxy", 1);
 
-app.use("/api/auth", loginRateLimit, authRoutes);
+app.use("/api/auth", authRateLimit, authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/tasks", taskRoutes);

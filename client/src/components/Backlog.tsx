@@ -171,7 +171,6 @@ const Backlog: React.FC<BacklogProps> = ({
 		return Array.from(assignees.values());
 	}, [tasks]);
 
-	// Fonctions pour la gestion de la sélection
 	const toggleTaskSelection = (taskId: number) => {
 		setSelectedTasks(prev =>
 			prev.includes(taskId)
@@ -197,13 +196,10 @@ const Backlog: React.FC<BacklogProps> = ({
 
 		setIsDeleting(true);
 		try {
-			// Supprimer toutes les tâches sélectionnées
 			await Promise.all(selectedTasks.map(taskId => taskService.deleteTask(taskId)));
 
-			// Réinitialiser la sélection
 			setSelectedTasks([]);
 
-			// Invalider le cache pour refetch les tâches
 			await queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
 		} catch (error) {
 			console.error('Erreur lors de la suppression des tâches:', error);
