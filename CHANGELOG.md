@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.3.0 (2025-08-22)
+
+### ✨ Features (Pull Requests)
+
+- **📱 Responsive Design** – Improved layouts and support for all screen sizes ([#25](https://github.com/MatteoDinville/Agileboard/pull/25)) `6d2fc24`
+
+### ➕ Added
+
+- Responsive design support across desktop, tablet, and mobile devices
+
+### 🔄 Changed
+
+- Updated grid system and components for adaptive rendering
+- Improved navigation and readability on smaller screens
+- Adjusted typography, spacing, and alignment for better UI consistency
+
+---
+
 ## v1.2.0 (2025-08-22)
 
 ### ✨ Features (Pull Requests)
